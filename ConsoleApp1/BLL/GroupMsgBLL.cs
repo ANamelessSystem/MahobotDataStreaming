@@ -75,16 +75,11 @@ namespace Marchen.BLL
                     cmdType = "queuequit";
                     Console.WriteLine("识别为退出排刀");
                 }
-                else if (cmdContext.Contains("清空"))
+                else if (cmdContext.Contains("清空队列"))
                 {
                     cmdType = "clear";
                     Console.WriteLine("识别为清空指令");
                 }
-                //else if (cmdContext.Contains("配置"))
-                //{
-                //    cmdType = "howto";
-                //    Console.WriteLine("识别为查询配置");
-                //}
                 else if (cmdContext.Contains("伤害"))
                 {
                     cmdType = "debrief";
@@ -99,6 +94,16 @@ namespace Marchen.BLL
                 {
                     cmdType = "timeout";
                     Console.WriteLine("识别为掉线");
+                }
+                else if (cmdContext.Contains("修改"))
+                {
+                    cmdType = "dmgmod";
+                    Console.WriteLine("识别为伤害修改");
+                }
+                else if (cmdContext.Contains("查看"))
+                {
+                    cmdType = "dmgshow";
+                    Console.WriteLine("识别为伤害查看");
                 }
                 else
                 {
@@ -366,7 +371,6 @@ namespace Marchen.BLL
                                     }
                                 }
                             }
-                            #region 无法识别的伤害填报的用户指引区
                             if (intDMG == -1)
                             {
                                 message += new Message("无法识别伤害，可能由于格式错误\r\n");
@@ -382,7 +386,6 @@ namespace Marchen.BLL
                                 message += new Message("无法识别周目数，可能由于格式错误\r\n");
                                 isCorrect = false;
                             }
-                            #endregion
                             if (isCorrect)
                             {
                                 if (GroupMsgDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode,intExTime, out int intEID))
@@ -410,10 +413,10 @@ namespace Marchen.BLL
                             message += new Message("加入队列：【@MahoBot c1】可进入队列\r\n");
                             message += new Message("查询队列：【@MahoBot c2】可查询当前在队列中的人\r\n");
                             message += new Message("退出队列：【@MahoBot c3】可离开队列\r\n");
-                            message += new Message("清空队列：【@MahoBot m1】可清空当前队列（仅限群主/管理员使用）\r\n");
+                            message += new Message("清空队列：【@MahoBot 清空队列】可清空当前队列（仅限群主/管理员使用）\r\n");
                             message += new Message("伤害记录：【@MahoBot 伤害 B(n) (n)周目 （伤害值）】（如@MahoBot 伤害 B2 6周目 1374200）\r\n 伤害值可如137w等模糊格式\r\n");
                             message += new Message("额外时间的伤害记录：【@MahoBot 伤害 补时 B(n) (n)周目 （伤害值）】\r\n");
-                            message += new Message("掉线记录：【@MahoBot 掉线】或【@MahoBot 补时掉线】可记录一次掉刀或额外时间掉刀\r\n");
+                            message += new Message("掉线记录：【@MahoBot 掉线 (是否补时)】可记录一次掉刀或额外时间掉刀\r\n");
                         }
                         message += Message.At(long.Parse(strUserID));
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
@@ -436,6 +439,51 @@ namespace Marchen.BLL
                             else
                             {
                                 message += new Message("与数据库失去连接，掉刀记录失败。\r\n");
+                                message += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                            }
+                        }
+                        break;
+                    case "dmgmod": { }break;
+                    case "dmgshow":
+                        {
+                            int intEID = 0;
+                            string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (string e in sArray)
+                            {
+                                if (e.ToLower().Contains("e"))
+                                {
+                                    intEID = int.Parse(e.ToLower().Replace("e", ""));
+                                    if (GroupMsgDAL.QueryDamageRecord(intEID, strGrpID, out DataTable dtDmgRec) && dtDmgRec.Rows.Count == 1)
+                                    {
+                                        string strRUID = dtDmgRec.Rows[0]["userid"].ToString();
+                                        string strRDmg = dtDmgRec.Rows[0]["dmg"].ToString();
+                                        string strRRound = dtDmgRec.Rows[0]["round"].ToString();
+                                        string strRBC = dtDmgRec.Rows[0]["bc"].ToString();
+                                        string strEXT = dtDmgRec.Rows[0]["extime"].ToString();
+                                        string resultString = "";
+                                        if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
+                                        {
+                                            resultString = "掉刀，无伤害";
+                                        }
+                                        else if (strEXT == "1")
+                                        {
+                                            resultString = strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " 补时";
+                                        }
+                                        else
+                                        {
+                                            resultString = strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
+                                        }
+                                        message += new Message("读出档案号：" + intEID + " 数据为：" + resultString + "\r\n");
+                                    }
+                                    else
+                                    {
+                                        message += new Message("与数据库失去连接，查询失败。\r\n");
+                                    }
+                                }
+                            }
+                            if (intEID > 0)
+                            {
                                 message += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                             }

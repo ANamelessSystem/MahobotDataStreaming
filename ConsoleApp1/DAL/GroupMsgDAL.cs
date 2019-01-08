@@ -247,5 +247,20 @@ namespace Marchen.DAL
                 return false;
             }
         }
+        public static bool QueryDamageRecord(int intEID,string strGrpID,out DataTable dtDmgRec)
+        {
+            try
+            {
+                string sqlQryDmgRec = "select userid,dmg,round,bc,extime from GD_" + strGrpID + " where eventid =" + intEID;
+                dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRec);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("群：" + strGrpID + "查询EID为" + intEID + "时失败。\r\n" + oex);
+                dtDmgRec = null;
+                return false;
+            }
+        }
     }
 }

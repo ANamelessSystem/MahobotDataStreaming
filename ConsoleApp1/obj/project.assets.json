@@ -784,11 +784,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Devons\\Documents\\Visual Studio 2017\\Projects\\MahoBot20190107_2\\MahoBot\\ConsoleApp1\\MarchenGarden.csproj",
+      "projectUniqueName": "D:\\CSharpProjects\\MahobotDataStreamingRepo\\MahobotDataStreaming\\ConsoleApp1\\MarchenGarden.csproj",
       "projectName": "MarchenGarden",
-      "projectPath": "C:\\Users\\Devons\\Documents\\Visual Studio 2017\\Projects\\MahoBot20190107_2\\MahoBot\\ConsoleApp1\\MarchenGarden.csproj",
+      "projectPath": "D:\\CSharpProjects\\MahobotDataStreamingRepo\\MahobotDataStreaming\\ConsoleApp1\\MarchenGarden.csproj",
       "packagesPath": "C:\\Users\\Devons\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Devons\\Documents\\Visual Studio 2017\\Projects\\MahoBot20190107_2\\MahoBot\\ConsoleApp1\\obj\\",
+      "outputPath": "D:\\CSharpProjects\\MahobotDataStreamingRepo\\MahobotDataStreaming\\ConsoleApp1\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
