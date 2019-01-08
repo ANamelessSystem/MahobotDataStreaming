@@ -1,0 +1,105 @@
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\Sisters.WudiLib.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\Sisters.WudiLib.pdb
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CopyComplete
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\Sisters.WudiLib.dll
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\Sisters.WudiLib.pdb
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CopyComplete
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+D:\CSharpWorkspace\MahoBotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+D:\CSharpWorkspace\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\TESTLAB\MahoBotLite20181222\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBotLite20181230\MahoBotLite\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20181231\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\NEMESIS SYSTEM\Documents\Visual Studio 2017\Projects\MahoBot20190105\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb

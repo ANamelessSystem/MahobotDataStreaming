@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Company>Devons System</Company>
+    <Product>Puricone_qq_bot</Product>
+    <Authors>Devons System</Authors>
+    <PackageId>MarchenGarden</PackageId>
+    <RootNamespace>Marchen</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.18.3" />
+    <PackageReference Include="Sisters.WudiLib" Version="0.0.2-alpha" />
+  </ItemGroup>
+
+</Project>
