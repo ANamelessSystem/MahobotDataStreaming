@@ -3,3 +3,6 @@
 ################################################################################
 
 /.vs/MahoBotDataStreaming/v15/Server/sqlite3
+/.vs
+/ConsoleApp1/obj/Release
+/ConsoleApp1/bin
