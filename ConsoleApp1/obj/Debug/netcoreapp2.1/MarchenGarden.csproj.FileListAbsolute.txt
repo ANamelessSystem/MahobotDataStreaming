@@ -103,3 +103,14 @@ C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\Co
 C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
 C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
 C:\Users\Devons\Documents\Visual Studio 2017\Projects\MahoBot20190107\MahoBot\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.deps.json
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.json
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.runtimeconfig.dev.json
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\bin\Debug\netcoreapp2.1\MarchenGarden.pdb
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csprojAssemblyReference.cache
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.csproj.CoreCompileInputs.cache
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfoInputs.cache
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.AssemblyInfo.cs
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.dll
+C:\Users\DEBUGTEAM\Source\Repos\MahobotDataStreaming\ConsoleApp1\obj\Debug\netcoreapp2.1\MarchenGarden.pdb

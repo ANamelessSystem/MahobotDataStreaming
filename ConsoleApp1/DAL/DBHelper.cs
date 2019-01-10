@@ -16,7 +16,7 @@ namespace Marchen.DAL
         {
             get
             {
-                string conStr = "User ID =" + DBProperties.DBUserID + "; Password =" + DBProperties.DBPassWord + "; Data Source = (DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = " + DBProperties.DBAddress + ")(PORT = " + DBProperties.DBPort + ")))(CONNECT_DATA = (SERVICE_NAME =" + DBProperties.DBServiceName + ")))";
+                string conStr = "User ID =" + DBProperties.DBUserID + "; Password =" + DBProperties.DBPassword + "; Data Source = (DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = " + DBProperties.DBAddress + ")(PORT = " + DBProperties.DBPort + ")))(CONNECT_DATA = (SERVICE_NAME =" + DBProperties.DBServiceName + ")))";
                 if (connection == null)
                 {
                     connection = new OracleConnection(conStr);

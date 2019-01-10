@@ -8,10 +8,16 @@
     <Authors>Devons System</Authors>
     <PackageId>MarchenGarden</PackageId>
     <RootNamespace>Marchen</RootNamespace>
+    <StartupObject>Marchen.Garden.Program</StartupObject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>4</WarningLevel>
+    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

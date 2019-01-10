@@ -13,7 +13,7 @@ namespace Marchen.Model
         /// <summary>
         /// 数据库密码
         /// </summary>
-        public static string DBPassWord { get; set; }
+        public static string DBPassword { get; set; }
         /// <summary>
         /// 数据库地址
         /// </summary>

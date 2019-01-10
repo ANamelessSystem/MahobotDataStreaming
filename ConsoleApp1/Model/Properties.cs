@@ -10,20 +10,24 @@ namespace Marchen.Model
         /// <summary>
         /// 监听地址
         /// </summary>
-        public static string PostAddress { get; set; }
+        public static string ApiPostAddr { get; set; }
         /// <summary>
         /// API端口地址
         /// </summary>
-        public static string ApiAddress { get; set; }
+        public static string ApiAddr { get; set; }
         /// <summary>
         /// API实例
         /// </summary>
         public static HttpApiClient HttpApi { get; set; }
+        /// <summary>
+        /// 内容转发地址，将收到的所有内容再次上报到此地址
+        /// </summary>
+        public static string ApiForwardToAddr { get; set; }
     }
     public static class SelfProperties
     {
         /// <summary>
-        /// 自己的QQ号
+        /// 自己的QQ号，保持自动获取
         /// </summary>
         public static string SelfID { get; set; }
     }

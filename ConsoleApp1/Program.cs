@@ -6,6 +6,9 @@ using Sisters.WudiLib.Responses;
 using Marchen.Model;
 using Marchen.BLL;
 using System.Timers;
+using System.Runtime.InteropServices;
+using System.IO;
+using System.Text;
 
 namespace Marchen.Garden
 {
@@ -14,10 +17,19 @@ namespace Marchen.Garden
         static void SetDatabaseInfo()
         {
             DBProperties.DBUserID = "MIRACLEMAHO";
-            DBProperties.DBPassWord = "pupupu";
+            DBProperties.DBPassword = "pupupu";
             DBProperties.DBAddress = "192.168.29.12";
             DBProperties.DBPort = "1521";
             DBProperties.DBServiceName = "MAHOMAHO";
+        }
+        static void SetHttpApiInfo()
+        {
+            //ApiProperties.PostAddress = "http://[::1]:10202";
+            ApiProperties.ApiPostAddr = "http://+:8876/";//监听地址（接收酷Q HTTPAPI上报信息的地址）
+            ApiProperties.ApiAddr = "http://127.0.0.1:5700/";//上报地址
+            ApiProperties.HttpApi = new HttpApiClient();
+            ApiProperties.HttpApi.ApiAddress = ApiProperties.ApiAddr;
+            ApiProperties.ApiForwardToAddr = "http://[::1]:10202";
         }
 
         static void Main(string[] args)
@@ -27,16 +39,24 @@ namespace Marchen.Garden
             CultureInfo.DefaultThreadCurrentUICulture = culture;
             CultureInfo.CurrentCulture = culture;
             CultureInfo.CurrentUICulture = culture;
-            //SelfProperties.PostAddress = "http://[::1]:10202";
-            ApiProperties.PostAddress = "http://+:8876/";//监听地址（接收酷Q HTTPAPI上报信息的地址）
-            ApiProperties.ApiAddress = "http://127.0.0.1:5700/";//上报地址
-            ApiProperties.HttpApi = new HttpApiClient();
-            ApiProperties.HttpApi.ApiAddress = ApiProperties.ApiAddress;
-            SelfProperties.SelfID = ApiProperties.HttpApi.GetLoginInfoAsync().Result.UserId.ToString();
+            SetDatabaseInfo();
+            SetHttpApiInfo();
+            try
+            {
+                SelfProperties.SelfID = ApiProperties.HttpApi.GetLoginInfoAsync().Result.UserId.ToString();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                Console.WriteLine("获取自己的ID时出现错误，请确认酷Q的运行情况与HTTP API插件的安装。");
+                Console.WriteLine("点击任意键退出");
+                Console.ReadKey();
+                return;
+            }
             ApiPostListener postListener = new ApiPostListener();
             postListener.ApiClient = ApiProperties.HttpApi;
-            postListener.PostAddress = ApiProperties.PostAddress;
-            postListener.ForwardTo = "http://[::1]:10202";//转发地址，用于不影响现有业务运作开发新的业务流程
+            postListener.PostAddress = ApiProperties.ApiPostAddr;
+            postListener.ForwardTo = ApiProperties.ApiForwardToAddr;
             try
             {
                 postListener.StartListen();
@@ -49,7 +69,7 @@ namespace Marchen.Garden
                 Console.ReadKey();
                 return;
             }
-            Console.WriteLine("监听启动完毕");
+            Console.WriteLine("监听启动成功");
             //Timer timer = new Timer();
             //timer.Enabled = true;
             //timer.Interval = 1800000;
@@ -117,5 +137,7 @@ namespace Marchen.Garden
         //{
         //    return new DateTime(datetime.Year, datetime.Month, datetime.Day);
         //}
+
+
     }
 }
