@@ -1,9 +1,0 @@
-﻿################################################################################
-# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
-################################################################################
-
-/.vs/MahoBotDataStreaming/v15/Server/sqlite3
-/.vs
-/ConsoleApp1/obj/Release
-/ConsoleApp1/bin
-/ConsoleApp1/Properties/PublishProfiles
