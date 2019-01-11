@@ -1,9 +1,0 @@
-{
-  "runtimeOptions": {
-    "additionalProbingPaths": [
-      "C:\\Users\\NEMESIS SYSTEM\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\NEMESIS SYSTEM\\.nuget\\packages",
-      "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-    ]
-  }
-}
