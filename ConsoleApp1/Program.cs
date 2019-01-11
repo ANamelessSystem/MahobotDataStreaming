@@ -53,10 +53,12 @@ namespace Marchen.Garden
                 Console.ReadKey();
                 return;
             }
-            ApiPostListener postListener = new ApiPostListener();
-            postListener.ApiClient = ApiProperties.HttpApi;
-            postListener.PostAddress = ApiProperties.ApiPostAddr;
-            postListener.ForwardTo = ApiProperties.ApiForwardToAddr;
+            ApiPostListener postListener = new ApiPostListener
+            {
+                ApiClient = ApiProperties.HttpApi,
+                PostAddress = ApiProperties.ApiPostAddr,
+                ForwardTo = ApiProperties.ApiForwardToAddr
+            };
             try
             {
                 postListener.StartListen();

@@ -444,7 +444,23 @@ namespace Marchen.BLL
                             }
                         }
                         break;
-                    case "dmgmod": { }break;
+                    case "dmgmod":
+                        {
+                            int intEID = 0;
+                            string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (string e in sArray)
+                            {
+                                if (e.ToLower().Contains("e"))
+                                {
+                                    intEID = int.Parse(e.ToLower().Replace("e", ""));
+                                }
+                                else if (e.ToLower().Contains("周目"))
+                                {
+
+                                }
+                            }
+                        }
+                        break;
                     case "dmgshow":
                         {
                             int intEID = 0;
@@ -454,27 +470,40 @@ namespace Marchen.BLL
                                 if (e.ToLower().Contains("e"))
                                 {
                                     intEID = int.Parse(e.ToLower().Replace("e", ""));
-                                    if (GroupMsgDAL.QueryDamageRecord(intEID, strGrpID, out DataTable dtDmgRec) && dtDmgRec.Rows.Count == 1)
+                                    if (GroupMsgDAL.QueryDamageRecord(intEID, strGrpID, out DataTable dtDmgRec))
                                     {
-                                        string strRUID = dtDmgRec.Rows[0]["userid"].ToString();
-                                        string strRDmg = dtDmgRec.Rows[0]["dmg"].ToString();
-                                        string strRRound = dtDmgRec.Rows[0]["round"].ToString();
-                                        string strRBC = dtDmgRec.Rows[0]["bc"].ToString();
-                                        string strEXT = dtDmgRec.Rows[0]["extime"].ToString();
-                                        string resultString = "";
-                                        if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
+                                        if (dtDmgRec.Rows.Count < 1)
                                         {
-                                            resultString = "掉刀，无伤害";
+                                            Console.WriteLine("输入的档案号：" + intEID + " 未能找到数据。\r\n");
+                                            message += new Message("输入的档案号：" + intEID + " 未能找到数据。\r\n");
                                         }
-                                        else if (strEXT == "1")
+                                        else if (dtDmgRec.Rows.Count > 1)
                                         {
-                                            resultString = strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " 补时";
+                                            Console.WriteLine("输入的档案号：" + intEID + " 返回非唯一结果。");
+                                            message += new Message("输入的档案号：" + intEID + " 返回非唯一结果，请联系维护团队。\r\n");
                                         }
                                         else
                                         {
-                                            resultString = strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
+                                            string strRUID = dtDmgRec.Rows[0]["userid"].ToString();
+                                            string strRDmg = dtDmgRec.Rows[0]["dmg"].ToString();
+                                            string strRRound = dtDmgRec.Rows[0]["round"].ToString();
+                                            string strRBC = dtDmgRec.Rows[0]["bc"].ToString();
+                                            string strEXT = dtDmgRec.Rows[0]["extime"].ToString();
+                                            string resultString = "";
+                                            if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
+                                            {
+                                                resultString = "掉刀";
+                                            }
+                                            else if (strEXT == "1")
+                                            {
+                                                resultString = strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
+                                            }
+                                            else
+                                            {
+                                                resultString = strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
+                                            }
+                                            message += new Message("读出档案号：" + intEID + " 数据为：" + resultString + "\r\n");
                                         }
-                                        message += new Message("读出档案号：" + intEID + " 数据为：" + resultString + "\r\n");
                                     }
                                     else
                                     {
@@ -484,6 +513,13 @@ namespace Marchen.BLL
                             }
                             if (intEID > 0)
                             {
+                                message += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                            }
+                            else
+                            {
+                                Console.WriteLine("未能识别输入的档案号。" + cmdContext.ToString());
+                                message += new Message("未能识别输入的档案号。\r\n");
                                 message += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                             }

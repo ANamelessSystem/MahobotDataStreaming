@@ -7,7 +7,7 @@ using Marchen.Model;
 
 namespace Marchen
 {
-    class FillConfig
+    class CfgLoader
     {
         /// <summary>
         /// 写入INI文件
@@ -32,25 +32,25 @@ namespace Marchen
         [DllImport("kernel32")]
         private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retval, int size, string filePath);
         private static string pathPrefix = Directory.GetCurrentDirectory();
-        private string strFilePath = pathPrefix + "\\MahobotConfig.ini";//ini path
-        private string strCfgFileName = ""; 
-        private string keyCode = "KururinPa";
+        private static string strFilePath = pathPrefix + "\\MahobotConfig.ini";//ini path
+        private static string strCfgFileName = ""; 
+        private static string keyCode = "KururinPa";
 
-        private void CreateConfigFile()
+        public static void CreateConfigFile()
         {
             //Pending 能创建？
             try
             {
                 strCfgFileName = Path.GetFileNameWithoutExtension(strFilePath);
-                WritePrivateProfileString(strCfgFileName, "DBAddress", "", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "DBServiceName", "", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "DBUserID", "", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "DbPassword", "", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "DBPort", "", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "DBCreaGDTProcName", "", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiAddress", "", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiForwardToAddress", "", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "DBAddress", "(数据库地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "DBServiceName", "(数据库服务名)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "DBUserID", "(数据库用户名)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "DbPassword", "(数据库用户密码)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "DBPort", "(数据库监听端口)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "DBCreaGDTProcName", "(创建表格所用存储过程的名字)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "ApiAddress", "(酷Q HTTP API的监听地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "(酷Q HTTP API的消息上报地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "ApiForwardToAddress", "(本程序接收酷Q HTTP API传来的信息后上报的地址)", strFilePath);
             }
             catch (Exception ex)
             {
