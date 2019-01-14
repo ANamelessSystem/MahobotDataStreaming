@@ -6,7 +6,7 @@ using Marchen.Model;
 
 namespace Marchen.DAL
 {
-    class GroupMsgDAL
+    class QueueDAL
     {
         /// <summary>
         /// 验证群组是否启用bot服务的方法
@@ -163,6 +163,9 @@ namespace Marchen.DAL
                 return false;
             }
         }
+    }
+    class RecordDAL
+    {
         /// <summary>
         /// 伤害上报的方法
         /// </summary>
@@ -173,7 +176,7 @@ namespace Marchen.DAL
         /// <param name="intBossCode"></param>
         /// <param name="intEID"></param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool DamageDebrief(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode,int intExTime, out int intEID)
+        public static bool DamageDebrief(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime, out int intEID)
         {
             DataTable dtMaxEID = new DataTable();
             int intEventID = 1;
@@ -247,7 +250,7 @@ namespace Marchen.DAL
                 return false;
             }
         }
-        public static bool QueryDamageRecord(int intEID,string strGrpID,out DataTable dtDmgRec)
+        public static bool QueryDamageRecord(int intEID, string strGrpID, out DataTable dtDmgRec)
         {
             try
             {
