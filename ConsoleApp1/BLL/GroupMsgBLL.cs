@@ -453,7 +453,7 @@ namespace Marchen.BLL
                             int intDMG = -1;
                             int intBossCode = 0;
                             int intExTime = 0;
-                            string strRUID = "";
+                            string strOriUID = "";
                             string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string e in sArray)
                             {
@@ -480,7 +480,7 @@ namespace Marchen.BLL
                                         }
                                         else
                                         {
-                                            strRUID = dtDmgRec.Rows[0]["userid"].ToString();
+                                            strOriUID = dtDmgRec.Rows[0]["userid"].ToString();
                                             intDMG = int.Parse(dtDmgRec.Rows[0]["dmg"].ToString());
                                             intRound = int.Parse(dtDmgRec.Rows[0]["round"].ToString());
                                             intBossCode = int.Parse(dtDmgRec.Rows[0]["bc"].ToString());
@@ -513,7 +513,7 @@ namespace Marchen.BLL
                                 }
                                 else if (e == "非补时")
                                 {
-                                    intExTime = 1;
+                                    intExTime = 0;
                                 }
                                 else if (e == "掉线")
                                 {
@@ -523,6 +523,62 @@ namespace Marchen.BLL
                                 {
                                     //不处理
                                 }
+                            }
+                            if (strUserID.ToString() == strOriUID.ToString())
+                            {
+                                if (RecordDAL.DamageUpdate(strGrpID, strOriUID, intDMG, intRound, intBossCode, intExTime, intEID))
+                                {
+                                    message += new Message("修改成功。\r\n");
+                                    if (RecordDAL.QueryDamageRecord(intEID, strGrpID, out DataTable dtDmgRec))
+                                    {
+                                        if (dtDmgRec.Rows.Count < 1)
+                                        {
+                                            Console.WriteLine("输入的档案号：" + intEID + " 未能找到数据。\r\n");
+                                            message += new Message("输入的档案号：" + intEID + " 未能找到数据。\r\n");
+                                        }
+                                        else if (dtDmgRec.Rows.Count > 1)
+                                        {
+                                            Console.WriteLine("输入的档案号：" + intEID + " 返回非唯一结果。");
+                                            message += new Message("输入的档案号：" + intEID + " 返回非唯一结果，请联系维护团队。\r\n");
+                                        }
+                                        else
+                                        {
+                                            string strRUID = dtDmgRec.Rows[0]["userid"].ToString();
+                                            string strRDmg = dtDmgRec.Rows[0]["dmg"].ToString();
+                                            string strRRound = dtDmgRec.Rows[0]["round"].ToString();
+                                            string strRBC = dtDmgRec.Rows[0]["bc"].ToString();
+                                            string strREXT = dtDmgRec.Rows[0]["extime"].ToString();
+                                            string resultString = "";
+                                            if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
+                                            {
+                                                resultString = "掉刀";
+                                            }
+                                            else if (strREXT == "1")
+                                            {
+                                                resultString = "ID" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
+                                            }
+                                            else
+                                            {
+                                                resultString = "ID" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
+                                            }
+                                            message += new Message("读出档案号：" + intEID + " 数据为：" + resultString + "\r\n");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        message += new Message("与数据库失去连接，查询失败。\r\n");
+                                    }
+                                }
+                                else
+                                {
+                                    message += new Message("与数据库失去连接，修改失败。\r\n");
+                                    message += Message.At(long.Parse(strUserID));
+                                }
+                            }
+                            else
+                            {
+                                message += new Message("修改者不是原记录上传者，拒绝修改。\r\n");
+                                message += Message.At(long.Parse(strUserID));
                             }
                             //改过和未改过的一起上传，不再另设判断
                             //显示上传内容
@@ -555,19 +611,19 @@ namespace Marchen.BLL
                                             string strRDmg = dtDmgRec.Rows[0]["dmg"].ToString();
                                             string strRRound = dtDmgRec.Rows[0]["round"].ToString();
                                             string strRBC = dtDmgRec.Rows[0]["bc"].ToString();
-                                            string strEXT = dtDmgRec.Rows[0]["extime"].ToString();
+                                            string strREXT = dtDmgRec.Rows[0]["extime"].ToString();
                                             string resultString = "";
                                             if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
                                             {
                                                 resultString = "掉刀";
                                             }
-                                            else if (strEXT == "1")
+                                            else if (strREXT == "1")
                                             {
-                                                resultString = strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
+                                                resultString = "ID"+ strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
                                             }
                                             else
                                             {
-                                                resultString = strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
+                                                resultString = "ID" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
                                             }
                                             message += new Message("读出档案号：" + intEID + " 数据为：" + resultString + "\r\n");
                                         }

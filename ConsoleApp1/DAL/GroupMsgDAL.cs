@@ -265,5 +265,19 @@ namespace Marchen.DAL
                 return false;
             }
         }
+        public static bool DamageUpdate(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime,int intEID)
+        {
+            string sqlDmgDbrf = "insert into GD_" + strGrpID + "(userid,dmg,round,bc,ext) values('" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ") where eventid = " + intEID + "";
+            try
+            {
+                DBHelper.ExecuteCommand(sqlDmgDbrf);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("修改伤害时返回错误：" + oex);
+                return false;
+            }
+        }
     }
 }
