@@ -21,6 +21,7 @@ namespace Marchen.Garden
             DBProperties.DBAddress = "192.168.29.12";
             DBProperties.DBPort = "1521";
             DBProperties.DBServiceName = "MAHOMAHO";
+            DBProperties.DBCreaGDTProcName = "CreaGrpDmgTab";
         }
         static void SetHttpApiInfo()
         {

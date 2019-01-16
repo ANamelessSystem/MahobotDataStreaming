@@ -18,7 +18,12 @@ namespace Marchen.BLL
             string cmdContext = "";
             string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
             string strUserID = receivedMessage.UserId.ToString();
-            string strUserGrpCard = memberInfo.InGroupName.ToString();
+            string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
+            string strUserNickName = memberInfo.Nickname.ToString().Trim();
+            if (strUserGrpCard == null || strUserGrpCard == "")
+            {
+                strUserGrpCard = strUserNickName;
+            }
             int vfyCode = QueueDAL.GroupRegVerify(strGrpID);
             #region 意外情况
             if (strRawcontext.Contains(cmdAtMeAlone) && vfyCode == 0)
@@ -80,7 +85,7 @@ namespace Marchen.BLL
                     cmdType = "clear";
                     Console.WriteLine("识别为清空指令");
                 }
-                else if (cmdContext.Contains("伤害"))
+                else if (cmdContext.Contains("伤害") && !cmdContext.Contains("修改"))
                 {
                     cmdType = "debrief";
                     Console.WriteLine("识别为伤害上报");
@@ -216,6 +221,28 @@ namespace Marchen.BLL
                             int intDMG = -1;
                             bool isCorrect = true;
                             int intExTime = 0;
+                            if (RecordDAL.CheckClanDmgTable(strGrpID, out DataTable dtTableCount))
+                            {
+                                if (int.Parse(dtTableCount.Rows[0]["count"].ToString()) != 1)
+                                {
+                                    if (RecordDAL.CreateTablesForGuildDamage(strGrpID))
+                                    {
+                                        message += new Message("(未找到本公会伤害后台数据表，已自动建立。)\r\n");
+                                    }
+                                    else
+                                    {
+                                        message += new Message("(公会伤害后台数据表建立失败。)\r\n");
+                                        return;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                message += new Message("与数据库失去连接，读取本公会伤害表失败。\r\n");
+                                message += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                return;
+                            }
                             string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string e in sArray)
                             {
@@ -454,6 +481,7 @@ namespace Marchen.BLL
                             int intBossCode = 0;
                             int intExTime = 0;
                             string strOriUID = "";
+                            string strNewUID = "";
                             string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string e in sArray)
                             {
@@ -481,6 +509,7 @@ namespace Marchen.BLL
                                         else
                                         {
                                             strOriUID = dtDmgRec.Rows[0]["userid"].ToString();
+                                            strNewUID = strOriUID;
                                             intDMG = int.Parse(dtDmgRec.Rows[0]["dmg"].ToString());
                                             intRound = int.Parse(dtDmgRec.Rows[0]["round"].ToString());
                                             intBossCode = int.Parse(dtDmgRec.Rows[0]["bc"].ToString());
@@ -502,6 +531,10 @@ namespace Marchen.BLL
                                 else if (e.ToLower().Contains("b"))
                                 {
                                     intBossCode = int.Parse(e.ToLower().Replace("b", ""));
+                                }
+                                else if (e.ToLower().Contains("u"))
+                                {
+                                    strNewUID = e.ToLower().Replace("u", "");
                                 }
                                 else if (e.ToLower().Contains("伤害"))
                                 {
@@ -526,9 +559,8 @@ namespace Marchen.BLL
                             }
                             if (strUserID.ToString() == strOriUID.ToString())
                             {
-                                if (RecordDAL.DamageUpdate(strGrpID, strOriUID, intDMG, intRound, intBossCode, intExTime, intEID))
+                                if (RecordDAL.DamageUpdate(strGrpID, strNewUID, intDMG, intRound, intBossCode, intExTime, intEID))
                                 {
-                                    message += new Message("修改成功。\r\n");
                                     if (RecordDAL.QueryDamageRecord(intEID, strGrpID, out DataTable dtDmgRec))
                                     {
                                         if (dtDmgRec.Rows.Count < 1)
@@ -555,13 +587,13 @@ namespace Marchen.BLL
                                             }
                                             else if (strREXT == "1")
                                             {
-                                                resultString = "ID" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
+                                                resultString = "UID=" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
                                             }
                                             else
                                             {
-                                                resultString = "ID" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
+                                                resultString = "UID=" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
                                             }
-                                            message += new Message("读出档案号：" + intEID + " 数据为：" + resultString + "\r\n");
+                                            message += new Message("现在档案号" + intEID + "的数据为：\r\n" + resultString + "\r\n");
                                         }
                                     }
                                     else
@@ -572,14 +604,14 @@ namespace Marchen.BLL
                                 else
                                 {
                                     message += new Message("与数据库失去连接，修改失败。\r\n");
-                                    message += Message.At(long.Parse(strUserID));
                                 }
                             }
                             else
                             {
                                 message += new Message("修改者不是原记录上传者，拒绝修改。\r\n");
-                                message += Message.At(long.Parse(strUserID));
                             }
+                            message += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                             //改过和未改过的一起上传，不再另设判断
                             //显示上传内容
                         }

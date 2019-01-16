@@ -81,7 +81,7 @@ namespace Marchen.DAL
                 Console.WriteLine("查询最大序号时跳出错误" + orex);
                 return false;
             }
-            if (dtMaxSeq.Rows[0]["maxseq"].ToString() != null || dtMaxSeq.Rows[0]["maxseq"].ToString() != "")
+            if (dtMaxSeq.Rows[0]["maxseq"].ToString().Trim() != null && dtMaxSeq.Rows[0]["maxseq"].ToString().Trim() != "")
             {
                 intSequence = int.Parse(dtMaxSeq.Rows[0]["maxseq"].ToString()) + 1;
             }
@@ -191,11 +191,11 @@ namespace Marchen.DAL
                 intEID = 0;
                 return false;
             }
-            if (dtMaxEID.Rows[0]["maxeid"].ToString() != null || dtMaxEID.Rows[0]["maxeid"].ToString() != "")
+            if (dtMaxEID.Rows[0]["maxeid"].ToString() != null && dtMaxEID.Rows[0]["maxeid"].ToString() != "")
             {
                 intEventID = int.Parse(dtMaxEID.Rows[0]["maxeid"].ToString()) + 1;
             }
-            string sqlDmgDbrf = "insert into GD_" + strGrpID + "(userid,dmg,round,bc,ext,time,eventid) values('" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ",sysdate," + intEventID + ")";
+            string sqlDmgDbrf = "insert into GD_" + strGrpID + "(userid,dmg,round,bc,extime,time,eventid) values('" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ",sysdate," + intEventID + ")";
             try
             {
                 DBHelper.ExecuteCommand(sqlDmgDbrf);
@@ -239,9 +239,11 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool CreateTablesForGuildDamage(string strGrpID)
         {
+            Console.WriteLine("未查询到群：" + strGrpID + "存在伤害统计表，尝试创建\r\n");
             try
             {
                 DBHelper.ExecCreaGDT(DBProperties.DBCreaGDTProcName, strGrpID);
+                Console.WriteLine("群：" + strGrpID + "创建伤害统计表成功。\r\n");
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
@@ -267,7 +269,7 @@ namespace Marchen.DAL
         }
         public static bool DamageUpdate(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime,int intEID)
         {
-            string sqlDmgDbrf = "insert into GD_" + strGrpID + "(userid,dmg,round,bc,ext) values('" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ") where eventid = " + intEID + "";
+            string sqlDmgDbrf = " update GD_" + strGrpID + " set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " where eventid = " + intEID;
             try
             {
                 DBHelper.ExecuteCommand(sqlDmgDbrf);
@@ -276,6 +278,21 @@ namespace Marchen.DAL
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
                 Console.WriteLine("修改伤害时返回错误：" + oex);
+                return false;
+            }
+        }
+        public static bool CheckClanDmgTable(string strGrpID, out DataTable dtTableCount)
+        {
+            string sqlCheckTableExist = "select count(*) as count from user_tables where table_name = 'GD_" + strGrpID + "'";
+            try
+            {
+                dtTableCount = DBHelper.GetDataTable(sqlCheckTableExist);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("查询伤害表是否存在时返回错误：" + oex);
+                dtTableCount = null;
                 return false;
             }
         }
