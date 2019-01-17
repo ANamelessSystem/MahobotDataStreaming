@@ -770,13 +770,25 @@ namespace Marchen.BLL
                             {
                                 if (e.ToLower().Contains("e"))
                                 {
-                                    intEID = int.Parse(e.ToLower().Replace("e", ""));
+                                    if (!int.TryParse(e.ToLower().Replace("e", ""), out int intOutEID))
+                                    {
+                                        Console.WriteLine("无法识别档案号。原始信息=" + e.ToString());
+                                        message += new Message("无法识别档案号。\r\n");
+                                        message += Message.At(long.Parse(strUserID));
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        intEID = intOutEID;
+                                    }
                                     if (RecordDAL.QueryDamageRecord(intEID, strGrpID, out DataTable dtDmgRec))
                                     {
                                         if (dtDmgRec.Rows.Count < 1)
                                         {
                                             Console.WriteLine("输入的档案号：" + intEID + " 未能找到数据。\r\n");
                                             message += new Message("输入的档案号：" + intEID + " 未能找到数据。\r\n");
+
                                         }
                                         else if (dtDmgRec.Rows.Count > 1)
                                         {
@@ -793,22 +805,36 @@ namespace Marchen.BLL
                                             string resultString = "";
                                             if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
                                             {
-                                                resultString = "掉线";
+                                                if (strREXT == "1")
+                                                {
+                                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线) （补时）";
+                                                }
+                                                else
+                                                {
+                                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线)";
+                                                }
                                             }
-                                            else if (strREXT == "1")
+                                            else if (dtDmgRec.Rows[0]["dmg"].ToString() != "0")
                                             {
-                                                resultString = "ID" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
+                                                if (strREXT == "1")
+                                                {
+                                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + " （补时）";
+                                                }
+                                                else
+                                                {
+                                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg;
+                                                }
                                             }
                                             else
                                             {
-                                                resultString = "ID" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
+                                                Console.WriteLine("写出伤害时出现意料外的错误，dtDmgRec.Rows[0][dmg].ToString()=" + dtDmgRec.Rows[0]["dmg"].ToString());
+                                                message += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                                message += Message.At(long.Parse(strUserID));
+                                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                                return;
                                             }
-                                            message += new Message("读出档案号：" + intEID + " 数据为：" + resultString + "\r\n");
+                                            message += new Message("所查询档案号" + intEID + "的数据为：\r\n" + resultString + "\r\n");
                                         }
-                                    }
-                                    else
-                                    {
-                                        message += new Message("与数据库失去连接，查询失败。\r\n");
                                     }
                                 }
                             }
