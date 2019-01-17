@@ -11,7 +11,7 @@ namespace Marchen.BLL
 {
     class GroupMsgBLL
     {
-        public static void GrpMsgReco(MessageContext receivedMessage,GroupMemberInfo memberInfo)
+        public static void GrpMsgReco(MessageContext receivedMessage, GroupMemberInfo memberInfo)
         {
             string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
             string cmdAtMeAlone = "[CQ:at,qq=" + SelfProperties.SelfID + "]";
@@ -139,7 +139,7 @@ namespace Marchen.BLL
                                 for (int i = 0; i < dtQueue.Rows.Count; i++)
                                 {
                                     string strOutput = "顺序：" + dtQueue.Rows[i]["seq"].ToString() + "    " + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")";
-                                    string strMark = "←";
+                                    string strMark = "←";//提醒用标识
                                     if (dtQueue.Rows[i]["id"].ToString() == strUserID)
                                     {
                                         message += new Message(strOutput + strMark + "\r\n");
@@ -263,7 +263,7 @@ namespace Marchen.BLL
                                         isCorrect = false;
                                     }
                                 }
-                                else if (e.Contains("补时"))
+                                else if (e == "补时")
                                 {
                                     intExTime = 1;
                                 }
@@ -415,7 +415,7 @@ namespace Marchen.BLL
                             }
                             if (isCorrect)
                             {
-                                if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode,intExTime, out int intEID))
+                                if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode, intExTime, out int intEID))
                                 {
                                     Console.WriteLine(intBossCode.ToString() + " " + intRound.ToString() + " " + intDMG.ToString());
                                     Console.WriteLine(intEID.ToString());
@@ -443,7 +443,7 @@ namespace Marchen.BLL
                             message += new Message("清空队列：【@MahoBot 清空队列】可清空当前队列（仅限群主/管理员使用）\r\n");
                             message += new Message("伤害记录：【@MahoBot 伤害 B(n) (n)周目 （伤害值）】（如@MahoBot 伤害 B2 6周目 1374200）\r\n 伤害值可如137w等模糊格式\r\n");
                             message += new Message("额外时间的伤害记录：【@MahoBot 伤害 补时 B(n) (n)周目 （伤害值）】\r\n");
-                            message += new Message("掉线记录：【@MahoBot 掉线 (是否补时)】可记录一次掉刀或额外时间掉刀\r\n");
+                            message += new Message("掉线记录：【@MahoBot 掉线 (是否补时)】可记录一次掉线或额外时间掉线\r\n");
                         }
                         message += Message.At(long.Parse(strUserID));
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
@@ -458,14 +458,14 @@ namespace Marchen.BLL
                             {
                                 intExTime = 1;
                             }
-                            if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode,intExTime, out int intEID))
+                            if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode, intExTime, out int intEID))
                             {
-                                message = new Message("掉刀已记录，档案号为： " + intEID.ToString() + "\r\n--------------------\r\n");
+                                message = new Message("掉线已记录，档案号为： " + intEID.ToString() + "\r\n--------------------\r\n");
                                 goto case "queuequit";
                             }
                             else
                             {
-                                message += new Message("与数据库失去连接，掉刀记录失败。\r\n");
+                                message += new Message("与数据库失去连接，掉线记录失败。\r\n");
                                 message += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                             }
@@ -473,8 +473,7 @@ namespace Marchen.BLL
                         break;
                     case "dmgmod":
                         {
-                            //pending 修改权限
-                            //pending 是否修改EXT时的判断逻辑
+                            //对所有填入数值的合理性进行检查
                             int intEID = 0;
                             int intRound = 0;
                             int intDMG = -1;
@@ -482,6 +481,7 @@ namespace Marchen.BLL
                             int intExTime = 0;
                             string strOriUID = "";
                             string strNewUID = "";
+                            bool isCorrect = true;
                             string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string e in sArray)
                             {
@@ -524,21 +524,156 @@ namespace Marchen.BLL
                                         return;
                                     }
                                 }
-                                else if (e.ToLower().Contains("周目"))
-                                {
-                                    intRound = int.Parse(e.ToLower().Replace("周目", ""));
-                                }
-                                else if (e.ToLower().Contains("b"))
-                                {
-                                    intBossCode = int.Parse(e.ToLower().Replace("b", ""));
-                                }
                                 else if (e.ToLower().Contains("u"))
                                 {
                                     strNewUID = e.ToLower().Replace("u", "");
                                 }
-                                else if (e.ToLower().Contains("伤害"))
+                                else if (e.ToLower() == "b1" || e.ToLower() == "b2" || e.ToLower() == "b3" || e.ToLower() == "b4" || e.ToLower() == "b5")
                                 {
-                                    intDMG = int.Parse(e.ToLower().Replace("伤害", ""));
+                                    try
+                                    {
+                                        intBossCode = int.Parse(e.ToLower().Replace("b", ""));
+                                        if (intBossCode > 5 || intBossCode < 1)
+                                        {
+                                            throw new Exception("由boss异常检测块抛出");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex);
+                                        message += new Message("boss代码有误，请确保填入为b1~b5\r\n");
+                                        isCorrect = false;
+                                    }
+                                }
+                                else if (e.Contains("周目"))
+                                {
+                                    try
+                                    {
+                                        intRound = int.Parse(e.Replace("周目", ""));
+                                        if (intRound > 30)
+                                        {
+                                            throw new Exception("由周目过高检测块抛出");
+                                        }
+                                        if (intRound < 1)
+                                        {
+                                            throw new Exception("由周目过低检测块抛出");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex);
+                                        if (intRound > 30)
+                                        {
+                                            message += new Message("周目数过高，请确保填入周目正确\r\n");
+                                        }
+                                        else if (intRound < 1)
+                                        {
+                                            message += new Message("周目数过低，请确保填入周目正确\r\n");
+                                        }
+                                        else
+                                        {
+                                            message += new Message("无法识别周目，请确保填入周目正确\r\n");
+                                        }
+                                        isCorrect = false;
+                                    }
+                                }
+                                else if (e.ToLower().Contains("w") || e.Contains("万"))
+                                {
+                                    try
+                                    {
+                                        decimal result = decimal.Parse(Regex.Replace(e, @"[^\d.\d]", ""));
+                                        intDMG = int.Parse(decimal.Round((result * 10000), 0).ToString());
+                                        if (intDMG > 3000000)
+                                        {
+                                            throw new Exception("由伤害过高检测块抛出");
+                                        }
+                                        if (intDMG < 1000)
+                                        {
+                                            throw new Exception("由伤害过低检测块抛出");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex);
+                                        if (intDMG > 3000000)
+                                        {
+                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
+                                        }
+                                        else if (intDMG < 1000)
+                                        {
+                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
+                                        }
+                                        else
+                                        {
+                                            message += new Message("无法识别伤害，请确保填入伤害值正确\r\n");
+                                        }
+                                        isCorrect = false;
+                                    }
+                                }
+                                else if (e.ToLower().Contains("k"))
+                                {
+                                    try
+                                    {
+                                        decimal result = decimal.Parse(Regex.Replace(e, @"[^\d.\d]", ""));
+                                        intDMG = int.Parse(decimal.Round((result * 1000), 0).ToString());
+                                        if (intDMG > 3000000)
+                                        {
+                                            throw new Exception("由伤害过高检测块抛出");
+                                        }
+                                        if (intDMG < 1000)
+                                        {
+                                            throw new Exception("由伤害过低检测块抛出");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex);
+                                        if (intDMG > 3000000)
+                                        {
+                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
+                                        }
+                                        else if (intDMG < 1000)
+                                        {
+                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
+                                        }
+                                        else
+                                        {
+                                            message += new Message("无法识别伤害，请确保填入伤害值正确\r\n");
+                                        }
+                                        isCorrect = false;
+                                    }
+                                }
+                                else if (int.TryParse(e, out int intResult) && Regex.Replace(e, @"[^0-9]+", "").Length > 4)//数字长度部分大于4
+                                {
+                                    try
+                                    {
+                                        intDMG = intResult;
+                                        if (intDMG > 3000000)
+                                        {
+                                            throw new Exception("由伤害过高检测块抛出");
+                                        }
+                                        if (intDMG < 1000)
+                                        {
+                                            throw new Exception("由伤害过低检测块抛出");
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(ex);
+                                        if (intDMG > 3000000)
+                                        {
+                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
+                                        }
+                                        else if (intDMG < 1000)
+                                        {
+                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
+                                        }
+                                        else
+                                        {
+                                            message += new Message("无法识别伤害");
+                                        }
+                                        isCorrect = false;
+                                    }
                                 }
                                 else if (e == "补时")
                                 {
@@ -583,7 +718,7 @@ namespace Marchen.BLL
                                             string resultString = "";
                                             if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
                                             {
-                                                resultString = "掉刀";
+                                                resultString = "掉线";
                                             }
                                             else if (strREXT == "1")
                                             {
@@ -647,11 +782,11 @@ namespace Marchen.BLL
                                             string resultString = "";
                                             if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
                                             {
-                                                resultString = "掉刀";
+                                                resultString = "掉线";
                                             }
                                             else if (strREXT == "1")
                                             {
-                                                resultString = "ID"+ strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
+                                                resultString = "ID" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
                                             }
                                             else
                                             {

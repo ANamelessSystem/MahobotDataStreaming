@@ -252,6 +252,13 @@ namespace Marchen.DAL
                 return false;
             }
         }
+        /// <summary>
+        /// 查询EventID对应记录的方法
+        /// </summary>
+        /// <param name="intEID">EventID</param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtDmgRec">返回dt</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDamageRecord(int intEID, string strGrpID, out DataTable dtDmgRec)
         {
             try
@@ -267,6 +274,17 @@ namespace Marchen.DAL
                 return false;
             }
         }
+        /// <summary>
+        /// 根据eventID修改对应数据的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="intDMG">伤害</param>
+        /// <param name="intRound">周目</param>
+        /// <param name="intBossCode">BOSS代号</param>
+        /// <param name="intExTime">是否补时；1：是，2：否。</param>
+        /// <param name="intEID">EventID</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool DamageUpdate(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime,int intEID)
         {
             string sqlDmgDbrf = " update GD_" + strGrpID + " set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " where eventid = " + intEID;
@@ -281,6 +299,12 @@ namespace Marchen.DAL
                 return false;
             }
         }
+        /// <summary>
+        /// 检查伤害统计表是否存在的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtTableCount">返回dt</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool CheckClanDmgTable(string strGrpID, out DataTable dtTableCount)
         {
             string sqlCheckTableExist = "select count(*) as count from user_tables where table_name = 'GD_" + strGrpID + "'";
