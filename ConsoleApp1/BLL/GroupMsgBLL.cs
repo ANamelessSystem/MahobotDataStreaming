@@ -493,6 +493,10 @@ namespace Marchen.BLL
                                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                                         return;
                                     }
+                                    else
+                                    {
+                                        intEID = intOutEID;
+                                    }
                                     if (RecordDAL.QueryDamageRecord(intEID, strGrpID, out DataTable dtDmgRec))
                                     {
                                         if (dtDmgRec.Rows.Count < 1)
