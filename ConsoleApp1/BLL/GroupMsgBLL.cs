@@ -536,14 +536,17 @@ namespace Marchen.BLL
                                 }
                                 else if (e.ToLower().Contains("u"))
                                 {
-                                    strNewUID = e.ToLower().Replace("u", "");
-                                    if (!double.TryParse(strNewUID, out double douOutUID))
+                                    if (!double.TryParse(e.ToLower().Replace("u", ""), out double douOutUID))
                                     {
                                         Console.WriteLine("输入的qq号并非全数字或无法转换成double");
                                         message += new Message("用户ID请填入数字QQ号。\r\n");
                                         message += Message.At(long.Parse(strUserID));
                                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                                         return;
+                                    }
+                                    else
+                                    {
+                                        strNewUID = douOutUID.ToString();
                                     }
                                 }
                                 else if (e.ToLower().Contains("b"))
@@ -583,6 +586,10 @@ namespace Marchen.BLL
                                             message += Message.At(long.Parse(strUserID));
                                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                                             return;
+                                        }
+                                        else
+                                        {
+                                            intRound = intOutRound;
                                         }
                                     }
                                     else
