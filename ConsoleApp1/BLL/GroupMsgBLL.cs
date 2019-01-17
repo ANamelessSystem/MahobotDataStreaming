@@ -485,12 +485,19 @@ namespace Marchen.BLL
                             {
                                 if (e.ToLower().Contains("e"))
                                 {
-                                    intEID = int.Parse(e.ToLower().Replace("e", ""));
+                                    if (!int.TryParse(e.ToLower().Replace("e", ""), out int intOutEID))
+                                    {
+                                        Console.WriteLine("无法识别档案号。原始信息=" + e.ToString());
+                                        message += new Message("无法识别档案号。\r\n");
+                                        message += Message.At(long.Parse(strUserID));
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                        return;
+                                    }
                                     if (RecordDAL.QueryDamageRecord(intEID, strGrpID, out DataTable dtDmgRec))
                                     {
                                         if (dtDmgRec.Rows.Count < 1)
                                         {
-                                            Console.WriteLine("输入的档案号：" + intEID + " 未能找到数据。\r\n");
+                                            Console.WriteLine("输入的档案号：" + intEID + " 未能找到数据。");
                                             message += new Message("输入的档案号：" + intEID + " 未能找到数据。\r\n");
                                             message += Message.At(long.Parse(strUserID));
                                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
@@ -526,7 +533,7 @@ namespace Marchen.BLL
                                 else if (e.ToLower().Contains("u"))
                                 {
                                     strNewUID = e.ToLower().Replace("u", "");
-                                    if (!double.TryParse(strNewUID, out double dNewUID))
+                                    if (!double.TryParse(strNewUID, out double douOutUID))
                                     {
                                         Console.WriteLine("输入的qq号并非全数字或无法转换成double");
                                         message += new Message("用户ID请填入数字QQ号。\r\n");
@@ -537,15 +544,19 @@ namespace Marchen.BLL
                                 }
                                 else if (e.ToLower().Contains("b"))
                                 {
-                                    if (int.TryParse(e.ToLower().Replace("b", ""), out intBossCode))
+                                    if (int.TryParse(e.ToLower().Replace("b", ""), out int intOutBC))
                                     {
-                                        if (intBossCode > 5 || intBossCode < 1)
+                                        if (intOutBC > 5 || intOutBC < 1)
                                         {
                                             Console.WriteLine("输入的BOSS代码数值超出范围（1~5），原始信息=" + e.ToString());
                                             message += new Message("输入的BOSS代码数值超出范围（1~5）。\r\n");
                                             message += Message.At(long.Parse(strUserID));
                                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                                             return;
+                                        }
+                                        else
+                                        {
+                                            intBossCode = intOutBC;
                                         }
                                     }
                                     else
@@ -559,9 +570,9 @@ namespace Marchen.BLL
                                 }
                                 else if (e.Contains("周目"))
                                 {
-                                    if (int.TryParse(e.Replace("周目", ""), out intRound))
+                                    if (int.TryParse(e.Replace("周目", ""), out int intOutRound))
                                     {
-                                        if (intRound > 30 || intRound < 1)
+                                        if (intOutRound > 30 || intOutRound < 1)
                                         {
                                             Console.WriteLine("输入的周目数值超出范围（1~30），原始信息=" + e.ToString());
                                             message += new Message("输入的周目数值超出范围（1~30）。\r\n");
@@ -581,9 +592,9 @@ namespace Marchen.BLL
                                 }
                                 else if (e.ToLower().Contains("w") || e.Contains("万") || e.ToLower().Contains("k"))
                                 {
-                                    if (int.TryParse(e.Replace("w", ""), out intDMG))
+                                    if (int.TryParse(e.Replace("w", ""), out int intOutDMG))
                                     {
-                                        if (intDMG > 300 || intDMG < 10)
+                                        if (intOutDMG > 300 || intOutDMG < 10)
                                         {
                                             Console.WriteLine("输入的伤害数值不符合范围（10w~300w），原始信息=" + e.ToString());
                                             message += new Message("输入的伤害数值不符合范围（10w~300w）。\r\n");
@@ -593,12 +604,12 @@ namespace Marchen.BLL
                                         }
                                         else
                                         {
-                                            intDMG = intDMG * 10000;
+                                            intDMG = intOutDMG * 10000;
                                         }
                                     }
-                                    else if (int.TryParse(e.Replace("万", ""), out intDMG))
+                                    else if (int.TryParse(e.Replace("万", ""), out int intOutDMG2))
                                     {
-                                        if (intDMG > 300 || intDMG < 10)
+                                        if (intOutDMG2 > 300 || intOutDMG2 < 10)
                                         {
                                             Console.WriteLine("输入的伤害数值不符合范围（10万~300万），原始信息=" + e.ToString());
                                             message += new Message("输入的伤害数值不符合范围（10万~300万）。\r\n");
@@ -608,12 +619,12 @@ namespace Marchen.BLL
                                         }
                                         else
                                         {
-                                            intDMG = intDMG * 10000;
+                                            intDMG = intOutDMG2 * 10000;
                                         }
                                     }
-                                    else if (int.TryParse(e.Replace("k", ""), out intDMG))
+                                    else if (int.TryParse(e.Replace("k", ""), out int intOutDMG3))
                                     {
-                                        if (intDMG > 3000 || intDMG < 100)
+                                        if (intOutDMG3 > 3000 || intOutDMG3 < 100)
                                         {
                                             Console.WriteLine("输入的伤害数值不符合范围（100k~3000k），原始信息=" + e.ToString());
                                             message += new Message("输入的伤害数值不符合范围（100k~3000k）。\r\n");
@@ -623,7 +634,7 @@ namespace Marchen.BLL
                                         }
                                         else
                                         {
-                                            intDMG = intDMG * 1000;
+                                            intDMG = intOutDMG3 * 1000;
                                         }
                                     }
                                     else
@@ -635,15 +646,19 @@ namespace Marchen.BLL
                                         return;
                                     }
                                 }
-                                else if (int.TryParse(e, out intDMG))
+                                else if (int.TryParse(e, out int intOutDMG4))
                                 {
-                                    if (intDMG > 3000000 || intDMG < 100000)
+                                    if (intOutDMG4 > 3000000 || intOutDMG4 < 100000)
                                     {
                                         Console.WriteLine("输入的伤害数值不符合范围（100000~3000000），原始信息=" + e.ToString());
                                         message += new Message("输入的伤害数值不符合范围（100000~3000000）。\r\n");
                                         message += Message.At(long.Parse(strUserID));
                                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                                         return;
+                                    }
+                                    else
+                                    {
+                                        intDMG = intOutDMG4;
                                     }
                                 }
                                 else if (e == "补时")
@@ -685,17 +700,35 @@ namespace Marchen.BLL
                                             string resultString = "";
                                             if (dtDmgRec.Rows[0]["dmg"].ToString() == "0")
                                             {
-                                                resultString = "掉线";
+                                                if (strREXT == "1")
+                                                {
+                                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线) （补时）";
+                                                }
+                                                else
+                                                {
+                                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线)";
+                                                }
                                             }
-                                            else if (strREXT == "1")
+                                            else if (dtDmgRec.Rows[0]["dmg"].ToString() != "0")
                                             {
-                                                resultString = "UID=" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg + " （补时）";
+                                                if (strREXT == "1")
+                                                {
+                                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + " （补时）";
+                                                }
+                                                else
+                                                {
+                                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg;
+                                                }
                                             }
                                             else
                                             {
-                                                resultString = "UID=" + strRUID + "：" + strRRound + "周目，B" + strRBC + "，伤害：" + strRDmg;
+                                                Console.WriteLine("写出伤害时出现意料外的错误，dtDmgRec.Rows[0][dmg].ToString()=" + dtDmgRec.Rows[0]["dmg"].ToString());
+                                                message += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                                message += Message.At(long.Parse(strUserID));
+                                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                                return;
                                             }
-                                            message += new Message("现在档案号" + intEID + "的数据为：\r\n" + resultString + "\r\n");
+                                            message += new Message("修改成功，目前档案号" + intEID + "的数据为：\r\n" + resultString + "\r\n");
                                         }
                                     }
                                     else
@@ -710,7 +743,7 @@ namespace Marchen.BLL
                             }
                             else
                             {
-                                Console.WriteLine("修改者不是原记录上传者，拒绝修改。修改者：" + strUserID + " 原记录：" + strOriUID);
+                                Console.WriteLine("修改者不是原记录上传者，拒绝修改。修改者：" + strUserID + " 原记录：" + strOriUID + "EventID：" + intEID.ToString());
                                 message += new Message("修改者不是原记录上传者，拒绝修改。\r\n");
                             }
                             message += Message.At(long.Parse(strUserID));
