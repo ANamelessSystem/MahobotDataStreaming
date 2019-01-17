@@ -473,7 +473,6 @@ namespace Marchen.BLL
                         break;
                     case "dmgmod":
                         {
-                            //对所有填入数值的合理性进行检查
                             int intEID = 0;
                             int intRound = 0;
                             int intDMG = -1;
@@ -481,7 +480,6 @@ namespace Marchen.BLL
                             int intExTime = 0;
                             string strOriUID = "";
                             string strNewUID = "";
-                            bool isCorrect = true;
                             string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string e in sArray)
                             {
@@ -508,6 +506,7 @@ namespace Marchen.BLL
                                         }
                                         else
                                         {
+                                            //给结果值先赋上原始数据，以简化判断
                                             strOriUID = dtDmgRec.Rows[0]["userid"].ToString();
                                             strNewUID = strOriUID;
                                             intDMG = int.Parse(dtDmgRec.Rows[0]["dmg"].ToString());
@@ -527,152 +526,124 @@ namespace Marchen.BLL
                                 else if (e.ToLower().Contains("u"))
                                 {
                                     strNewUID = e.ToLower().Replace("u", "");
-                                }
-                                else if (e.ToLower() == "b1" || e.ToLower() == "b2" || e.ToLower() == "b3" || e.ToLower() == "b4" || e.ToLower() == "b5")
-                                {
-                                    try
+                                    if (!double.TryParse(strNewUID, out double dNewUID))
                                     {
-                                        intBossCode = int.Parse(e.ToLower().Replace("b", ""));
+                                        Console.WriteLine("输入的qq号并非全数字或无法转换成double");
+                                        message += new Message("用户ID请填入数字QQ号。\r\n");
+                                        message += Message.At(long.Parse(strUserID));
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                        return;
+                                    }
+                                }
+                                else if (e.ToLower().Contains("b"))
+                                {
+                                    if (int.TryParse(e.ToLower().Replace("b", ""), out intBossCode))
+                                    {
                                         if (intBossCode > 5 || intBossCode < 1)
                                         {
-                                            throw new Exception("由boss异常检测块抛出");
+                                            Console.WriteLine("输入的BOSS代码数值超出范围（1~5），原始信息=" + e.ToString());
+                                            message += new Message("输入的BOSS代码数值超出范围（1~5）。\r\n");
+                                            message += Message.At(long.Parse(strUserID));
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                            return;
                                         }
                                     }
-                                    catch (Exception ex)
+                                    else
                                     {
-                                        Console.WriteLine(ex);
-                                        message += new Message("boss代码有误，请确保填入为b1~b5\r\n");
-                                        isCorrect = false;
+                                        Console.WriteLine("输入的BOSS代码含有非数字，原始信息=" + e.ToString());
+                                        message += new Message("输入的BOSS代码无法识别。\r\n");
+                                        message += Message.At(long.Parse(strUserID));
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                        return;
                                     }
                                 }
                                 else if (e.Contains("周目"))
                                 {
-                                    try
+                                    if (int.TryParse(e.Replace("周目", ""), out intRound))
                                     {
-                                        intRound = int.Parse(e.Replace("周目", ""));
-                                        if (intRound > 30)
+                                        if (intRound > 30 || intRound < 1)
                                         {
-                                            throw new Exception("由周目过高检测块抛出");
-                                        }
-                                        if (intRound < 1)
-                                        {
-                                            throw new Exception("由周目过低检测块抛出");
+                                            Console.WriteLine("输入的周目数值超出范围（1~30），原始信息=" + e.ToString());
+                                            message += new Message("输入的周目数值超出范围（1~30）。\r\n");
+                                            message += Message.At(long.Parse(strUserID));
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                            return;
                                         }
                                     }
-                                    catch (Exception ex)
+                                    else
                                     {
-                                        Console.WriteLine(ex);
-                                        if (intRound > 30)
-                                        {
-                                            message += new Message("周目数过高，请确保填入周目正确\r\n");
-                                        }
-                                        else if (intRound < 1)
-                                        {
-                                            message += new Message("周目数过低，请确保填入周目正确\r\n");
-                                        }
-                                        else
-                                        {
-                                            message += new Message("无法识别周目，请确保填入周目正确\r\n");
-                                        }
-                                        isCorrect = false;
+                                        Console.WriteLine("输入的周目无法识别，原始信息=" + e.ToString());
+                                        message += new Message("输入的周目无法识别。\r\n");
+                                        message += Message.At(long.Parse(strUserID));
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                        return;
                                     }
                                 }
-                                else if (e.ToLower().Contains("w") || e.Contains("万"))
+                                else if (e.ToLower().Contains("w") || e.Contains("万") || e.ToLower().Contains("k"))
                                 {
-                                    try
+                                    if (int.TryParse(e.Replace("w", ""), out intDMG))
                                     {
-                                        decimal result = decimal.Parse(Regex.Replace(e, @"[^\d.\d]", ""));
-                                        intDMG = int.Parse(decimal.Round((result * 10000), 0).ToString());
-                                        if (intDMG > 3000000)
+                                        if (intDMG > 300 || intDMG < 10)
                                         {
-                                            throw new Exception("由伤害过高检测块抛出");
-                                        }
-                                        if (intDMG < 1000)
-                                        {
-                                            throw new Exception("由伤害过低检测块抛出");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                        if (intDMG > 3000000)
-                                        {
-                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
-                                        }
-                                        else if (intDMG < 1000)
-                                        {
-                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
+                                            Console.WriteLine("输入的伤害数值不符合范围（10w~300w），原始信息=" + e.ToString());
+                                            message += new Message("输入的伤害数值不符合范围（10w~300w）。\r\n");
+                                            message += Message.At(long.Parse(strUserID));
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                            return;
                                         }
                                         else
                                         {
-                                            message += new Message("无法识别伤害，请确保填入伤害值正确\r\n");
+                                            intDMG = intDMG * 10000;
                                         }
-                                        isCorrect = false;
+                                    }
+                                    else if (int.TryParse(e.Replace("万", ""), out intDMG))
+                                    {
+                                        if (intDMG > 300 || intDMG < 10)
+                                        {
+                                            Console.WriteLine("输入的伤害数值不符合范围（10万~300万），原始信息=" + e.ToString());
+                                            message += new Message("输入的伤害数值不符合范围（10万~300万）。\r\n");
+                                            message += Message.At(long.Parse(strUserID));
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                            return;
+                                        }
+                                        else
+                                        {
+                                            intDMG = intDMG * 10000;
+                                        }
+                                    }
+                                    else if (int.TryParse(e.Replace("k", ""), out intDMG))
+                                    {
+                                        if (intDMG > 3000 || intDMG < 100)
+                                        {
+                                            Console.WriteLine("输入的伤害数值不符合范围（100k~3000k），原始信息=" + e.ToString());
+                                            message += new Message("输入的伤害数值不符合范围（100k~3000k）。\r\n");
+                                            message += Message.At(long.Parse(strUserID));
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                            return;
+                                        }
+                                        else
+                                        {
+                                            intDMG = intDMG * 1000;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("输入的伤害数值无法识别，原始信息=" + e.ToString());
+                                        message += new Message("输入的伤害数值无法识别。\r\n");
+                                        message += Message.At(long.Parse(strUserID));
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                        return;
                                     }
                                 }
-                                else if (e.ToLower().Contains("k"))
+                                else if (int.TryParse(e, out intDMG))
                                 {
-                                    try
+                                    if (intDMG > 3000000 || intDMG < 100000)
                                     {
-                                        decimal result = decimal.Parse(Regex.Replace(e, @"[^\d.\d]", ""));
-                                        intDMG = int.Parse(decimal.Round((result * 1000), 0).ToString());
-                                        if (intDMG > 3000000)
-                                        {
-                                            throw new Exception("由伤害过高检测块抛出");
-                                        }
-                                        if (intDMG < 1000)
-                                        {
-                                            throw new Exception("由伤害过低检测块抛出");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                        if (intDMG > 3000000)
-                                        {
-                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
-                                        }
-                                        else if (intDMG < 1000)
-                                        {
-                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
-                                        }
-                                        else
-                                        {
-                                            message += new Message("无法识别伤害，请确保填入伤害值正确\r\n");
-                                        }
-                                        isCorrect = false;
-                                    }
-                                }
-                                else if (int.TryParse(e, out int intResult) && Regex.Replace(e, @"[^0-9]+", "").Length > 4)//数字长度部分大于4
-                                {
-                                    try
-                                    {
-                                        intDMG = intResult;
-                                        if (intDMG > 3000000)
-                                        {
-                                            throw new Exception("由伤害过高检测块抛出");
-                                        }
-                                        if (intDMG < 1000)
-                                        {
-                                            throw new Exception("由伤害过低检测块抛出");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                        if (intDMG > 3000000)
-                                        {
-                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
-                                        }
-                                        else if (intDMG < 1000)
-                                        {
-                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
-                                        }
-                                        else
-                                        {
-                                            message += new Message("无法识别伤害");
-                                        }
-                                        isCorrect = false;
+                                        Console.WriteLine("输入的伤害数值不符合范围（100000~3000000），原始信息=" + e.ToString());
+                                        message += new Message("输入的伤害数值不符合范围（100000~3000000）。\r\n");
+                                        message += Message.At(long.Parse(strUserID));
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                        return;
                                     }
                                 }
                                 else if (e == "补时")
@@ -687,12 +658,8 @@ namespace Marchen.BLL
                                 {
                                     intDMG = 0;
                                 }
-                                else
-                                {
-                                    //不处理
-                                }
                             }
-                            if (strUserID.ToString() == strOriUID.ToString())
+                            if (strUserID == strOriUID)//仅允许命令输入人的QQ与原记录QQ相同时发起修改
                             {
                                 if (RecordDAL.DamageUpdate(strGrpID, strNewUID, intDMG, intRound, intBossCode, intExTime, intEID))
                                 {
@@ -743,11 +710,11 @@ namespace Marchen.BLL
                             }
                             else
                             {
+                                Console.WriteLine("修改者不是原记录上传者，拒绝修改。修改者：" + strUserID + " 原记录：" + strOriUID);
                                 message += new Message("修改者不是原记录上传者，拒绝修改。\r\n");
                             }
                             message += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                            //改过和未改过的一起上传，不再另设判断
                             //显示上传内容
                         }
                         break;
@@ -820,7 +787,7 @@ namespace Marchen.BLL
                             message += new Message("无法识别内容,输入【@MahoBot help】以查询命令表。\r\n");
                             message += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                            RecordDAL.RecordUnknownContext(strGrpID, strUserID, cmdContext);
+                            //RecordDAL.RecordUnknownContext(strGrpID, strUserID, cmdContext);
                         }
                         break;
                 }
