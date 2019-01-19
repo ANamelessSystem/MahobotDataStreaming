@@ -285,7 +285,7 @@ namespace Marchen.DAL
         /// <param name="intExTime">是否补时；1：是，2：否。</param>
         /// <param name="intEID">EventID</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool DamageUpdate(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime,int intEID)
+        public static bool DamageUpdate(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime, int intEID)
         {
             string sqlDmgDbrf = " update GD_" + strGrpID + " set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " where eventid = " + intEID;
             try
@@ -317,6 +317,50 @@ namespace Marchen.DAL
             {
                 Console.WriteLine("查询伤害表是否存在时返回错误：" + oex);
                 dtTableCount = null;
+                return false;
+            }
+        }
+        /// <summary>
+        /// 查询数据库时间的方法
+        /// </summary>
+        /// <param name="dtTimeNow">返回dt格式时间</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool QueryTimeNowOnDatabase(out DataTable dtResultTime)
+        {
+            string sqlGetDatabaseTime = "select sysdate from dual";
+            try
+            {
+                dtResultTime = DBHelper.GetDataTable(sqlGetDatabaseTime);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("查询当前数据库时间时返回错误：" + oex);
+                dtResultTime = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 根据群号查询指定时间范围出刀情况
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtStart">开始时间（日期，时间）</param>
+        /// <param name="dtEnd">结束时间（日期，时间）</param>
+        /// <param name="dtInsuff">返回dt格式的出刀情况(userid,cmain=首刀次数，cex=补时刀数)</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool QueryStrikeStatus(string strGrpID, DateTime dtStart, DateTime dtEnd, out DataTable dtInsuff)
+        {
+            string sqlQueryStrikeStatus = "select distinct(a.userid),nvl(cm,0) as cmain,nvl(ce,0) as cex from GD_" + strGrpID + " a left join (select userid,count(CASE WHEN EXTIME = 0 THEN 1 ELSE NULL END) as cm,count(CASE WHEN EXTIME = 1 THEN 1 ELSE NULL END) as ce from GD_" + strGrpID + " where time between to_date('" + dtStart + "', 'yyyy/mm/dd hh24:mi:ss') and to_date('" + dtEnd + "','yyyy/mm/dd hh24:mi:ss') group by userid) b on a.userid=b.userid";
+            try
+            {
+                dtInsuff = DBHelper.GetDataTable(sqlQueryStrikeStatus);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("查询出刀状态时发生错误：" + oex);
+                dtInsuff = null;
                 return false;
             }
         }
