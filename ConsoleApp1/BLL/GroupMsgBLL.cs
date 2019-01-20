@@ -28,44 +28,42 @@ namespace Marchen.BLL
             {
                 strUserGrpCard = strUserNickName;
             }
-            int vfyCode = QueueDAL.GroupRegVerify(strGrpID);
-            #region 意外情况
-            if (strRawcontext.Contains(cmdAtMeAlone) && vfyCode == 0)
+            
+
+            if (strRawcontext.Contains(cmdAtMeAlone))
             {
                 var message = new Message("");
-                message += new Message("vfycode0：bot服务尚未在本群开启，请管理员联系bot维护人员。\r\n");
-                message += Message.At(receivedMessage.UserId);
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                return;
-            }
-            if (strRawcontext.Contains(cmdAtMeAlone) && vfyCode == 10)
-            {
-                var message = new Message("");
-                message += new Message("vfycode10：无法连接主数据库，请联系bot维护人员。\r\n");
-                message += Message.At(receivedMessage.UserId);
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                return;
-            }
-            if (strRawcontext.Contains(cmdAtMeAlone) && vfyCode == 11)
-            {
-                var message = new Message("");
-                message += new Message("vfycode11：本群的服务设置有误，请联系bot维护人员。\r\n");
-                message += Message.At(receivedMessage.UserId);
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                return;
-            }
-            if (strRawcontext.Contains(cmdAtMeAlone) && vfyCode == 12)
-            {
-                var message = new Message("");
-                message += new Message("vfycode12：业务流出现错误，请联系bot维护人员。\r\n");
-                message += Message.At(receivedMessage.UserId);
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                return;
-            }
-            #endregion
-            if (strRawcontext.Contains(cmdAtMeAlone) && vfyCode == 1)
-            {
-                var message = new Message("");
+                int vfyCode = QueueDAL.GroupRegVerify(strGrpID);
+                #region 意外情况
+                if (vfyCode == 0)
+                {
+                    message += new Message("vfycode0：bot服务尚未在本群开启，请管理员联系bot维护团队。\r\n");
+                    message += Message.At(receivedMessage.UserId);
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                    return;
+                }
+                if (vfyCode == 10)
+                {
+                    message += new Message("vfycode10：无法连接主数据库，请联系bot维护团队。\r\n");
+                    message += Message.At(receivedMessage.UserId);
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                    return;
+                }
+                if (vfyCode == 11)
+                {
+                    message += new Message("vfycode11：本群的服务设置有误，请联系bot维护团队。\r\n");
+                    message += Message.At(receivedMessage.UserId);
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                    return;
+                }
+                if (vfyCode == 12)
+                {
+                    message += new Message("vfycode12：业务流出现错误，请联系bot维护团队。\r\n");
+                    message += Message.At(receivedMessage.UserId);
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                    return;
+                }
+                #endregion
                 Console.WriteLine("接收到一条来自群的单at，开始解析内容");
                 cmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Trim();
                 string cmdType = "";

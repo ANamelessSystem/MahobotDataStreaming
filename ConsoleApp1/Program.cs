@@ -40,8 +40,16 @@ namespace Marchen.Garden
             CultureInfo.DefaultThreadCurrentUICulture = culture;
             CultureInfo.CurrentCulture = culture;
             CultureInfo.CurrentUICulture = culture;
-            SetDatabaseInfo();
-            SetHttpApiInfo();
+            //SetDatabaseInfo();
+            //SetHttpApiInfo();
+            if (!CfgLoader.LoadConfigFile())
+            {
+                Console.WriteLine("请按任意键退出，并在编辑配置文件完成后重启。");
+                Console.ReadKey();
+                return;
+            }
+            ApiProperties.HttpApi = new HttpApiClient();
+            ApiProperties.HttpApi.ApiAddress = ApiProperties.ApiAddr;
             try
             {
                 SelfProperties.SelfID = ApiProperties.HttpApi.GetLoginInfoAsync().Result.UserId.ToString();

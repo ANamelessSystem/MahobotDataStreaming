@@ -33,9 +33,9 @@ namespace Marchen
         private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retval, int size, string filePath);
         private static string strFilePath = Directory.GetCurrentDirectory() + "\\MahobotConfig.ini";//ini path
         private static string strCfgFileName = ""; 
-        private static string keyCode = "KururinPa";
+        //private static string keyCode = "KururinPa";
 
-        public static void CreateConfigFile()
+        private static void CreateConfigFile()
         {
             try
             {
@@ -47,8 +47,8 @@ namespace Marchen
                 WritePrivateProfileString(strCfgFileName, "DBPort", "(数据库监听端口)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "DBCreaGDTProcName", "(创建表格所用存储过程的名字)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "ApiAddress", "(酷Q HTTP API的监听地址)", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "(酷Q HTTP API的消息上报地址)", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiForwardToAddress", "(本程序接收酷Q HTTP API传来的信息后上报的地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "(酷Q HTTP API的端口地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "ApiForwardToAddress", "(本程序接收酷Q HTTP API传来的信息后转发的地址)", strFilePath);
             }
             catch (Exception ex)
             {
@@ -61,30 +61,43 @@ namespace Marchen
         /// <summary>
         /// 将INI文件的内容写到对应textbox的方法
         /// </summary>
-        private void LoadConfigFile()
+        public static bool LoadConfigFile()
         {
             if (File.Exists(strFilePath))
             {
-                strCfgFileName = Path.GetFileNameWithoutExtension(strFilePath);
-                string[] arrayEncryp = ContentValue(strCfgFileName, "DbPassword").Split(' ');
-                StringBuilder sbDecryp = new StringBuilder();
-                for (int i = 0; i < arrayEncryp.Length; i++)
+                try
                 {
-                    sbDecryp.Append((char)(keyCode[i] ^ int.Parse(arrayEncryp[i])));
+                    strCfgFileName = Path.GetFileNameWithoutExtension(strFilePath);
+                    //string[] arrayEncryp = ContentValue(strCfgFileName, "DbPassword").Split(' ');
+                    //StringBuilder sbDecryp = new StringBuilder();
+                    //for (int i = 0; i < arrayEncryp.Length; i++)
+                    //{
+                    //    sbDecryp.Append((char)(keyCode[i] ^ int.Parse(arrayEncryp[i])));
+                    //}
+                    //DBProperties.DBPassword = sbDecryp.ToString();
+                    DBProperties.DBPassword = ContentValue(strCfgFileName, "DbPassword").ToString();
+                    DBProperties.DBAddress = ContentValue(strCfgFileName, "DBAddress").ToString();
+                    DBProperties.DBServiceName = ContentValue(strCfgFileName, "DBServiceName").ToString();
+                    DBProperties.DBUserID = ContentValue(strCfgFileName, "DBUserID").ToString();
+                    DBProperties.DBPort = ContentValue(strCfgFileName, "DBPort").ToString();
+                    DBProperties.DBCreaGDTProcName = ContentValue(strCfgFileName, "DBCreaGDTProcName").ToString();
+                    ApiProperties.ApiAddr = ContentValue(strCfgFileName, "ApiAddress").ToString();
+                    ApiProperties.ApiPostAddr = ContentValue(strCfgFileName, "ApiPostAddress").ToString();
+                    ApiProperties.ApiForwardToAddr = ContentValue(strCfgFileName, "ApiForwardToAddress").ToString();
+                    return true;
                 }
-                DBProperties.DBPassword = sbDecryp.ToString();
-                DBProperties.DBAddress = ContentValue(strCfgFileName, "DBAddress").ToString();
-                DBProperties.DBServiceName = ContentValue(strCfgFileName, "DBServiceName").ToString();
-                DBProperties.DBUserID = ContentValue(strCfgFileName, "DBUserID").ToString();
-                DBProperties.DBPort = ContentValue(strCfgFileName, "DBPort").ToString();
-                DBProperties.DBCreaGDTProcName = ContentValue(strCfgFileName, "DBCreaGDTProcName").ToString();
-                ApiProperties.ApiAddr = ContentValue(strCfgFileName, "ApiAddress").ToString();
-                ApiProperties.ApiPostAddr = ContentValue(strCfgFileName, "ApiPostAddress").ToString();
-                ApiProperties.ApiForwardToAddr = ContentValue(strCfgFileName, "ApiForwardToAddress").ToString();
+                catch
+                {
+                    Console.WriteLine("配置文件格式有误，读取失败！");
+                    return false;
+                }
             }
             else
             {
                 Console.WriteLine("未找到配置文件，正在创建模版……");
+                CreateConfigFile();
+                Console.WriteLine("创建完毕");
+                return false;
             }
         }
 
@@ -94,7 +107,7 @@ namespace Marchen
         /// <param name="Section">键</param>
         /// <param name="key">值</param>
         /// <returns></returns>
-        private string ContentValue(string Section, string key)
+        private static string ContentValue(string Section, string key)
         {
             StringBuilder temp = new StringBuilder(1024);
             GetPrivateProfileString(Section, key, "", temp, 1024, strFilePath);
