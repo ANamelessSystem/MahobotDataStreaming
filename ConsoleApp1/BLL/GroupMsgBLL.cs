@@ -153,15 +153,7 @@ namespace Marchen.BLL
                                 for (int i = 0; i < dtQueue.Rows.Count; i++)
                                 {
                                     string strOutput = "顺序：" + dtQueue.Rows[i]["seq"].ToString() + "    " + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")";
-                                    string strMark = "←";//提醒用标识
-                                    if (dtQueue.Rows[i]["id"].ToString() == strUserID)
-                                    {
-                                        message += new Message(strOutput + strMark + "\r\n");
-                                    }
-                                    else
-                                    {
-                                        message += new Message(strOutput + "\r\n");
-                                    }
+                                    message += new Message(strOutput + "\r\n");
                                     Console.WriteLine(strOutput);
                                 }
                             }
@@ -431,9 +423,8 @@ namespace Marchen.BLL
                             {
                                 if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode, intExTime, out int intEID))
                                 {
-                                    Console.WriteLine(intBossCode.ToString() + " " + intRound.ToString() + " " + intDMG.ToString());
-                                    Console.WriteLine(intEID.ToString());
-                                    message = new Message("伤害已保存，档案号为： " + intEID.ToString() + "\r\n--------------------\r\n");
+                                    Console.WriteLine("伤害已保存，档案号=" + intEID.ToString() + "，B" + intBossCode.ToString() + "，" + intRound.ToString() + "周目，数值：" + intDMG.ToString() + "，补时标识：" + intExTime);
+                                    message = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
                                     goto case "queuequit";
                                 }
                                 else
@@ -454,10 +445,10 @@ namespace Marchen.BLL
                             message += new Message("加入队列：【@MahoBot c1】可进入队列\r\n");
                             message += new Message("查询队列：【@MahoBot c2】可查询当前在队列中的人\r\n");
                             message += new Message("退出队列：【@MahoBot c3】可离开队列\r\n");
-                            message += new Message("清空队列：【@MahoBot 清空队列】可清空当前队列（仅限群主/管理员使用）\r\n");
                             message += new Message("伤害记录：【@MahoBot 伤害 B(n) (n)周目 （伤害值）】（如@MahoBot 伤害 B2 6周目 1374200）\r\n 伤害值可如137w等模糊格式\r\n");
                             message += new Message("额外时间的伤害记录：【@MahoBot 伤害 补时 B(n) (n)周目 （伤害值）】\r\n");
                             message += new Message("掉线记录：【@MahoBot 掉线 (是否补时)】可记录一次掉线或额外时间掉线\r\n");
+                            message += new Message("其他功能及用例请参考群文件的命令表\r\n");
                         }
                         message += Message.At(long.Parse(strUserID));
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
@@ -815,8 +806,14 @@ namespace Marchen.BLL
                             if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
                             {
                                 DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                                DateTime dtStart = GetZeroTime(dtNow.AddDays(-1)).AddHours(4);//每天凌晨4点开始
-                                DateTime dtEnd = GetZeroTime(dtNow).AddHours(4);//第二天凌晨4点结束
+                                DateTime dtStart = GetZeroTime(dtNow).AddHours(4);//每天凌晨4点开始
+                                DateTime dtEnd = GetZeroTime(dtNow.AddDays(1)).AddHours(4);//第二天凌晨4点结束
+                                if (dtNow.Hour >= 0 && dtNow.Hour < 4)
+                                {
+                                    //0点后日期变换，开始日期需查到昨天
+                                    dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
+                                    dtEnd = dtNow.AddDays(-1);//第二天凌晨4点结束
+                                }
                                 if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
                                 {
                                     message += new Message("截至目前尚有余刀的成员：\r\n");
@@ -846,11 +843,24 @@ namespace Marchen.BLL
                         break;
                     case "remainnotice":
                         {
+                            if (!(memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager))
+                            {
+                                message += new Message("拒绝：仅有管理员或群主可执行出刀提醒指令。\r\n");
+                                message += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                return;
+                            }
                             if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
                             {
                                 DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                                DateTime dtStart = GetZeroTime(dtNow.AddDays(-1)).AddHours(4);//每天凌晨4点开始
-                                DateTime dtEnd = GetZeroTime(dtNow).AddHours(4);//第二天凌晨4点结束
+                                DateTime dtStart = GetZeroTime(dtNow).AddHours(4);//每天凌晨4点开始
+                                DateTime dtEnd = GetZeroTime(dtNow.AddDays(1)).AddHours(4);//第二天凌晨4点结束
+                                if (dtNow.Hour >= 0 && dtNow.Hour < 4)
+                                {
+                                    //0点后日期变换，开始日期需查到昨天
+                                    dtStart = dtStart.AddDays(-1);
+                                    dtEnd = dtNow.AddDays(-1);
+                                }
                                 if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
                                 {
                                     message += new Message("请以下成员尽早出刀：");
