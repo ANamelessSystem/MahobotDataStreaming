@@ -11,30 +11,30 @@ namespace Marchen.BLL
 {
     class GroupMsgBLL
     {
+        /// <summary>
+        /// 获取指定日期的0点时间
+        /// </summary>
+        /// <param name="datetime">指定日期</param>
+        /// <returns>返回指定日期的0点时间</returns>
         private static DateTime GetZeroTime(DateTime datetime)
         {
             return new DateTime(datetime.Year, datetime.Month, datetime.Day);
         }
+        /// <summary>
+        /// 解析收到的来自群的内容
+        /// </summary>
+        /// <param name="receivedMessage">收到的消息内容</param>
+        /// <param name="memberInfo">发出此消息的用户信息</param>
         public static void GrpMsgReco(MessageContext receivedMessage, GroupMemberInfo memberInfo)
         {
             string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
             string cmdAtMeAlone = "[CQ:at,qq=" + SelfProperties.SelfID + "]";
-            string cmdContext = "";
-            string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
-            string strUserID = receivedMessage.UserId.ToString();
-            string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
-            string strUserNickName = memberInfo.Nickname.ToString().Trim();
-            if (strUserGrpCard == null || strUserGrpCard == "")
-            {
-                strUserGrpCard = strUserNickName;
-            }
-            
-
             if (strRawcontext.Contains(cmdAtMeAlone))
             {
+                string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
                 var message = new Message("");
                 int vfyCode = QueueDAL.GroupRegVerify(strGrpID);
-                #region 意外情况
+                #region 有效性验证不通过
                 if (vfyCode == 0)
                 {
                     message += new Message("vfycode0：bot服务尚未在本群开启，请管理员联系bot维护团队。\r\n");
@@ -64,7 +64,15 @@ namespace Marchen.BLL
                     return;
                 }
                 #endregion
-                Console.WriteLine("接收到一条来自群的单at，开始解析内容");
+                Console.WriteLine("接收到一条来自群：" + strGrpID + "的Notice，开始解析内容");
+                string cmdContext = "";
+                string strUserID = receivedMessage.UserId.ToString();
+                string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
+                string strUserNickName = memberInfo.Nickname.ToString().Trim();
+                if (strUserGrpCard == null || strUserGrpCard == "")
+                {
+                    strUserGrpCard = strUserNickName;
+                }
                 cmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Trim();
                 string cmdType = "";
                 if (cmdContext.ToLower() == "c1")

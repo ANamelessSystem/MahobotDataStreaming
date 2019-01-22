@@ -14,24 +14,24 @@ namespace Marchen.Garden
 {
     class Program
     {
-        static void SetDatabaseInfo()
-        {
-            DBProperties.DBUserID = "MIRACLEMAHO";
-            DBProperties.DBPassword = "pupupu";
-            DBProperties.DBAddress = "192.168.29.12";
-            DBProperties.DBPort = "1521";
-            DBProperties.DBServiceName = "MAHOMAHO";
-            DBProperties.DBCreaGDTProcName = "CreaGrpDmgTab";
-        }
-        static void SetHttpApiInfo()
-        {
-            //ApiProperties.PostAddress = "http://[::1]:10202";
-            ApiProperties.ApiPostAddr = "http://+:8876/";//监听地址（接收酷Q HTTPAPI上报信息的地址）
-            ApiProperties.ApiAddr = "http://127.0.0.1:5700/";//上报地址
-            ApiProperties.HttpApi = new HttpApiClient();
-            ApiProperties.HttpApi.ApiAddress = ApiProperties.ApiAddr;
-            ApiProperties.ApiForwardToAddr = "http://[::1]:10202";
-        }
+        //static void SetDatabaseInfo()
+        //{
+        //    DBProperties.DBUserID = "MIRACLEMAHO";
+        //    DBProperties.DBPassword = "pupupu";
+        //    DBProperties.DBAddress = "192.168.29.12";
+        //    DBProperties.DBPort = "1521";
+        //    DBProperties.DBServiceName = "MAHOMAHO";
+        //    DBProperties.DBCreaGDTProcName = "CreaGrpDmgTab";
+        //}
+        //static void SetHttpApiInfo()
+        //{
+        //    //ApiProperties.PostAddress = "http://[::1]:10202";
+        //    ApiProperties.ApiPostAddr = "http://+:8876/";//监听地址（接收酷Q HTTPAPI上报信息的地址）
+        //    ApiProperties.ApiAddr = "http://127.0.0.1:5700/";//上报地址
+        //    ApiProperties.HttpApi = new HttpApiClient();
+        //    ApiProperties.HttpApi.ApiAddress = ApiProperties.ApiAddr;
+        //    ApiProperties.ApiForwardToAddr = "http://[::1]:10202";
+        //}
 
         static void Main(string[] args)
         {
@@ -109,8 +109,6 @@ namespace Marchen.Garden
             };
             Console.ReadKey();
         }
-        //static string vfGroupID = "720671752";//设置群号//maho群
-        //static string vfGroupID = "877184755";//测试群
         //private static void MsgRecognization(MessageContext receivedMessage)
         //{
         //    MsgRecog.
