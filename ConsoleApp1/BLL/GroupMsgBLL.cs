@@ -6,6 +6,7 @@ using MessageContext = Sisters.WudiLib.Posts.Message;
 using System.Text.RegularExpressions;
 using Marchen.DAL;
 using Sisters.WudiLib.Responses;
+using System.IO;
 
 namespace Marchen.BLL
 {
@@ -19,6 +20,53 @@ namespace Marchen.BLL
         private static DateTime GetZeroTime(DateTime datetime)
         {
             return new DateTime(datetime.Year, datetime.Month, datetime.Day);
+        }
+
+        /// <summary>
+        /// 输出csv文件
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="fileName"></param>
+        private static void SaveCSV(DataTable dt, string fileName)
+        {
+            FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
+            string data = "";
+
+            for (int i = 0; i < dt.Columns.Count; i++)
+            {
+                data += dt.Columns[i].ColumnName.ToString();
+                if (i < dt.Columns.Count - 1)
+                {
+                    data += ",";
+                }
+            }
+            sw.WriteLine(data);
+
+            if (dt.Rows.Count > 0)
+            {
+                Console.WriteLine("开始写入数据");
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    data = "";
+                    for (int j = 0; j < dt.Columns.Count; j++)
+                    {
+                        data += dt.Rows[i][j].ToString() == "" ? "null" : dt.Rows[i][j].ToString();
+                        if (j < dt.Columns.Count - 1)
+                        {
+                            data += ",";
+                        }
+                    }
+                    sw.WriteLine(data);
+                }
+            }
+            else
+            {
+                Console.WriteLine("数据空白");
+            }
+            sw.Close();
+            fs.Close();
+            Console.WriteLine("csv生成完毕");
         }
         /// <summary>
         /// 解析收到的来自群的内容
@@ -129,6 +177,11 @@ namespace Marchen.BLL
                 {
                     cmdType = "remainnotice";
                     Console.WriteLine("识别为提醒未出满三刀的成员");
+                }
+                else if (cmdContext == "导出统计表")
+                {
+                    cmdType = "fileoutput";
+                    Console.WriteLine("识别为导出统计表");
                 }
                 else
                 {
@@ -892,6 +945,23 @@ namespace Marchen.BLL
                                 message += Message.At(long.Parse(strUserID));
                             }
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                        }
+                        break;
+                    case "fileoutput":
+                        {
+                            if (!(memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager))
+                            {
+                                message += new Message("拒绝：仅有管理员或群主可执行导出伤害表。\r\n");
+                                message += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                return;
+                            }
+                            if (RecordDAL.QueryDamageTable(strGrpID, out DataTable dtDmgReport))
+                            {
+                                string fileName = "C:\\MahoBotOutput\\wdll.csv";
+                                SaveCSV(dtDmgReport, fileName);
+                                //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                            }
                         }
                         break;
                     case "unknown":
