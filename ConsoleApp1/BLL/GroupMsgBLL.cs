@@ -869,9 +869,8 @@ namespace Marchen.BLL
                                 DateTime dtEnd = GetZeroTime(dtNow.AddDays(1)).AddHours(4);//第二天凌晨4点结束
                                 if (dtNow.Hour >= 0 && dtNow.Hour < 4)
                                 {
-                                    //0点后日期变换，开始日期需查到昨天
                                     dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
-                                    dtEnd = dtNow.AddDays(-1);//第二天凌晨4点结束
+                                    dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束
                                 }
                                 if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
                                 {
@@ -917,8 +916,8 @@ namespace Marchen.BLL
                                 if (dtNow.Hour >= 0 && dtNow.Hour < 4)
                                 {
                                     //0点后日期变换，开始日期需查到昨天
-                                    dtStart = dtStart.AddDays(-1);
-                                    dtEnd = dtNow.AddDays(-1);
+                                    dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
+                                    dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束
                                 }
                                 if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
                                 {
@@ -949,27 +948,35 @@ namespace Marchen.BLL
                         break;
                     case "fileoutput":
                         {
-                            if (!(memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager))
-                            {
-                                message += new Message("拒绝：仅有管理员或群主可执行导出伤害表。\r\n");
-                                message += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                return;
-                            }
-                            if (!(strGrpID == "877184755"))
-                            {
-                                message += new Message("拒绝：调试功能只开放给特定群。\r\n");
-                                message += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                return;
-                            }
-                            if (RecordDAL.QueryDamageTable(strGrpID, out DataTable dtDmgReport))
-                            {
-                                string fileName = "C:\\MahoBotOutput\\wdll.csv";
-                                SaveCSV(dtDmgReport, fileName);
-                                var fileMessage = Message.LocalImage(@"C:\MahoBotOutput\wdll.csv");
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), fileMessage).Wait();
-                            }
+                            //if (!(memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager))
+                            //{
+                            //    message += new Message("拒绝：仅有管理员或群主可执行导出伤害表。\r\n");
+                            //    message += Message.At(long.Parse(strUserID));
+                            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                            //    return;
+                            //}
+                            //if (!(strGrpID == "877184755"))
+                            //{
+                            //    message += new Message("拒绝：调试功能只开放给特定群。\r\n");
+                            //    message += Message.At(long.Parse(strUserID));
+                            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                            //    return;
+                            //}
+                            //if (RecordDAL.QueryDamageTable(strGrpID, out DataTable dtDmgReport))
+                            //{
+                            //    string fileName = "C:\\MahoBotOutput\\wdll.csv";
+                            //    SaveCSV(dtDmgReport, fileName);
+                            //    try
+                            //    {
+                            //        var fileMessage = Message.LocalImage(@"C:\MahoBotOutput\wdll.csv");
+                            //        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), fileMessage).Wait();
+                            //    }
+                            //    catch (Exception ex)
+                            //    {
+                            //        Console.WriteLine(ex);
+                            //        return;
+                            //    }
+                            //}
                         }
                         break;
                     case "unknown":
