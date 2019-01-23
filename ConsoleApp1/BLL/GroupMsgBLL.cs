@@ -956,11 +956,19 @@ namespace Marchen.BLL
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                                 return;
                             }
+                            if (!(strGrpID == "877184755"))
+                            {
+                                message += new Message("拒绝：调试功能只开放给特定群。\r\n");
+                                message += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                return;
+                            }
                             if (RecordDAL.QueryDamageTable(strGrpID, out DataTable dtDmgReport))
                             {
                                 string fileName = "C:\\MahoBotOutput\\wdll.csv";
                                 SaveCSV(dtDmgReport, fileName);
-                                //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                var fileMessage = Message.LocalImage(@"C:\MahoBotOutput\wdll.csv");
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), fileMessage).Wait();
                             }
                         }
                         break;
