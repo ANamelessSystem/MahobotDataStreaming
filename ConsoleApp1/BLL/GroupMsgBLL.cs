@@ -874,16 +874,39 @@ namespace Marchen.BLL
                                 }
                                 if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
                                 {
-                                    message += new Message("截至目前尚有余刀的成员：\r\n");
+                                    message += new Message("截至目前尚有余刀的成员：");
+                                    int intCount = 0;
                                     for (int i = 0; i < dtInsuff.Rows.Count; i++)
                                     {
                                         string strUID = dtInsuff.Rows[i]["userid"].ToString();
                                         string strCountMain = dtInsuff.Rows[i]["cmain"].ToString();
-                                        if (int.Parse(strCountMain) < 3)
+                                        if (int.Parse(strCountMain) == 2)
                                         {
-                                            message += new Message("ID：" + strUID + "，剩余" + (3 - int.Parse(strCountMain)).ToString() + "刀\r\n");
+                                            intCount += 1;
+                                            message += new Message("\r\nID：" + strUID + "，剩余1刀");
                                         }
                                     }
+                                    for (int j = 0; j < dtInsuff.Rows.Count; j++)
+                                    {
+                                        string strUID = dtInsuff.Rows[j]["userid"].ToString();
+                                        string strCountMain = dtInsuff.Rows[j]["cmain"].ToString();
+                                        if (int.Parse(strCountMain) == 1)
+                                        {
+                                            intCount += 2;
+                                            message += new Message("\r\nID：" + strUID + "，剩余2刀");
+                                        }
+                                    }
+                                    for (int k = 0; k < dtInsuff.Rows.Count; k++)
+                                    {
+                                        string strUID = dtInsuff.Rows[k]["userid"].ToString();
+                                        string strCountMain = dtInsuff.Rows[k]["cmain"].ToString();
+                                        if (int.Parse(strCountMain) == 1)
+                                        {
+                                            intCount += 3;
+                                            message += new Message("\r\nID：" + strUID + "，剩余3刀");
+                                        }
+                                    }
+                                    message += new Message("\r\n合计剩余" + intCount.ToString() + "刀");
                                 }
                                 else
                                 {
