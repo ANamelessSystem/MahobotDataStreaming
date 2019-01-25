@@ -204,6 +204,41 @@ namespace Marchen.BLL
                         }
                         break;
                     case "queueshow":
+                        if (ConsoleProperties.IsHpShow)
+                        {
+                            if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
+                            {
+                                try
+                                {
+                                    string strHpRemain = dtBossProgress.Rows[0]["hpremain"].ToString();
+                                    string strOutput2 = "";
+                                    if (strHpRemain.Length > 4 && !strHpRemain.Contains("-"))
+                                    {
+                                        strOutput2 = "目前进度：" + dtBossProgress.Rows[0]["maxround"].ToString() + "周目，B" + dtBossProgress.Rows[0]["maxbc"].ToString() + "，剩余血量(推测)=" + strHpRemain.Substring(0, strHpRemain.Length - 4) + "万";
+                                        message += new Message(strOutput2 + "\r\n--------------------\r\n");
+                                    }
+                                    else if (strHpRemain.Length > 0)
+                                    {
+                                        strOutput2 = "目前进度：" + dtBossProgress.Rows[0]["maxround"].ToString() + "周目，B" + dtBossProgress.Rows[0]["maxbc"].ToString() + "，剩余血量(推测)=" + strHpRemain;
+                                        message += new Message(strOutput2 + "\r\n--------------------\r\n");
+                                    }
+                                    Console.WriteLine(strOutput2);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex);
+                                }
+                            }
+                            else
+                            {
+                                message += new Message("与数据库失去连接，查询剩余HP失败。\r\n");
+                                Console.WriteLine("与数据库失去连接，查询剩余HP失败。\r\n");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("hpshow not open");
+                        }
                         if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
                         {
                             if (dtQueue.Rows.Count > 0)
@@ -225,31 +260,6 @@ namespace Marchen.BLL
                         else
                         {
                             message += new Message("与数据库失去连接，查询队列失败。\r\n");
-                        }
-                        if (ConsoleProperties.IsHpShow)
-                        {
-                            if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
-                            {
-                                try
-                                {
-                                    string strOutput2 = "目前进度：" + dtBossProgress.Rows[0]["maxround"].ToString() + "周目，B" + dtBossProgress.Rows[0]["maxbc"].ToString() + "，剩余血量（推测）=" + dtBossProgress.Rows[0]["hpremain"].ToString();
-                                    message += new Message("--------------------\r\n" + strOutput2 + "\r\n");
-                                    Console.WriteLine(strOutput2);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine(ex);
-                                }
-                            }
-                            else
-                            {
-                                message += new Message("与数据库失去连接，查询剩余HP失败。\r\n");
-                                Console.WriteLine("与数据库失去连接，查询剩余HP失败。\r\n");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("hpshow not open");
                         }
                         message += Message.At(long.Parse(strUserID));
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
