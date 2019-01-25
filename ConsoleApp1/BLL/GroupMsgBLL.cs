@@ -876,36 +876,30 @@ namespace Marchen.BLL
                                 {
                                     message += new Message("截至目前尚有余刀的成员：");
                                     int intCount = 0;
+                                    string strLeft1 = "";
+                                    string strLeft2 = "";
+                                    string strLeft3 = "";
                                     for (int i = 0; i < dtInsuff.Rows.Count; i++)
                                     {
                                         string strUID = dtInsuff.Rows[i]["userid"].ToString();
-                                        string strCountMain = dtInsuff.Rows[i]["cmain"].ToString();
-                                        if (int.Parse(strCountMain) == 2)
+                                        int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
+                                        if (intCountMain == 2)
                                         {
                                             intCount += 1;
-                                            message += new Message("\r\nID：" + strUID + "，剩余1刀");
+                                            strLeft1 += "\r\nID：" + strUID + "，剩余1刀";
                                         }
-                                    }
-                                    for (int j = 0; j < dtInsuff.Rows.Count; j++)
-                                    {
-                                        string strUID = dtInsuff.Rows[j]["userid"].ToString();
-                                        string strCountMain = dtInsuff.Rows[j]["cmain"].ToString();
-                                        if (int.Parse(strCountMain) == 1)
+                                        if (intCountMain == 1)
                                         {
                                             intCount += 2;
-                                            message += new Message("\r\nID：" + strUID + "，剩余2刀");
+                                            strLeft2 += "\r\nID：" + strUID + "，剩余2刀";
                                         }
-                                    }
-                                    for (int k = 0; k < dtInsuff.Rows.Count; k++)
-                                    {
-                                        string strUID = dtInsuff.Rows[k]["userid"].ToString();
-                                        string strCountMain = dtInsuff.Rows[k]["cmain"].ToString();
-                                        if (int.Parse(strCountMain) == 0)
+                                        if (intCountMain == 0)
                                         {
                                             intCount += 3;
-                                            message += new Message("\r\nID：" + strUID + "，剩余3刀");
+                                            strLeft3 += "\r\nID：" + strUID + "，剩余3刀";
                                         }
                                     }
+                                    message += new Message(strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
                                     message += new Message("\r\n合计剩余" + intCount.ToString() + "刀");
                                 }
                                 else
