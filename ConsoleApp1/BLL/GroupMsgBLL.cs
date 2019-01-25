@@ -900,7 +900,7 @@ namespace Marchen.BLL
                                     {
                                         string strUID = dtInsuff.Rows[k]["userid"].ToString();
                                         string strCountMain = dtInsuff.Rows[k]["cmain"].ToString();
-                                        if (int.Parse(strCountMain) == 1)
+                                        if (int.Parse(strCountMain) == 0)
                                         {
                                             intCount += 3;
                                             message += new Message("\r\nID：" + strUID + "，剩余3刀");
