@@ -81,6 +81,7 @@ namespace Marchen.Garden
                 return;
             }
             Console.WriteLine("监听启动成功");
+            ConsoleProperties.IsHpShow = true;
             //Timer timer = new Timer();
             //timer.Enabled = true;
             //timer.Interval = 1800000;

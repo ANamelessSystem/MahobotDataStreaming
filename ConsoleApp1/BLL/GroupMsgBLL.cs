@@ -226,6 +226,31 @@ namespace Marchen.BLL
                         {
                             message += new Message("与数据库失去连接，查询队列失败。\r\n");
                         }
+                        if (ConsoleProperties.IsHpShow)
+                        {
+                            if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
+                            {
+                                try
+                                {
+                                    string strOutput2 = "目前进度：" + dtBossProgress.Rows[0]["maxround"].ToString() + "周目，B" + dtBossProgress.Rows[0]["maxbc"].ToString() + "，剩余血量（推测）=" + dtBossProgress.Rows[0]["hpremain"].ToString();
+                                    message += new Message("--------------------\r\n" + strOutput2 + "\r\n");
+                                    Console.WriteLine(strOutput2);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex);
+                                }
+                            }
+                            else
+                            {
+                                message += new Message("与数据库失去连接，查询剩余HP失败。\r\n");
+                                Console.WriteLine("与数据库失去连接，查询剩余HP失败。\r\n");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("hpshow not open");
+                        }
                         message += Message.At(long.Parse(strUserID));
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         break;

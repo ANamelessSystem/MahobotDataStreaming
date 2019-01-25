@@ -386,5 +386,21 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
+        public static bool GetBossProgress(string strGrpID,out DataTable dtProgress)
+        {
+            string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from (select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, sum(b.DMG) as totaldmg from (select max(bc) as maxbc, max(round) as maxround from GD_" + strGrpID + " where round = (select max(round) from GD_" + strGrpID + ")) a left join (select dmg, bc, round from GD_" + strGrpID + ") b on a.MAXBC = b.bc and a.maxround = b.round) c left join (select roundmin, roundmax, bc, hp from ttl_hpset) d on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
+            try
+            {
+                dtProgress = DBHelper.GetDataTable(sqlQueryProgress);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("查询目前进度时发生错误：" + oex);
+                dtProgress = null;
+                return false;
+            }
+        }
     }
 }
