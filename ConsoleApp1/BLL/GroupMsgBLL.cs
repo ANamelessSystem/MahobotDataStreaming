@@ -275,7 +275,7 @@ namespace Marchen.BLL
                             else
                             {
                                 Console.WriteLine("群：" + strGrpID + "，" + strUserID + "移出队列失败：未找到记录。");
-                                message += new Message("退出队列失败，未找到你的队列记录。\r\n--------------------\r\n");
+                                message += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
                             }
                             goto case "queueshow";
                         }
@@ -290,27 +290,43 @@ namespace Marchen.BLL
                         {
                             if (memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
                             {
-                                if (QueueDAL.ClearQueue(strGrpID, out deletedCount))
+                                
+                                if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue_old))
                                 {
-                                    if (deletedCount > 0)
+                                    if (dtQueue_old.Rows.Count > 0)
                                     {
-                                        message += new Message("已清空队列。\r\n");
+                                        if (QueueDAL.ClearQueue(strGrpID, out deletedCount))
+                                        {
+                                            message += new Message("已清空队列。\r\n--------------------\r\n");
+                                            Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
+                                            message += new Message("由于队列被清空，请以下成员重新排队：\r\n");
+                                            for (int i = 0; i < dtQueue_old.Rows.Count; i++)
+                                            {
+                                                string strUID = dtQueue_old.Rows[i]["id"].ToString();
+                                                message += Message.At(long.Parse(strUID));
+                                            }
+                                        }
+                                        else
+                                        {
+                                            message += new Message("与数据库失去连接，清空队列失败。\r\n");
+                                        }
                                     }
                                     else
                                     {
-                                        message += new Message("队列中无人。\r\n");
+                                        Console.WriteLine("执行清空队列指令失败，队列中无人");
+                                        message += new Message("目前队列中无人。\r\n");
                                     }
                                 }
                                 else
                                 {
-                                    message += new Message("与数据库失去连接，清空队列失败。\r\n");
+                                    message += new Message("与数据库失去连接，查询队列失败。\r\n");
                                 }
                             }
                             else
                             {
+                                Console.WriteLine("执行清空队列指令失败，由权限不足的人发起");
                                 message += new Message("拒绝：仅有管理员或群主可执行队列清空指令。\r\n");
                             }
-                            message += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }
                         break;
