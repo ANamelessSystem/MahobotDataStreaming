@@ -27,47 +27,47 @@ namespace Marchen.BLL
         /// </summary>
         /// <param name="dt"></param>
         /// <param name="fileName"></param>
-        private static void SaveCSV(DataTable dt, string fileName)
-        {
-            FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
-            StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
-            string data = "";
+        //private static void SaveCSV(DataTable dt, string fileName)
+        //{
+        //    FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+        //    StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
+        //    string data = "";
 
-            for (int i = 0; i < dt.Columns.Count; i++)
-            {
-                data += dt.Columns[i].ColumnName.ToString();
-                if (i < dt.Columns.Count - 1)
-                {
-                    data += ",";
-                }
-            }
-            sw.WriteLine(data);
+        //    for (int i = 0; i < dt.Columns.Count; i++)
+        //    {
+        //        data += dt.Columns[i].ColumnName.ToString();
+        //        if (i < dt.Columns.Count - 1)
+        //        {
+        //            data += ",";
+        //        }
+        //    }
+        //    sw.WriteLine(data);
 
-            if (dt.Rows.Count > 0)
-            {
-                Console.WriteLine("开始写入数据");
-                for (int i = 0; i < dt.Rows.Count; i++)
-                {
-                    data = "";
-                    for (int j = 0; j < dt.Columns.Count; j++)
-                    {
-                        data += dt.Rows[i][j].ToString() == "" ? "null" : dt.Rows[i][j].ToString();
-                        if (j < dt.Columns.Count - 1)
-                        {
-                            data += ",";
-                        }
-                    }
-                    sw.WriteLine(data);
-                }
-            }
-            else
-            {
-                Console.WriteLine("数据空白");
-            }
-            sw.Close();
-            fs.Close();
-            Console.WriteLine("csv生成完毕");
-        }
+        //    if (dt.Rows.Count > 0)
+        //    {
+        //        Console.WriteLine("开始写入数据");
+        //        for (int i = 0; i < dt.Rows.Count; i++)
+        //        {
+        //            data = "";
+        //            for (int j = 0; j < dt.Columns.Count; j++)
+        //            {
+        //                data += dt.Rows[i][j].ToString() == "" ? "null" : dt.Rows[i][j].ToString();
+        //                if (j < dt.Columns.Count - 1)
+        //                {
+        //                    data += ",";
+        //                }
+        //            }
+        //            sw.WriteLine(data);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("数据空白");
+        //    }
+        //    sw.Close();
+        //    fs.Close();
+        //    Console.WriteLine("csv生成完毕");
+        //}
         /// <summary>
         /// 解析收到的来自群的内容
         /// </summary>
