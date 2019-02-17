@@ -259,7 +259,7 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtDmgRec">返回dt</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool QueryDamageRecord(int intEID, string strGrpID, out DataTable dtDmgRec)
+        public static bool QueryDmgRecByEID(int intEID, string strGrpID, out DataTable dtDmgRec)
         {
             try
             {
@@ -387,6 +387,12 @@ namespace Marchen.DAL
             }
         }
 
+        /// <summary>
+        /// 查询BOSS进度的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtProgress">dt格式进度表</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool GetBossProgress(string strGrpID,out DataTable dtProgress)
         {
             string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from (select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, sum(b.DMG) as totaldmg from (select max(bc) as maxbc, max(round) as maxround from GD_" + strGrpID + " where round = (select max(round) from GD_" + strGrpID + ")) a left join (select dmg, bc, round from GD_" + strGrpID + ") b on a.MAXBC = b.bc and a.maxround = b.round) c left join (select roundmin, roundmax, bc, hp from ttl_hpset) d on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
@@ -402,5 +408,48 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
+        /// <summary>
+        /// 根据BOSS或周目或两方查询出刀记录的方法
+        /// </summary>
+        /// <param name="intBossCode">BOSS代码</param>
+        /// <param name="intRound">周目数</param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtDmgRec">dt格式的伤害数据</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool QueryDmgRecByBCnRound(int intBossCode,int intRound, string strGrpID, out DataTable dtDmgRec)
+        {
+            string sqlQryDmgRecByBCnRound = "";
+            if (intBossCode > 0 && intRound > 0)
+            {
+                sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where bc =" + intBossCode + " and round =" + intRound + " order by eventid asc";
+            }
+            else if (intBossCode > 0)
+            {
+                sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where bc =" + intBossCode + " order by eventid asc";
+            }
+            else if (intRound > 0)
+            {
+                sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where round =" + intRound + " order by eventid asc";
+            }
+            else
+            {
+                Console.WriteLine("群：" + strGrpID + "查询伤害时失败，内容为：BC=" + intBossCode + "，ROUND=" + intRound + "。\r\n");
+                dtDmgRec = null;
+                return false;
+            }
+            try
+            {
+                dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRecByBCnRound);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("群：" + strGrpID + "查询伤害时失败，内容为：" + sqlQryDmgRecByBCnRound + "。\r\n" + oex);
+                dtDmgRec = null;
+                return false;
+            }
+        }
+        
     }
 }
