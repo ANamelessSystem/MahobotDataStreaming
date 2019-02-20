@@ -6,7 +6,6 @@ using MessageContext = Sisters.WudiLib.Posts.Message;
 using System.Text.RegularExpressions;
 using Marchen.DAL;
 using Sisters.WudiLib.Responses;
-using System.IO;
 
 namespace Marchen.BLL
 {
@@ -153,7 +152,7 @@ namespace Marchen.BLL
                     cmdType = "help";
                     Console.WriteLine("识别为说明书呈报");
                 }
-                else if (cmdContext == "掉刀" || cmdContext == "掉线")
+                else if (cmdContext.Contains("掉线"))
                 {
                     cmdType = "timeout";
                     Console.WriteLine("识别为掉线");
@@ -716,77 +715,6 @@ namespace Marchen.BLL
                                         return;
                                     }
                                 }
-                                else if (e.ToLower().Contains("w") || e.Contains("万") || e.ToLower().Contains("k"))
-                                {
-                                    if (int.TryParse(e.Replace("w", ""), out int intOutDMG))
-                                    {
-                                        if (intOutDMG > 300 || intOutDMG < 10)
-                                        {
-                                            Console.WriteLine("输入的伤害数值不符合范围（10w~300w），原始信息=" + e.ToString());
-                                            message += new Message("输入的伤害数值不符合范围（10w~300w）。\r\n");
-                                            message += Message.At(long.Parse(strUserID));
-                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            intDMG = intOutDMG * 10000;
-                                        }
-                                    }
-                                    else if (int.TryParse(e.Replace("万", ""), out int intOutDMG2))
-                                    {
-                                        if (intOutDMG2 > 300 || intOutDMG2 < 10)
-                                        {
-                                            Console.WriteLine("输入的伤害数值不符合范围（10万~300万），原始信息=" + e.ToString());
-                                            message += new Message("输入的伤害数值不符合范围（10万~300万）。\r\n");
-                                            message += Message.At(long.Parse(strUserID));
-                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            intDMG = intOutDMG2 * 10000;
-                                        }
-                                    }
-                                    else if (int.TryParse(e.Replace("k", ""), out int intOutDMG3))
-                                    {
-                                        if (intOutDMG3 > 3000 || intOutDMG3 < 100)
-                                        {
-                                            Console.WriteLine("输入的伤害数值不符合范围（100k~3000k），原始信息=" + e.ToString());
-                                            message += new Message("输入的伤害数值不符合范围（100k~3000k）。\r\n");
-                                            message += Message.At(long.Parse(strUserID));
-                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                            return;
-                                        }
-                                        else
-                                        {
-                                            intDMG = intOutDMG3 * 1000;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("输入的伤害数值无法识别，原始信息=" + e.ToString());
-                                        message += new Message("输入的伤害数值无法识别。\r\n");
-                                        message += Message.At(long.Parse(strUserID));
-                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                        return;
-                                    }
-                                }
-                                else if (int.TryParse(e, out int intOutDMG4))
-                                {
-                                    if (intOutDMG4 > 4000000 || intOutDMG4 < 100000)
-                                    {
-                                        Console.WriteLine("输入的伤害数值不符合范围（100000~4000000），原始信息=" + e.ToString());
-                                        message += new Message("输入的伤害数值不符合范围（100000~4000000）。\r\n");
-                                        message += Message.At(long.Parse(strUserID));
-                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                        return;
-                                    }
-                                    else
-                                    {
-                                        intDMG = intOutDMG4;
-                                    }
-                                }
                                 else if (e == "补时")
                                 {
                                     intExTime = 1;
@@ -798,6 +726,80 @@ namespace Marchen.BLL
                                 else if (e == "掉线")
                                 {
                                     intDMG = 0;
+                                }
+                                else if (!(e.Length > 7))
+                                {
+                                    if (e.ToLower().Contains("w") || e.Contains("万") || e.ToLower().Contains("k"))
+                                    {
+                                        if (int.TryParse(e.Replace("w", ""), out int intOutDMG))
+                                        {
+                                            if (intOutDMG > 400 || intOutDMG < 1)
+                                            {
+                                                Console.WriteLine("输入的伤害数值不符合范围（1w~400w），原始信息=" + e.ToString());
+                                                message += new Message("输入的伤害数值不符合范围（1w~400w）。\r\n");
+                                                message += Message.At(long.Parse(strUserID));
+                                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                                return;
+                                            }
+                                            else
+                                            {
+                                                intDMG = intOutDMG * 10000;
+                                            }
+                                        }
+                                        else if (int.TryParse(e.Replace("万", ""), out int intOutDMG2))
+                                        {
+                                            if (intOutDMG2 > 400 || intOutDMG2 < 1)
+                                            {
+                                                Console.WriteLine("输入的伤害数值不符合范围（1万~400万），原始信息=" + e.ToString());
+                                                message += new Message("输入的伤害数值不符合范围（1万~400万）。\r\n");
+                                                message += Message.At(long.Parse(strUserID));
+                                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                                return;
+                                            }
+                                            else
+                                            {
+                                                intDMG = intOutDMG2 * 10000;
+                                            }
+                                        }
+                                        else if (int.TryParse(e.Replace("k", ""), out int intOutDMG3))
+                                        {
+                                            if (intOutDMG3 > 4000 || intOutDMG3 < 10)
+                                            {
+                                                Console.WriteLine("输入的伤害数值不符合范围（10k~4000k），原始信息=" + e.ToString());
+                                                message += new Message("输入的伤害数值不符合范围（10k~4000k）。\r\n");
+                                                message += Message.At(long.Parse(strUserID));
+                                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                                return;
+                                            }
+                                            else
+                                            {
+                                                intDMG = intOutDMG3 * 1000;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("输入的伤害数值无法识别，原始信息=" + e.ToString());
+                                            message += new Message("输入的伤害数值无法识别。\r\n");
+                                            message += Message.At(long.Parse(strUserID));
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                            return;
+                                        }
+                                    }
+                                    if (int.TryParse(e, out int intOutDMG4))
+                                    {
+                                        if (intOutDMG4 > 4000000 || intOutDMG4 < 1000)
+                                        {
+                                            Console.WriteLine("输入的伤害数值不符合范围（1000~4000000），原始信息=" + e.ToString());
+                                            message += new Message("输入的伤害数值不符合范围（1000~4000000）。\r\n");
+                                            message += Message.At(long.Parse(strUserID));
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                                            return;
+                                        }
+                                        else
+                                        {
+                                            intDMG = intOutDMG4;
+                                        }
+                                    }
                                 }
                             }
                             if (strUserID == strOriUID || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
