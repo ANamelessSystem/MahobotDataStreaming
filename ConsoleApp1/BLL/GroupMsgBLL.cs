@@ -22,52 +22,6 @@ namespace Marchen.BLL
         }
 
         /// <summary>
-        /// 输出csv文件
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="fileName"></param>
-        //private static void SaveCSV(DataTable dt, string fileName)
-        //{
-        //    FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
-        //    StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.Default);
-        //    string data = "";
-
-        //    for (int i = 0; i < dt.Columns.Count; i++)
-        //    {
-        //        data += dt.Columns[i].ColumnName.ToString();
-        //        if (i < dt.Columns.Count - 1)
-        //        {
-        //            data += ",";
-        //        }
-        //    }
-        //    sw.WriteLine(data);
-
-        //    if (dt.Rows.Count > 0)
-        //    {
-        //        Console.WriteLine("开始写入数据");
-        //        for (int i = 0; i < dt.Rows.Count; i++)
-        //        {
-        //            data = "";
-        //            for (int j = 0; j < dt.Columns.Count; j++)
-        //            {
-        //                data += dt.Rows[i][j].ToString() == "" ? "null" : dt.Rows[i][j].ToString();
-        //                if (j < dt.Columns.Count - 1)
-        //                {
-        //                    data += ",";
-        //                }
-        //            }
-        //            sw.WriteLine(data);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("数据空白");
-        //    }
-        //    sw.Close();
-        //    fs.Close();
-        //    Console.WriteLine("csv生成完毕");
-        //}
-        /// <summary>
         /// 解析收到的来自群的内容
         /// </summary>
         /// <param name="receivedMessage">收到的消息内容</param>
@@ -112,7 +66,7 @@ namespace Marchen.BLL
                 }
                 #endregion
                 Console.WriteLine("接收到一条来自群：" + strGrpID + "的Notice，开始解析内容");
-                string cmdContext = "";
+                string strCmdContext = "";
                 string strUserID = receivedMessage.UserId.ToString();
                 string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
                 string strUserNickName = memberInfo.Nickname.ToString().Trim();
@@ -120,64 +74,64 @@ namespace Marchen.BLL
                 {
                     strUserGrpCard = strUserNickName;
                 }
-                cmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Trim();
+                strCmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Trim();
                 string cmdType = "";
-                if (cmdContext.ToLower() == "c1")
+                if (strCmdContext.ToLower() == "c1")
                 {
                     cmdType = "queueadd";
                     Console.WriteLine("识别为开始排刀");
                 }
-                else if (cmdContext.ToLower() == "c2")
+                else if (strCmdContext.ToLower() == "c2")
                 {
                     cmdType = "queueshow";
                     Console.WriteLine("识别为查询排刀");
                 }
-                else if (cmdContext.ToLower() == "c3")
+                else if (strCmdContext.ToLower() == "c3")
                 {
                     cmdType = "queuequit";
                     Console.WriteLine("识别为退出排刀");
                 }
-                else if (cmdContext.Contains("清空队列"))
+                else if (strCmdContext.Contains("清空队列"))
                 {
                     cmdType = "clear";
                     Console.WriteLine("识别为清空指令");
                 }
-                else if (cmdContext.Contains("伤害") && !cmdContext.Contains("修改"))
+                else if (strCmdContext.Contains("伤害") && !strCmdContext.Contains("修改"))
                 {
                     cmdType = "debrief";
                     Console.WriteLine("识别为伤害上报");
                 }
-                else if (cmdContext.ToLower() == "help")
+                else if (strCmdContext.ToLower() == "help")
                 {
                     cmdType = "help";
                     Console.WriteLine("识别为说明书呈报");
                 }
-                else if (cmdContext.Contains("掉线"))
+                else if (strCmdContext.Contains("掉线"))
                 {
                     cmdType = "timeout";
                     Console.WriteLine("识别为掉线");
                 }
-                else if (cmdContext.Contains("修改"))
+                else if (strCmdContext.Contains("修改"))
                 {
                     cmdType = "dmgmod";
                     Console.WriteLine("识别为伤害修改");
                 }
-                else if (cmdContext.Contains("查看"))
+                else if (strCmdContext.Contains("查看"))
                 {
                     cmdType = "dmgshow";
                     Console.WriteLine("识别为伤害查看");
                 }
-                else if (cmdContext.ToLower() == "f1")
+                else if (strCmdContext.ToLower() == "f1")
                 {
                     cmdType = "remainshow";
                     Console.WriteLine("识别为未出满三刀的成员查询");
                 }
-                else if (cmdContext.ToLower() == "f2")
+                else if (strCmdContext.ToLower() == "f2")
                 {
                     cmdType = "remainnotice";
                     Console.WriteLine("识别为提醒未出满三刀的成员");
                 }
-                else if (cmdContext == "导出统计表")
+                else if (strCmdContext == "导出统计表")
                 {
                     cmdType = "fileoutput";
                     Console.WriteLine("识别为导出统计表");
@@ -190,363 +144,31 @@ namespace Marchen.BLL
                 switch (cmdType)
                 {
                     case "queueadd":
-                        if (QueueDAL.AddQueue(strGrpID, strUserID, strUserGrpCard))
-                        {
-                            message += new Message("已加入队列\r\n--------------------\r\n");
-                            goto case "queueshow";
-                        }
-                        else
-                        {
-                            message += new Message("与数据库失去连接，加入队列失败。\r\n");
-                            message += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                        }
+                        CaseQueue.QueueAdd(strGrpID, strUserID, strUserGrpCard);
                         break;
                     case "queueshow":
-                        if (ConsoleProperties.IsHpShow)
-                        {
-                            if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
-                            {
-                                try
-                                {
-                                    string strHpRemain = dtBossProgress.Rows[0]["hpremain"].ToString();
-                                    string strOutput2 = "";
-                                    if (strHpRemain.Length > 4 && !strHpRemain.Contains("-"))
-                                    {
-                                        strOutput2 = "目前进度：" + dtBossProgress.Rows[0]["maxround"].ToString() + "周目，B" + dtBossProgress.Rows[0]["maxbc"].ToString() + "，剩余血量(推测)=" + strHpRemain.Substring(0, strHpRemain.Length - 4) + "万";
-                                        message += new Message(strOutput2 + "\r\n--------------------\r\n");
-                                    }
-                                    else if (strHpRemain.Length > 0)
-                                    {
-                                        strOutput2 = "目前进度：" + dtBossProgress.Rows[0]["maxround"].ToString() + "周目，B" + dtBossProgress.Rows[0]["maxbc"].ToString() + "，剩余血量(推测)=" + strHpRemain;
-                                        message += new Message(strOutput2 + "\r\n--------------------\r\n");
-                                    }
-                                    Console.WriteLine(strOutput2);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine(ex);
-                                }
-                            }
-                            else
-                            {
-                                message += new Message("与数据库失去连接，查询剩余HP失败。\r\n");
-                                Console.WriteLine("与数据库失去连接，查询剩余HP失败。\r\n");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("hpshow not open");
-                        }
-                        if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
-                        {
-                            if (dtQueue.Rows.Count > 0)
-                            {
-                                message += new Message("目前队列：\r\n");
-                                for (int i = 0; i < dtQueue.Rows.Count; i++)
-                                {
-                                    string strOutput = "顺序：" + dtQueue.Rows[i]["seq"].ToString() + "    " + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")";
-                                    message += new Message(strOutput + "\r\n");
-                                    Console.WriteLine(strOutput);
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("队列中无人");
-                                message += new Message("目前队列中无人。\r\n");
-                            }
-                        }
-                        else
-                        {
-                            message += new Message("与数据库失去连接，查询队列失败。\r\n");
-                        }
-                        message += Message.At(long.Parse(strUserID));
-                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                        CaseQueue.QueueShow(strGrpID, strUserID);
                         break;
                     case "queuequit":
-                        if (QueueDAL.QuitQueue(strGrpID, strUserID, out int deletedCount))
-                        {
-                            if (deletedCount > 0)
-                            {
-                                Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀移出队列。");
-                                message += new Message("已将较早一次队列记录退出。\r\n--------------------\r\n");
-                            }
-                            else
-                            {
-                                Console.WriteLine("群：" + strGrpID + "，" + strUserID + "移出队列失败：未找到记录。");
-                                message += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
-                            }
-                            goto case "queueshow";
-                        }
-                        else
-                        {
-                            message += new Message("与数据库失去连接，退出队列失败。\r\n");
-                            message += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                        }
+                        CaseQueue.QueueQuit(strGrpID, strUserID);
                         break;
                     case "clear":
                         {
                             if (memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
                             {
-                                
-                                if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue_old))
-                                {
-                                    if (dtQueue_old.Rows.Count > 0)
-                                    {
-                                        if (QueueDAL.ClearQueue(strGrpID, out deletedCount))
-                                        {
-                                            message += new Message("已清空队列。\r\n--------------------\r\n");
-                                            Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
-                                            message += new Message("由于队列被清空，请以下成员重新排队：");
-                                            for (int i = 0; i < dtQueue_old.Rows.Count; i++)
-                                            {
-                                                string strUID = dtQueue_old.Rows[i]["id"].ToString();
-                                                message += new Message("\r\nID：" + strUID + "， ") + Message.At(long.Parse(strUID));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            message += new Message("与数据库失去连接，清空队列失败。\r\n");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("执行清空队列指令失败，队列中无人");
-                                        message += new Message("队列中无人，不需要清空。\r\n");
-                                    }
-                                }
-                                else
-                                {
-                                    message += new Message("与数据库失去连接，查询队列失败。\r\n");
-                                }
+                                CaseQueue.QueueClear(strGrpID, strUserID);
                             }
                             else
                             {
                                 Console.WriteLine("执行清空队列指令失败，由权限不足的人发起");
                                 message += new Message("拒绝：仅有管理员或群主可执行队列清空指令。\r\n");
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                             }
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }
                         break;
                     case "debrief":
                         {
-                            int intBossCode = 0;
-                            int intRound = 0;
-                            int intDMG = -1;
-                            bool isCorrect = true;
-                            int intExTime = 0;
-                            if (RecordDAL.CheckClanDmgTable(strGrpID, out DataTable dtTableCount))
-                            {
-                                if (int.Parse(dtTableCount.Rows[0]["count"].ToString()) != 1)
-                                {
-                                    if (RecordDAL.CreateTablesForGuildDamage(strGrpID))
-                                    {
-                                        message += new Message("(未找到本公会伤害后台数据表，已自动建立。)\r\n");
-                                    }
-                                    else
-                                    {
-                                        message += new Message("(公会伤害后台数据表建立失败。)\r\n");
-                                        return;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                message += new Message("与数据库失去连接，读取本公会伤害表失败。\r\n");
-                                message += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                return;
-                            }
-                            string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                            foreach (string e in sArray)
-                            {
-                                if (e.ToLower() == "b1" || e.ToLower() == "b2" || e.ToLower() == "b3" || e.ToLower() == "b4" || e.ToLower() == "b5")
-                                {
-                                    try
-                                    {
-                                        intBossCode = int.Parse(e.ToLower().Replace("b", ""));
-                                        if (intBossCode > 5 || intBossCode < 1)
-                                        {
-                                            throw new Exception("由boss异常检测块抛出");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                        message += new Message("boss代码有误，请确保填入为b1~b5\r\n");
-                                        isCorrect = false;
-                                    }
-                                }
-                                else if (e == "补时")
-                                {
-                                    intExTime = 1;
-                                }
-                                else if (e.Contains("周目"))
-                                {
-                                    try
-                                    {
-                                        intRound = int.Parse(e.Replace("周目", ""));
-                                        if (intRound > 30)
-                                        {
-                                            throw new Exception("由周目过高检测块抛出");
-                                        }
-                                        if (intRound < 1)
-                                        {
-                                            throw new Exception("由周目过低检测块抛出");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                        if (intRound > 30)
-                                        {
-                                            message += new Message("周目数过高，请确保填入周目正确\r\n");
-                                        }
-                                        else if (intRound < 1)
-                                        {
-                                            message += new Message("周目数过低，请确保填入周目正确\r\n");
-                                        }
-                                        else
-                                        {
-                                            message += new Message("无法识别周目，请确保填入周目正确\r\n");
-                                        }
-                                        isCorrect = false;
-                                    }
-                                }
-                                else if (e.ToLower().Contains("w") || e.Contains("万"))
-                                {
-                                    try
-                                    {
-                                        decimal result = decimal.Parse(Regex.Replace(e, @"[^\d.\d]", ""));
-                                        intDMG = int.Parse(decimal.Round((result * 10000), 0).ToString());
-                                        if (intDMG > 4000000)
-                                        {
-                                            throw new Exception("由伤害过高检测块抛出");
-                                        }
-                                        if (intDMG < 1000)
-                                        {
-                                            throw new Exception("由伤害过低检测块抛出");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                        if (intDMG > 4000000)
-                                        {
-                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
-                                        }
-                                        else if (intDMG < 1000)
-                                        {
-                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
-                                        }
-                                        else
-                                        {
-                                            message += new Message("无法识别伤害，请确保填入伤害值正确\r\n");
-                                        }
-                                        isCorrect = false;
-                                    }
-                                }
-                                else if (e.ToLower().Contains("k"))
-                                {
-                                    try
-                                    {
-                                        decimal result = decimal.Parse(Regex.Replace(e, @"[^\d.\d]", ""));
-                                        intDMG = int.Parse(decimal.Round((result * 1000), 0).ToString());
-                                        if (intDMG > 4000000)
-                                        {
-                                            throw new Exception("由伤害过高检测块抛出");
-                                        }
-                                        if (intDMG < 1000)
-                                        {
-                                            throw new Exception("由伤害过低检测块抛出");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                        if (intDMG > 4000000)
-                                        {
-                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
-                                        }
-                                        else if (intDMG < 1000)
-                                        {
-                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
-                                        }
-                                        else
-                                        {
-                                            message += new Message("无法识别伤害，请确保填入伤害值正确\r\n");
-                                        }
-                                        isCorrect = false;
-                                    }
-                                }
-                                else if (Regex.Replace(e, @"[^0-9]+", "").Length > 4)//数字长度部分大于4
-                                {
-                                    try
-                                    {
-                                        intDMG = int.Parse(e);
-                                        if (intDMG > 4000000)
-                                        {
-                                            throw new Exception("由伤害过高检测块抛出");
-                                        }
-                                        if (intDMG < 1000)
-                                        {
-                                            throw new Exception("由伤害过低检测块抛出");
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine(ex);
-                                        if (intDMG > 4000000)
-                                        {
-                                            message += new Message("伤害过高，请确保填入伤害值正确\r\n");
-                                        }
-                                        else if (intDMG < 1000)
-                                        {
-                                            message += new Message("伤害过低，请确保填入伤害值高于1000\r\n");
-                                        }
-                                        else
-                                        {
-                                            message += new Message("无法识别伤害");
-                                        }
-                                        isCorrect = false;
-                                    }
-                                }
-                            }
-                            if (intDMG == -1)
-                            {
-                                message += new Message("无法识别伤害，可能由于格式错误\r\n");
-                                isCorrect = false;
-                            }
-                            if (intBossCode == 0)
-                            {
-                                message += new Message("无法识别BOSS代码，可能由于格式错误\r\n");
-                                isCorrect = false;
-                            }
-                            if (intRound == 0)
-                            {
-                                message += new Message("无法识别周目数，可能由于格式错误\r\n");
-                                isCorrect = false;
-                            }
-                            if (isCorrect)
-                            {
-                                if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode, intExTime, out int intEID))
-                                {
-                                    Console.WriteLine("伤害已保存，档案号=" + intEID.ToString() + "，B" + intBossCode.ToString() + "，" + intRound.ToString() + "周目，数值：" + intDMG.ToString() + "，补时标识：" + intExTime);
-                                    message = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
-                                    goto case "queuequit";
-                                }
-                                else
-                                {
-                                    message += new Message("与数据库失去连接，伤害保存失败。\r\n");
-                                }
-                            }
-                            else
-                            {
-                                message += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                            }
-                            message += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                            CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
                             break;
                         }
                     case "help":
@@ -568,7 +190,7 @@ namespace Marchen.BLL
                             int intRound = 0;
                             int intBossCode = 0;
                             int intExTime = 0;
-                            if (cmdContext.Contains("补时"))
+                            if (strCmdContext.Contains("补时"))
                             {
                                 intExTime = 1;
                             }
@@ -594,7 +216,7 @@ namespace Marchen.BLL
                             int intExTime = 0;
                             string strOriUID = "";
                             string strNewUID = "";
-                            string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string e in sArray)
                             {
                                 if (e.ToLower().Contains("e"))
@@ -827,8 +449,8 @@ namespace Marchen.BLL
                     case "dmgshow":
                         {
                             //按EID查询单条，或按周目、boss、周目+boss查询多条
-                            string[] sArray = cmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                            if (cmdContext.ToLower().Contains("e") && !(cmdContext.ToLower().Contains("b") || cmdContext.Contains("周目")))
+                            string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            if (strCmdContext.ToLower().Contains("e") && !(strCmdContext.ToLower().Contains("b") || strCmdContext.Contains("周目")))
                             {
                                 //处理按EID查询部分
                                 int intEID = 0;
@@ -908,7 +530,7 @@ namespace Marchen.BLL
                                     }
                                 }
                             }
-                            else if (!cmdContext.ToLower().Contains("e") && (cmdContext.ToLower().Contains("b") && cmdContext.Contains("周目")))
+                            else if (!strCmdContext.ToLower().Contains("e") && (strCmdContext.ToLower().Contains("b") && strCmdContext.Contains("周目")))
                             {
                                 //处理按boss与周目查询部分
                                 Console.WriteLine("开始按周目、boss查询");

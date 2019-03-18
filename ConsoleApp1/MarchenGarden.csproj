@@ -25,8 +25,4 @@
     <PackageReference Include="Sisters.WudiLib" Version="0.0.2-alpha" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="BLL\case\" />
-  </ItemGroup>
-
 </Project>
