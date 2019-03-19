@@ -12,6 +12,15 @@ namespace Marchen.BLL
     class GroupMsgBLL
     {
         /// <summary>
+        /// 消息
+        /// </summary>
+        protected static Message MsgMessage;
+
+        private static void LoadValueLimits()
+        {
+
+        }
+        /// <summary>
         /// 获取指定日期的0点时间
         /// </summary>
         /// <param name="datetime">指定日期</param>
@@ -28,6 +37,7 @@ namespace Marchen.BLL
         /// <param name="memberInfo">发出此消息的用户信息</param>
         public static void GrpMsgReco(MessageContext receivedMessage, GroupMemberInfo memberInfo)
         {
+            MsgMessage = new Message("");
             string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
             string cmdAtMeAlone = "[CQ:at,qq=" + SelfProperties.SelfID + "]";
             if (strRawcontext.Contains(cmdAtMeAlone))

@@ -450,6 +450,26 @@ namespace Marchen.DAL
                 return false;
             }
         }
-        
+
+        /// <summary>
+        /// 读取所有上限设置的方法
+        /// </summary>
+        /// <param name="dtDmgMaxLimit"></param>
+        /// <returns></returns>
+        public static bool QueryLimits(out DataTable dtLimits)
+        {
+            string sqlQryLimits = "select TYPE,VALUE from TTL_LIMITS";
+            try
+            {
+                dtLimits = DBHelper.GetDataTable(sqlQryLimits);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("读取伤害上限时失败，内容为：" + sqlQryLimits + "。\r\n" + oex);
+                dtLimits = null;
+                return false;
+            }
+        }
     }
 }
