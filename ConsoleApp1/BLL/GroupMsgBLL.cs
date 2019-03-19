@@ -153,24 +153,11 @@ namespace Marchen.BLL
                         CaseQueue.QueueQuit(strGrpID, strUserID);
                         break;
                     case "clear":
-                        {
-                            if (memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
-                            {
-                                CaseQueue.QueueClear(strGrpID, strUserID);
-                            }
-                            else
-                            {
-                                Console.WriteLine("执行清空队列指令失败，由权限不足的人发起");
-                                message += new Message("拒绝：仅有管理员或群主可执行队列清空指令。\r\n");
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                            }
-                        }
+                        CaseQueue.QueueClear(strGrpID, strUserID, memberInfo);
                         break;
                     case "debrief":
-                        {
-                            CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
-                            break;
-                        }
+                        CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
+                        break;
                     case "help":
                         {
                             message += new Message("加入队列：【@MahoBot c1】可进入队列\r\n");
@@ -185,27 +172,7 @@ namespace Marchen.BLL
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         break;
                     case "timeout":
-                        {
-                            int intDMG = 0;
-                            int intRound = 0;
-                            int intBossCode = 0;
-                            int intExTime = 0;
-                            if (strCmdContext.Contains("补时"))
-                            {
-                                intExTime = 1;
-                            }
-                            if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode, intExTime, out int intEID))
-                            {
-                                message = new Message("掉线已记录，档案号为： " + intEID.ToString() + "\r\n--------------------\r\n");
-                                goto case "queuequit";
-                            }
-                            else
-                            {
-                                message += new Message("与数据库失去连接，掉线记录失败。\r\n");
-                                message += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                            }
-                        }
+                        CaseDamage.DmgTimeOut(strGrpID, strUserID, strCmdContext);
                         break;
                     case "dmgmod":
                         {

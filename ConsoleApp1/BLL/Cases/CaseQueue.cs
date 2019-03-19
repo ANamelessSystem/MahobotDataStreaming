@@ -5,6 +5,7 @@ using System.Data;
 using Marchen.DAL;
 using Marchen.Model;
 using Message = Sisters.WudiLib.SendingMessage;
+using Sisters.WudiLib.Responses;
 
 namespace Marchen.BLL
 {
@@ -82,9 +83,9 @@ namespace Marchen.BLL
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
         /// <param name="strUserGrpCard"></param>
-        public static void QueueQuit(string strGrpID, string strUserID)
+        public static void QueueQuit(string strGrpID, string strUserID, Message msgMessage = null)
         {
-            var msgMessage = new Message("");
+            //var msgMessage = new Message("");
             if (QueueDAL.QuitQueue(strGrpID, strUserID, out int deletedCount))
             {
                 if (deletedCount > 0)
@@ -113,39 +114,47 @@ namespace Marchen.BLL
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
         /// <param name="strUserGrpCard"></param>
-        public static void QueueClear(string strGrpID, string strUserID)
+        public static void QueueClear(string strGrpID, string strUserID, GroupMemberInfo memberInfo)
         {
             var msgMessage = new Message("");
-            if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue_old))
+            if (memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
             {
-                if (dtQueue_old.Rows.Count > 0)
+                if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue_old))
                 {
-                    if (QueueDAL.ClearQueue(strGrpID, out int deletedCount))
+                    if (dtQueue_old.Rows.Count > 0)
                     {
-                        msgMessage += new Message("已清空队列。\r\n--------------------\r\n");
-                        Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
-                        msgMessage += new Message("由于队列被清空，请以下成员重新排队：");
-                        for (int i = 0; i < dtQueue_old.Rows.Count; i++)
+                        if (QueueDAL.ClearQueue(strGrpID, out int deletedCount))
                         {
-                            string strUID = dtQueue_old.Rows[i]["id"].ToString();
-                            msgMessage += new Message("\r\nID：" + strUID + "， ") + Message.At(long.Parse(strUID));
+                            msgMessage += new Message("已清空队列。\r\n--------------------\r\n");
+                            Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
+                            msgMessage += new Message("由于队列被清空，请以下成员重新排队：");
+                            for (int i = 0; i < dtQueue_old.Rows.Count; i++)
+                            {
+                                string strUID = dtQueue_old.Rows[i]["id"].ToString();
+                                msgMessage += new Message("\r\nID：" + strUID + "， ") + Message.At(long.Parse(strUID));
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("与数据库失去连接，清空队列失败。");
+                            msgMessage += new Message("与数据库失去连接，清空队列失败。\r\n");
                         }
                     }
                     else
                     {
-                        Console.WriteLine("与数据库失去连接，清空队列失败。");
-                        msgMessage += new Message("与数据库失去连接，清空队列失败。\r\n");
+                        Console.WriteLine("执行清空队列指令失败，队列中无人。");
+                        msgMessage += new Message("队列中无人，不需要清空。\r\n");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("执行清空队列指令失败，队列中无人。");
-                    msgMessage += new Message("队列中无人，不需要清空。\r\n");
+                    msgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
                 }
             }
             else
             {
-                msgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
+                Console.WriteLine("执行清空队列指令失败，由权限不足的人发起");
+                msgMessage += new Message("拒绝：仅有管理员或群主可执行队列清空指令。\r\n");
             }
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), msgMessage).Wait();
         }
