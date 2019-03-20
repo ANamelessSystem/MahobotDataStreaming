@@ -431,6 +431,7 @@ namespace Marchen.DAL
         public static bool QueryDmgRecords(int intBossCode, int intRound,double douUserID, string strGrpID, out DataTable dtDmgRecords)
         {
             //string strUserID = "";
+            Console.WriteLine("启动数据库查询语句");
             string sqlQryDmgRecByBCnRound = "";
             string sqlPaddingPattern = "";
             int elementCounter = 0;
@@ -473,9 +474,12 @@ namespace Marchen.DAL
                     elementCounter += 1;
                 }
             }
+            sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where " + sqlPaddingPattern + " order by eventid asc";
+            Console.WriteLine("将要查询的SQL语句为："+sqlQryDmgRecByBCnRound);
             try
             {
                 dtDmgRecords = DBHelper.GetDataTable(sqlQryDmgRecByBCnRound);
+                Console.WriteLine("SQL语句成功执行");
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)

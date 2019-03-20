@@ -277,15 +277,19 @@ namespace Marchen.BLL
                 else
                 {
                     MsgMessage += new Message("与数据库失去连接，修改失败。\r\n");
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    return;
                 }
             }
             else
             {
                 Console.WriteLine("只有本人或管理员以上可修改。修改者：" + strUserID + " 原记录：" + strOriUID + "EventID：" + CommonVariables.IntEID.ToString());
                 MsgMessage += new Message("只有本人或管理员以上可修改。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
 
         public static void RecordQuery(string strGrpID, string strUserID, string strCmdContext)
@@ -299,7 +303,7 @@ namespace Marchen.BLL
             }
             if (CommonVariables.IntEID != -1)
             {
-                //识别到EventID，优先使用EventID作为查询条件（唯一）
+                Console.WriteLine("识别到EventID，优先使用EventID作为查询条件（唯一）");
                 if (RecordDAL.QueryDmgRecByEID(CommonVariables.IntEID, strGrpID, out DataTable dtDmgRecEID))
                 {
                     if (dtDmgRecEID.Rows.Count < 1)
@@ -358,8 +362,7 @@ namespace Marchen.BLL
             }
             else if ((CommonVariables.DouUID != -1 && CommonVariables.IntBossCode == -1 && CommonVariables.IntRound == -1)|| (CommonVariables.DouUID == -1 && CommonVariables.IntBossCode != -1 && CommonVariables.IntRound != -1))
             {
-                //单独UID
-                //或周目+BOSS
+                Console.WriteLine("识别到UID或周目+BOSS");
                 if (RecordDAL.QueryDmgRecords(CommonVariables.IntBossCode, CommonVariables.IntRound, CommonVariables.DouUID, strGrpID, out DataTable dtDmgRecords))
                 {
                     for (int i = 0; i < dtDmgRecords.Rows.Count; i++)
@@ -425,6 +428,7 @@ namespace Marchen.BLL
         /// <param name="strCmdContext"></param>
         public static bool CmdSpliter(string strCmdContext)
         {
+            Console.WriteLine("开始拆分元素");
             bool isCorrect = true;
             CommonVariables.IntEID = -1;
             CommonVariables.DouUID = -1;
@@ -552,6 +556,13 @@ namespace Marchen.BLL
                     }
                 }
             }
+            Console.WriteLine("完成元素拆分\r\n结果：isCorrect=" + isCorrect.ToString());
+            Console.WriteLine("IntEID=" + CommonVariables.IntEID);
+            Console.WriteLine("DouUID=" + CommonVariables.DouUID);
+            Console.WriteLine("IntBossCode=" + CommonVariables.IntBossCode);
+            Console.WriteLine("IntRound=" + CommonVariables.IntRound);
+            Console.WriteLine("IntDMG=" + CommonVariables.IntDMG);
+            Console.WriteLine("IntEXT=" + CommonVariables.IntEXT);
             return isCorrect;
         }
     }
