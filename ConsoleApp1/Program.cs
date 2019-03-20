@@ -93,7 +93,7 @@ namespace Marchen.Garden
                 {
                     //处理群消息
                     GroupMemberInfo memberInfo = api.GetGroupMemberInfoAsync(long.Parse(message.GetType().GetProperty("GroupId").GetValue(message, null).ToString()), message.UserId).Result;
-                    GroupMsgBLL.GrpMsgReco(message,memberInfo);
+                    GroupMsgBLL.GrpMsgReco(message, memberInfo);
                 }
                 else if (message.Endpoint is DiscussEndpoint)
                 {

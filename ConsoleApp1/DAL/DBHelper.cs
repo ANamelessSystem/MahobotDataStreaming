@@ -70,7 +70,7 @@ namespace Marchen.DAL
         /// </summary>
         /// <param name="prod"></param>
         /// <param name="grpid"></param>
-        public static void ExecCreaGDT(string prod,string grpid)
+        public static void ExecCreaGDT(string prod, string grpid)
         {
             OracleCommand cmd = new OracleCommand(prod, Connection);
             cmd.CommandType = CommandType.StoredProcedure;

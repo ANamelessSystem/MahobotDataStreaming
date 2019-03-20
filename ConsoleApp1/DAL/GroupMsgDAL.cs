@@ -393,7 +393,7 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtProgress">dt格式进度表</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool GetBossProgress(string strGrpID,out DataTable dtProgress)
+        public static bool GetBossProgress(string strGrpID, out DataTable dtProgress)
         {
             string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from (select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, sum(b.DMG) as totaldmg from (select max(bc) as maxbc, max(round) as maxround from GD_" + strGrpID + " where round = (select max(round) from GD_" + strGrpID + ")) a left join (select dmg, bc, round from GD_" + strGrpID + ") b on a.MAXBC = b.bc and a.maxround = b.round) c left join (select roundmin, roundmax, bc, hp from ttl_hpset) d on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
             try
@@ -417,7 +417,7 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtDmgRec">dt格式的伤害数据</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool QueryDmgRecByBCnRound(int intBossCode,int intRound, string strGrpID, out DataTable dtDmgRec)
+        public static bool QueryDmgRecByBCnRound(int intBossCode, int intRound, string strGrpID, out DataTable dtDmgRec)
         {
             string sqlQryDmgRecByBCnRound = "";
             if (intBossCode > 0 && intRound > 0)

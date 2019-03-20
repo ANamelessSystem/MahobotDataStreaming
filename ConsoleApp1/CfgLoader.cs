@@ -32,7 +32,7 @@ namespace Marchen
         [DllImport("kernel32")]
         private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retval, int size, string filePath);
         private static string strFilePath = Directory.GetCurrentDirectory() + "\\MahobotConfig.ini";//ini path
-        private static string strCfgFileName = ""; 
+        private static string strCfgFileName = "";
         //private static string keyCode = "KururinPa";
 
         private static void CreateConfigFile()

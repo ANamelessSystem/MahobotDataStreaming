@@ -10,7 +10,7 @@ using Sisters.WudiLib.Responses;
 
 namespace Marchen.BLL
 {
-    class CaseDamage:GroupMsgBLL
+    class CaseDamage : GroupMsgBLL
     {
         /// <summary>
         /// 检查数据库的后台表是否已经创建
@@ -95,7 +95,7 @@ namespace Marchen.BLL
                     return false;
                 }
                 else
-                { 
+                {
                     if (intOutDamage > ValueLimits.DamageLimitMax)
                     {
                         Console.WriteLine("伤害值超出可信范围，输入字串为：" + e + "，上限值为：" + ValueLimits.DamageLimitMax.ToString());
@@ -125,7 +125,7 @@ namespace Marchen.BLL
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
         /// <param name="strCmdContext"></param>
-        public static void DmgRecAdd(string strGrpID, string strUserID,string strCmdContext)
+        public static void DmgRecAdd(string strGrpID, string strUserID, string strCmdContext)
         {
             bool isCorrect = true;
             int intBossCode = 0;
@@ -287,7 +287,7 @@ namespace Marchen.BLL
         }
 
         /// <summary>
-        /// 
+        /// 修改伤害记录
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>

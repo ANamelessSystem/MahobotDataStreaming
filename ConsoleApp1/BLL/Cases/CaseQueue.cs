@@ -9,7 +9,7 @@ using Sisters.WudiLib.Responses;
 
 namespace Marchen.BLL
 {
-    class CaseQueue:GroupMsgBLL
+    class CaseQueue : GroupMsgBLL
     {
         /// <summary>
         /// 加入队列
