@@ -58,6 +58,7 @@ namespace Marchen.DAL
                 }
             }
         }
+
         /// <summary>
         /// 加入队列的方法
         /// </summary>
@@ -78,7 +79,7 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
-                Console.WriteLine("查询最大序号时跳出错误" + orex);
+                Console.WriteLine("查询最大序号时跳出错误，SQL：" + sqlQryMaxSeq + "。\r\n" + orex);
                 return false;
             }
             if (dtMaxSeq.Rows[0]["maxseq"].ToString().Trim() != null && dtMaxSeq.Rows[0]["maxseq"].ToString().Trim() != "")
@@ -93,10 +94,11 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
-                Console.WriteLine("写入队列时跳出错误" + orex);
+                Console.WriteLine("写入队列时跳出错误，SQL：" + sqlAddSeq + "。\r\n" + orex);
                 return false;
             }
         }
+
         /// <summary>
         /// 读取当前队列的方法
         /// </summary>
@@ -115,11 +117,12 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
-                Console.WriteLine("查询队列时跳出错误" + orex);
+                Console.WriteLine("查询队列时跳出错误，SQL：" + sqlQrySeq + "。\r\n" + orex);
                 dtQueue = null;
                 return false;
             }
         }
+
         /// <summary>
         /// 退出队列的方法
         /// </summary>
@@ -129,19 +132,20 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QuitQueue(string strGrpID, string strUserID, out int deletedCount)
         {
-            string qryTopId = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' group by id)";
+            string sqlQryTopId = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' group by id)";
             try
             {
-                deletedCount = DBHelper.ExecuteCommand(qryTopId);
+                deletedCount = DBHelper.ExecuteCommand(sqlQryTopId);
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
-                Console.WriteLine("修改队列时跳出错误" + orex);
+                Console.WriteLine("修改队列时跳出错误，SQL：" + sqlQryTopId + "。\r\n" + orex);
                 deletedCount = 0;
                 return false;
             }
         }
+
         /// <summary>
         /// 清空队列的方法
         /// </summary>
@@ -158,12 +162,13 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
-                Console.WriteLine("清空队列时跳出错误" + orex);
+                Console.WriteLine("清空队列时跳出错误，SQL：" + sqlClrQue + "。\r\n" + orex);
                 deletedCount = 0;
                 return false;
             }
         }
     }
+
     class RecordDAL
     {
         /// <summary>
@@ -187,7 +192,7 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("查询最大EID时返回错误：" + oex);
+                Console.WriteLine("查询最大EID时返回错误，SQL：" + sqlQryMaxEID + "。\r\n" + oex);
                 intEID = 0;
                 return false;
             }
@@ -204,11 +209,12 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("上报伤害时返回错误：" + oex);
+                Console.WriteLine("上报伤害时返回错误，SQL：" + sqlDmgDbrf + "。\r\n" + oex);
                 intEID = 0;
                 return false;
             }
         }
+
         /// <summary>
         /// 记录无法被识别的语句的方法，可以通过你自己的人工学习来优化自然语言识别方向
         /// 因为没什么用而且占空间就没投用了，连表都没建
@@ -232,6 +238,7 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
         /// <summary>
         /// 创建伤害统计表的方法
         /// </summary>
@@ -252,6 +259,7 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
         /// <summary>
         /// 查询EventID对应记录的方法
         /// </summary>
@@ -261,19 +269,20 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDmgRecByEID(int intEID, string strGrpID, out DataTable dtDmgRec)
         {
+            string sqlQryDmgRec = "select userid,dmg,round,bc,extime from GD_" + strGrpID + " where eventid =" + intEID;
             try
             {
-                string sqlQryDmgRec = "select userid,dmg,round,bc,extime from GD_" + strGrpID + " where eventid =" + intEID;
                 dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRec);
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("群：" + strGrpID + "查询EID为" + intEID + "时失败。\r\n" + oex);
+                Console.WriteLine("查询伤害记录时返回错误，SQL：" + sqlQryDmgRec + "。\r\n" + oex);
                 dtDmgRec = null;
                 return false;
             }
         }
+
         /// <summary>
         /// 根据eventID修改对应数据的方法
         /// </summary>
@@ -295,10 +304,11 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("修改伤害时返回错误：" + oex);
+                Console.WriteLine("修改伤害时返回错误，SQL：" + sqlDmgDbrf + "。\r\n" + oex);
                 return false;
             }
         }
+
         /// <summary>
         /// 检查伤害统计表是否存在的方法
         /// </summary>
@@ -315,11 +325,12 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("查询伤害表是否存在时返回错误：" + oex);
+                Console.WriteLine("查询伤害表是否存在时返回错误，SQL：" + sqlCheckTableExist + "。\r\n" + oex);
                 dtTableCount = null;
                 return false;
             }
         }
+
         /// <summary>
         /// 查询数据库时间的方法
         /// </summary>
@@ -335,7 +346,7 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("查询当前数据库时间时返回错误：" + oex);
+                Console.WriteLine("查询当前数据库时间时返回错误，SQL：" + sqlGetDatabaseTime + "。\r\n" + oex);
                 dtResultTime = null;
                 return false;
             }
@@ -359,7 +370,7 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("查询出刀状态时发生错误：" + oex);
+                Console.WriteLine("查询出刀状态时发生错误，SQL：" + sqlQueryStrikeStatus + "。\r\n" + oex);
                 dtInsuff = null;
                 return false;
             }
@@ -403,7 +414,7 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("查询目前进度时发生错误：" + oex);
+                Console.WriteLine("查询目前进度时发生错误，SQL：" + sqlQueryProgress + "。\r\n" + oex);
                 dtProgress = null;
                 return false;
             }
@@ -417,27 +428,69 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtDmgRec">dt格式的伤害数据</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool QueryDmgRecByBCnRound(int intBossCode, int intRound, string strGrpID, out DataTable dtDmgRec)
+        public static bool QueryDmgRecByBCnRound(int intBossCode, int intRound,string strUserID, string strGrpID, out DataTable dtDmgRec)
         {
+            //string strUserID = "";
             string sqlQryDmgRecByBCnRound = "";
-            if (intBossCode > 0 && intRound > 0)
+            string sqlPaddingPattern = "";
+            int elementCounter = 0;
+            if (intBossCode > 0)
             {
-                sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where bc =" + intBossCode + " and round =" + intRound + " order by eventid asc";
+                if (elementCounter == 0)
+                {
+                    sqlPaddingPattern += "bc = " + intBossCode;
+                    elementCounter += 1;
+                }
+                else
+                {
+                    sqlPaddingPattern += "and bc = " + intBossCode;
+                    elementCounter += 1;
+                }
             }
-            else if (intBossCode > 0)
+            if (intRound > 0)
             {
-                sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where bc =" + intBossCode + " order by eventid asc";
+                if (elementCounter == 0)
+                {
+                    sqlPaddingPattern += "round = " + intRound;
+                    elementCounter += 1;
+                }
+                else
+                {
+                    sqlPaddingPattern += "and round = " + intRound;
+                    elementCounter += 1;
+                }
             }
-            else if (intRound > 0)
+            if (strUserID != "" || strUserID != null)
             {
-                sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where round =" + intRound + " order by eventid asc";
+                if (elementCounter == 0)
+                {
+                    sqlPaddingPattern += "userid = " + strUserID;
+                    elementCounter += 1;
+                }
+                else
+                {
+                    sqlPaddingPattern += "and userid = " + strUserID;
+                    elementCounter += 1;
+                }
             }
-            else
-            {
-                Console.WriteLine("群：" + strGrpID + "查询伤害时失败，内容为：BC=" + intBossCode + "，ROUND=" + intRound + "。\r\n");
-                dtDmgRec = null;
-                return false;
-            }
+            //if (intBossCode > 0 && intRound > 0)
+            //{
+            //    sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where bc =" + intBossCode + " and round =" + intRound + " order by eventid asc";
+            //}
+            //else if (intBossCode > 0)
+            //{
+            //    sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where bc =" + intBossCode + " order by eventid asc";
+            //}
+            //else if (intRound > 0)
+            //{
+            //    sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where round =" + intRound + " order by eventid asc";
+            //}
+            //else
+            //{
+            //    Console.WriteLine("群：" + strGrpID + "查询伤害时失败，内容为：BC=" + intBossCode + "，ROUND=" + intRound + "。\r\n");
+            //    dtDmgRec = null;
+            //    return false;
+            //}
             try
             {
                 dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRecByBCnRound);
@@ -445,16 +498,16 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("群：" + strGrpID + "查询伤害时失败，内容为：" + sqlQryDmgRecByBCnRound + "。\r\n" + oex);
+                Console.WriteLine("群：" + strGrpID + "查询伤害时失败，SQL：" + sqlQryDmgRecByBCnRound + "。\r\n" + oex);
                 dtDmgRec = null;
                 return false;
             }
         }
 
         /// <summary>
-        /// 读取所有上限设置的方法
+        /// 读取所有限值设置的方法
         /// </summary>
-        /// <param name="dtDmgMaxLimit"></param>
+        /// <param name="dtLimits"></param>
         /// <returns></returns>
         public static bool QueryLimits(out DataTable dtLimits)
         {
@@ -466,7 +519,7 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("读取伤害上限时失败，内容为：" + sqlQryLimits + "。\r\n" + oex);
+                Console.WriteLine("读取限值时失败，SQL：" + sqlQryLimits + "。\r\n" + oex);
                 dtLimits = null;
                 return false;
             }

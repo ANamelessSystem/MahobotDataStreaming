@@ -43,9 +43,9 @@ namespace Marchen.BLL
         {
             if (ConsoleProperties.IsHpShow)
             {
-                Console.WriteLine("查询HP前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
+                //Console.WriteLine("查询HP前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                 HpShow(strGrpID, strUserID);
-                Console.WriteLine("查询HP后的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
+                //Console.WriteLine("查询HP后的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
             }
             else
             {
@@ -56,14 +56,14 @@ namespace Marchen.BLL
                 if (dtQueue.Rows.Count > 0)
                 {
                     MsgMessage += new Message("目前队列：\r\n");
-                    Console.WriteLine("队列查询循环开始的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
+                    //Console.WriteLine("队列查询循环开始的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                     for (int i = 0; i < dtQueue.Rows.Count; i++)
                     {
                         string strOutput = "顺序：" + dtQueue.Rows[i]["seq"].ToString() + "    " + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")";
                         MsgMessage += new Message(strOutput + "\r\n");
                         Console.WriteLine(strOutput);
                     }
-                    Console.WriteLine("队列查询循环结束后的信息：\r\n" + MsgMessage.Raw.ToString()+"(信息结束)");
+                    //Console.WriteLine("队列查询循环结束后的信息：\r\n" + MsgMessage.Raw.ToString()+"(信息结束)");
                 }
                 else
                 {
@@ -75,10 +75,10 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
             }
-            Console.WriteLine("发送最终结果前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
+            //Console.WriteLine("发送最终结果前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
             MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-            Console.WriteLine("发送最终结果后的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
+            //Console.WriteLine("发送最终结果后的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
             //throw new Exception("调试，强制中断程序");
         }
 
@@ -102,7 +102,7 @@ namespace Marchen.BLL
                     Console.WriteLine("群：" + strGrpID + "，" + strUserID + "移出队列失败：未找到记录。");
                     MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
                 }
-                Console.WriteLine("展示队列前的信息输出：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
+                //Console.WriteLine("展示队列前的信息输出：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                 QueueShow(strGrpID, strUserID);
             }
             else

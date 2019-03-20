@@ -134,122 +134,27 @@ namespace Marchen.BLL
         /// <param name="strCmdContext"></param>
         public static void DmgRecAdd(string strGrpID, string strUserID, string strCmdContext)
         {
-            bool isCorrect = true;
-            int intBossCode = 0;
-            int intRound = 0;
-            int intDMG = -1;
-            int intExTime = 0;
             if (!DmgTblCheck(strGrpID))
             {
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string e in sArray)
+            if (!CmdSpliter(strCmdContext))
             {
-                if (e.ToLower() == "b1" || e.ToLower() == "b2" || e.ToLower() == "b3" || e.ToLower() == "b4" || e.ToLower() == "b5")
-                {
-                    if (!int.TryParse(e.ToLower().Replace("b", ""), out int intOutBC))
-                    {
-                        Console.WriteLine("无法识别BOSS代码，输入字串为：" + strCmdContext);
-                        MsgMessage += new Message("无法识别BOSS代码，请确保填入为b1~b5\r\n");
-                        isCorrect = false;
-                    }
-                    else
-                    {
-                        intBossCode = intOutBC;
-                    }
-                }
-                else if (e == "补时")
-                {
-                    intExTime = 1;
-                }
-                else if (e.Contains("周目"))
-                {
-                    if (!int.TryParse(e.Replace("周目", ""), out int intOutRound))
-                    {
-                        Console.WriteLine("无法识别周目数，输入字串为：" + strCmdContext);
-                        MsgMessage += new Message("无法识别周目数，请确保填入的周目数为阿拉伯数字。\r\n");
-                        isCorrect = false;
-                    }
-                    else
-                    {
-                        if (intOutRound > ValueLimits.RoundLimitMax)
-                        {
-                            Console.WriteLine("周目数过高，输入字串为：" + strCmdContext + "，上限值为：" + ValueLimits.RoundLimitMax.ToString());
-                            MsgMessage += new Message("所填入的周目数(" + intOutRound.ToString() + ")高于目前设定的上限值（" + ValueLimits.RoundLimitMax.ToString() + "）。\r\n");
-                            isCorrect = false;
-                        }
-                        else if (intOutRound < 1)
-                        {
-                            Console.WriteLine("周目数过低，输入字串为：" + strCmdContext);
-                            MsgMessage += new Message("所填入的周目数（" + intOutRound.ToString() + "）低于有效值（1）。\r\n");
-                            isCorrect = false;
-                        }
-                        else
-                        {
-                            intRound = intOutRound;
-                        }
-                    }
-                }
-                else if (e.ToLower().Contains("w") || e.Contains("万"))
-                {
-                    if (DamageAnalyzation(2, e, out int intResultDamage))
-                    {
-                        intDMG = intResultDamage;
-                    }
-                    else
-                    {
-                        isCorrect = false;
-                    }
-                }
-                else if (e.ToLower().Contains("k"))
-                {
-                    if (DamageAnalyzation(1, e, out int intResultDamage))
-                    {
-                        intDMG = intResultDamage;
-                    }
-                    else
-                    {
-                        isCorrect = false;
-                    }
-                }
-                else if (Regex.Replace(e, @"[^0-9]+", "").Length > 1)
-                {
-                    if (DamageAnalyzation(0, e, out int intResultDamage))
-                    {
-                        intDMG = intResultDamage;
-                    }
-                    else
-                    {
-                        isCorrect = false;
-                    }
-                }
+                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
             }
-            if (intDMG == -1)
+            else
             {
-                MsgMessage += new Message("可能由于格式错误，未能从输入中识别伤害。\r\n");
-                isCorrect = false;
-            }
-            if (intBossCode == 0)
-            {
-                MsgMessage += new Message("可能由于格式错误，未能从输入中识别BOSS代码。\r\n");
-                isCorrect = false;
-            }
-            if (intRound == 0)
-            {
-                MsgMessage += new Message("可能由于格式错误，未能从输入中识别周目。\r\n");
-                isCorrect = false;
-            }
-            if (isCorrect)
-            {
-                if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode, intExTime, out int intEID))
+                if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
                 {
-                    Console.WriteLine("伤害已保存，档案号=" + intEID.ToString() + "，B" + intBossCode.ToString() + "，" + intRound.ToString() + "周目，数值：" + intDMG.ToString() + "，补时标识：" + intExTime);
+                    Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + CommonVariables.IntBossCode.ToString() + "，" + CommonVariables.IntRound.ToString() + "周目，数值：" + CommonVariables.IntDMG.ToString() + "，补时标识：" + CommonVariables.IntEXT);
                     MsgMessage = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
-                    Console.WriteLine("伤害以保存，启动退刀");
-                    Console.WriteLine("退刀前的信息\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
+                    //Console.WriteLine("伤害以保存，启动退刀");
+                    //Console.WriteLine("退刀前的信息\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                     CaseQueue.QueueQuit(strGrpID, strUserID);
                 }
                 else
@@ -257,13 +162,8 @@ namespace Marchen.BLL
                     MsgMessage += new Message("与数据库失去连接，伤害保存失败。\r\n");
                     MsgMessage += Message.At(long.Parse(strUserID));
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    return;
                 }
-            }
-            else
-            {
-                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             }
         }
 
@@ -275,25 +175,17 @@ namespace Marchen.BLL
         /// <param name="strCmdContext"></param>
         public static void DmgTimeOut(string strGrpID, string strUserID, string strCmdContext)
         {
-            var msgMessage = new Message("");
-            int intDMG = 0;
-            int intRound = 0;
-            int intBossCode = 0;
-            int intExTime = 0;
-            if (strCmdContext.Contains("补时"))
+            CmdSpliter(strCmdContext);
+            if (RecordDAL.DamageDebrief(strGrpID, strUserID, 0, 0, 0, CommonVariables.IntEXT, out int intEID))
             {
-                intExTime = 1;
-            }
-            if (RecordDAL.DamageDebrief(strGrpID, strUserID, intDMG, intRound, intBossCode, intExTime, out int intEID))
-            {
-                msgMessage = new Message("掉线已记录，档案号为： " + intEID.ToString() + "\r\n--------------------\r\n");
+                MsgMessage = new Message("掉线已记录，档案号为： " + intEID.ToString() + "\r\n--------------------\r\n");
                 CaseQueue.QueueQuit(strGrpID, strUserID);
             }
             else
             {
-                msgMessage += new Message("与数据库失去连接，掉线记录失败。\r\n");
-                msgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), msgMessage).Wait();
+                MsgMessage += new Message("与数据库失去连接，掉线记录失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             }
         }
 
@@ -461,7 +353,7 @@ namespace Marchen.BLL
                 }
                 else if (e.ToLower().Contains("k"))
                 {
-                    if (DamageAnalyzation(2, e, out int intResultDamage))
+                    if (DamageAnalyzation(1, e, out int intResultDamage))
                     {
                         intDMG = intResultDamage;
                     }
@@ -474,7 +366,7 @@ namespace Marchen.BLL
                 }
                 else if (Regex.Replace(e, @"[^0-9]+", "").Length > 1)
                 {
-                    if (DamageAnalyzation(2, e, out int intResultDamage))
+                    if (DamageAnalyzation(0, e, out int intResultDamage))
                     {
                         intDMG = intResultDamage;
                     }
@@ -506,6 +398,332 @@ namespace Marchen.BLL
             }
             MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+        }
+
+        public static void RecordQuery1(string strGrpID, string strUserID, string strCmdContext)
+        {
+            //按EID查询单条，或按周目、boss、周目+boss查询多条
+            string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            if (strCmdContext.ToLower().Contains("e"))
+            {
+                //处理按EID查询部分
+                int intEID = 0;
+                foreach (string e in sArray)
+                {
+                    if (e.ToLower().Contains("e"))
+                    {
+                        if (!int.TryParse(e.ToLower().Replace("e", ""), out int intOutEID))
+                        {
+                            Console.WriteLine("无法识别档案号。原始信息=" + e.ToString());
+                            MsgMessage += new Message("无法识别档案号。\r\n");
+                            MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
+                        else
+                        {
+                            intEID = intOutEID;
+                        }
+                    }
+                    if (intEID > 0)
+                    {
+                        if (RecordDAL.QueryDmgRecByEID(intEID, strGrpID, out DataTable dtDmgRecEID))
+                        {
+                            if (dtDmgRecEID.Rows.Count < 1)
+                            {
+                                Console.WriteLine("输入的档案号：" + intEID + " 未能找到数据。\r\n");
+                                MsgMessage += new Message("输入的档案号：" + intEID + " 未能找到数据。\r\n");
+                            }
+                            else if (dtDmgRecEID.Rows.Count > 1)
+                            {
+                                Console.WriteLine("输入的档案号：" + intEID + " 返回非唯一结果。");
+                                MsgMessage += new Message("输入的档案号：" + intEID + " 返回非唯一结果，请联系维护团队。\r\n");
+                            }
+                            else
+                            {
+                                string strRUID = dtDmgRecEID.Rows[0]["userid"].ToString();
+                                string strRDmg = dtDmgRecEID.Rows[0]["dmg"].ToString();
+                                string strRRound = dtDmgRecEID.Rows[0]["round"].ToString();
+                                string strRBC = dtDmgRecEID.Rows[0]["bc"].ToString();
+                                string strREXT = dtDmgRecEID.Rows[0]["extime"].ToString();
+                                string resultString = "";
+                                if (dtDmgRecEID.Rows[0]["dmg"].ToString() == "0")
+                                {
+                                    if (strREXT == "1")
+                                    {
+                                        resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线) （补时）";
+                                    }
+                                    else
+                                    {
+                                        resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线)";
+                                    }
+                                }
+                                else if (dtDmgRecEID.Rows[0]["dmg"].ToString() != "0")
+                                {
+                                    if (strREXT == "1")
+                                    {
+                                        resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + " （补时）";
+                                    }
+                                    else
+                                    {
+                                        resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg;
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("写出伤害时出现意料外的错误，dtDmgRec.Rows[0][dmg].ToString()=" + dtDmgRecEID.Rows[0]["dmg"].ToString());
+                                    MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                    MsgMessage += Message.At(long.Parse(strUserID));
+                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                    return;
+                                }
+                                Console.WriteLine("档案号" + intEID + "的数据为：\r\n" + resultString + "\r\n");
+                                MsgMessage += new Message("档案号" + intEID + "的数据为：\r\n" + resultString + "\r\n");
+                            }
+                        }
+                    }
+                }
+            }
+            else if (!strCmdContext.ToLower().Contains("e") && (strCmdContext.ToLower().Contains("b") && strCmdContext.Contains("周目")))
+            {
+                //处理按boss与周目查询部分
+                Console.WriteLine("开始按周目、boss、UID查询");
+                int intBossCode = 0;
+                int intRound = 0;
+                foreach (string e in sArray)
+                {
+                    if (e.ToLower().Contains("b"))
+                    {
+                        if (!int.TryParse(e.ToLower().Replace("b", ""), out int intOutBC))
+                        {
+                            Console.WriteLine("无法识别BOSS。原始信息=" + e.ToString());
+                            MsgMessage += new Message("无法识别BOSS。\r\n");
+                            MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
+                        else
+                        {
+                            intBossCode = intOutBC;
+                        }
+                    }
+                    if (e.Contains("周目"))
+                    {
+                        if (!int.TryParse(e.Replace("周目", ""), out int intOutRound))
+                        {
+                            Console.WriteLine("无法识别周目。原始信息=" + e.ToString());
+                            MsgMessage += new Message("无法识别周目。\r\n");
+                            MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
+                        else
+                        {
+                            intRound = intOutRound;
+                        }
+                    }
+                }
+                if (intBossCode > 0 || intRound > 0)
+                {
+                    if (RecordDAL.QueryDmgRecByBCnRound(intBossCode, intRound, strGrpID, out DataTable dtDmgRecBCR))
+                    {
+                        for (int i = 0; i < dtDmgRecBCR.Rows.Count; i++)
+                        {
+                            string strRUID = dtDmgRecBCR.Rows[i]["userid"].ToString();
+                            string strRDmg = dtDmgRecBCR.Rows[i]["dmg"].ToString();
+                            string strRRound = dtDmgRecBCR.Rows[i]["round"].ToString();
+                            string strRBC = dtDmgRecBCR.Rows[i]["bc"].ToString();
+                            string strREXT = dtDmgRecBCR.Rows[i]["extime"].ToString();
+                            string strREID = dtDmgRecBCR.Rows[i]["eventid"].ToString();
+                            string resultString = "";
+                            if (dtDmgRecBCR.Rows[i]["dmg"].ToString() == "0")
+                            {
+                                if (strREXT == "1")
+                                {
+                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线) （补时）";
+                                }
+                                else
+                                {
+                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线)";
+                                }
+                            }
+                            else if (dtDmgRecBCR.Rows[i]["dmg"].ToString() != "0")
+                            {
+                                if (strREXT == "1")
+                                {
+                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + " （补时）";
+                                }
+                                else
+                                {
+                                    resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg;
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("写出伤害时出现意料外的错误，dtDmgRec.Rows[0][dmg].ToString()=" + dtDmgRecBCR.Rows[i]["dmg"].ToString());
+                                MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            Console.WriteLine("E" + strREID + "：" + resultString + "\r\n");
+                            MsgMessage += new Message("E" + strREID + "：" + resultString + "\r\n");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MsgMessage += new Message("未能识别查询内容。\r\n本功能支持单独按档案号查询，或同时按BOSS与周目查询。");
+            }
+            MsgMessage += Message.At(long.Parse(strUserID));
+            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+        }
+        public static void RecordQuery(string strGrpID, string strUserID, string strCmdContext)
+        {
+            string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string e in sArray)
+            {
+
+            }
+        }
+
+        /// <summary>
+        /// 命令内容中含有的参数提取器
+        /// </summary>
+        /// <param name="strCmdContext"></param>
+        public static bool CmdSpliter(string strCmdContext)
+        {
+            bool isCorrect = true;
+            CommonVariables.IntEID = 0;
+            CommonVariables.DouUID = 0;
+            CommonVariables.IntBossCode = 0;
+            CommonVariables.IntRound = 0;
+            CommonVariables.IntDMG = 0;
+            string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string e in sArray)
+            {
+                if (e == "补时")
+                {
+                    CommonVariables.IntEXT = 1;
+                }
+                else if (e.Contains("周目"))
+                {
+                    if (!int.TryParse(e.Replace("周目", ""), out int intOutRound))
+                    {
+                        Console.WriteLine(DateTime.Now.ToString() + "无法识别周目数，元素为：" + e.ToString());
+                        MsgMessage += new Message("无法识别周目数，请确保填入的周目数为数字。\r\n");
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        if (intOutRound > ValueLimits.RoundLimitMax)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString() + "周目数过高，输入字串为：" + e.ToString() + "，上限值为：" + ValueLimits.RoundLimitMax.ToString());
+                            MsgMessage += new Message("所填入的周目数(" + intOutRound.ToString() + ")高于目前设定的上限值（" + ValueLimits.RoundLimitMax.ToString() + "）。\r\n");
+                            isCorrect = false;
+                        }
+                        else if (intOutRound < 1)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString() + "周目数过低，输入字串为：" + e.ToString());
+                            MsgMessage += new Message("所填入的周目数（" + intOutRound.ToString() + "）低于有效值（1）。\r\n");
+                            isCorrect = false;
+                        }
+                        else
+                        {
+                            CommonVariables.IntRound = intOutRound;
+                        }
+                    }
+                }
+                else if (e.ToLower().Contains("e"))
+                {
+                    if (!int.TryParse(e.ToLower().Replace("e", ""), out int intOutEID))
+                    {
+                        Console.WriteLine(DateTime.Now.ToString() + "无法识别档案号，元素为：" + e.ToString());
+                        MsgMessage += new Message("无法识别档案号，请确保填入的档案号为数字。\r\n");
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        CommonVariables.IntEID = intOutEID;
+                    }
+                }
+                else if (e.ToLower().Contains("u"))
+                {
+                    if (!double.TryParse(e.ToLower().Replace("u", ""), out double douOutUID))
+                    {
+                        Console.WriteLine(DateTime.Now.ToString() + "无法识别QQ号，元素为：" + e.ToString());
+                        MsgMessage += new Message("无法识别QQ号，请确保填入的QQ号为数字。\r\n");
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        CommonVariables.DouUID = douOutUID;
+                    }
+                }
+                else if (e.ToLower().Contains("b"))
+                {
+                    if (!int.TryParse(e.ToLower().Replace("b", ""), out int intOutBC))
+                    {
+                        Console.WriteLine(DateTime.Now.ToString() + "无法识别BOSS编号，元素为：" + e.ToString());
+                        MsgMessage += new Message("无法识别BOSS，请确保填入的BOSS编号为数字。\r\n");
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        if (intOutBC > ValueLimits.BossLimitMax)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString() + "BOSS编号超限，输入字串为：" + e.ToString() + "，上限值为：" + ValueLimits.BossLimitMax.ToString());
+                            MsgMessage += new Message("所填入的BOSS编号(" + intOutBC.ToString() + ")高于目前设定的上限值（" + ValueLimits.BossLimitMax.ToString() + "）。\r\n");
+                            isCorrect = false;
+                        }
+                        else if (intOutBC < 1)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString() + "周目数过低，输入字串为：" + e.ToString());
+                            MsgMessage += new Message("所填入的周目数（" + intOutBC.ToString() + "）低于有效值（1）。\r\n");
+                            isCorrect = false;
+                        }
+                        else
+                        {
+                            CommonVariables.IntBossCode = intOutBC;
+                        }
+                    }
+                }
+                else if (e.ToLower().Contains("w") || e.Contains("万"))
+                {
+                    if (!DamageAnalyzation(2, e, out int intResultDamage))
+                    {
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        CommonVariables.IntDMG = intResultDamage;
+                    }
+                }
+                else if (e.ToLower().Contains("k"))
+                {
+                    if (!DamageAnalyzation(1, e, out int intResultDamage))
+                    {
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        CommonVariables.IntDMG = intResultDamage;
+                    }
+                }
+                else if (Regex.Replace(e, @"[^0-9]+", "").Length > 1)
+                {
+                    if (!DamageAnalyzation(0, e, out int intResultDamage))
+                    {
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        CommonVariables.IntDMG = intResultDamage;
+                    }
+                }
+            }
+            return isCorrect;
         }
     }
 }

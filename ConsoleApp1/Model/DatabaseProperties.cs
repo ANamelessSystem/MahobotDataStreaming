@@ -10,22 +10,27 @@ namespace Marchen.Model
         /// 数据库用户名
         /// </summary>
         public static string DBUserID { get; set; }
+
         /// <summary>
         /// 数据库密码
         /// </summary>
         public static string DBPassword { get; set; }
+
         /// <summary>
         /// 数据库地址
         /// </summary>
         public static string DBAddress { get; set; }
+
         /// <summary>
         /// 数据库监听端口
         /// </summary>
         public static string DBPort { get; set; }
+
         /// <summary>
         /// 数据库服务名
         /// </summary>
         public static string DBServiceName { get; set; }
+
         /// <summary>
         /// 创建伤害统计表格的存储过程名
         /// </summary>
