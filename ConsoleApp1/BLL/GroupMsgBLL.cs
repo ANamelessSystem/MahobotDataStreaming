@@ -19,7 +19,6 @@ namespace Marchen.BLL
         /// <summary>
         /// 读取上限值
         /// </summary>
-
         private static void LoadValueLimits()
         {
             if (RecordDAL.QueryLimits(out DataTable dtLimits))
@@ -74,6 +73,7 @@ namespace Marchen.BLL
                 return;
             }
         }
+
         /// <summary>
         /// 获取指定日期的0点时间
         /// </summary>
@@ -243,9 +243,7 @@ namespace Marchen.BLL
                         CaseDamage.DmgModify(strGrpID, strUserID, strCmdContext, memberInfo);
                         break;
                     case "dmgshow":
-                        {
-                            
-                        }
+                        CaseDamage.RecordQuery(strGrpID, strUserID, strCmdContext);
                         break;
                     case "remainshow":
                         {

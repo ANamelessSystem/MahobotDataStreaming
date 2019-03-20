@@ -382,21 +382,21 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtDmgReport">dt格式伤害表</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool QueryDamageTable(string strGrpID, out DataTable dtDmgReport)
-        {
-            string sqlQueryDmgTbl = "select * from GD_" + strGrpID;
-            try
-            {
-                dtDmgReport = DBHelper.GetDataTable(sqlQueryDmgTbl);
-                return true;
-            }
-            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
-            {
-                Console.WriteLine("查询伤害表时发生错误：" + oex);
-                dtDmgReport = null;
-                return false;
-            }
-        }
+        //public static bool QueryDamageTable(string strGrpID, out DataTable dtDmgReport)
+        //{
+        //    string sqlQueryDmgTbl = "select * from GD_" + strGrpID;
+        //    try
+        //    {
+        //        dtDmgReport = DBHelper.GetDataTable(sqlQueryDmgTbl);
+        //        return true;
+        //    }
+        //    catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+        //    {
+        //        Console.WriteLine("查询伤害表时发生错误：" + oex);
+        //        dtDmgReport = null;
+        //        return false;
+        //    }
+        //}
 
         /// <summary>
         /// 查询BOSS进度的方法
@@ -426,15 +426,15 @@ namespace Marchen.DAL
         /// <param name="intBossCode">BOSS代码</param>
         /// <param name="intRound">周目数</param>
         /// <param name="strGrpID">群号</param>
-        /// <param name="dtDmgRec">dt格式的伤害数据</param>
+        /// <param name="dtDmgRecords">dt格式的伤害数据</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool QueryDmgRecByBCnRound(int intBossCode, int intRound,string strUserID, string strGrpID, out DataTable dtDmgRec)
+        public static bool QueryDmgRecords(int intBossCode, int intRound,double douUserID, string strGrpID, out DataTable dtDmgRecords)
         {
             //string strUserID = "";
             string sqlQryDmgRecByBCnRound = "";
             string sqlPaddingPattern = "";
             int elementCounter = 0;
-            if (intBossCode > 0)
+            if (intBossCode > -1)
             {
                 if (elementCounter == 0)
                 {
@@ -447,7 +447,7 @@ namespace Marchen.DAL
                     elementCounter += 1;
                 }
             }
-            if (intRound > 0)
+            if (intRound > -1)
             {
                 if (elementCounter == 0)
                 {
@@ -460,46 +460,28 @@ namespace Marchen.DAL
                     elementCounter += 1;
                 }
             }
-            if (strUserID != "" || strUserID != null)
+            if (douUserID > -1)
             {
                 if (elementCounter == 0)
                 {
-                    sqlPaddingPattern += "userid = " + strUserID;
+                    sqlPaddingPattern += "userid = " + douUserID;
                     elementCounter += 1;
                 }
                 else
                 {
-                    sqlPaddingPattern += "and userid = " + strUserID;
+                    sqlPaddingPattern += "and userid = " + douUserID;
                     elementCounter += 1;
                 }
             }
-            //if (intBossCode > 0 && intRound > 0)
-            //{
-            //    sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where bc =" + intBossCode + " and round =" + intRound + " order by eventid asc";
-            //}
-            //else if (intBossCode > 0)
-            //{
-            //    sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where bc =" + intBossCode + " order by eventid asc";
-            //}
-            //else if (intRound > 0)
-            //{
-            //    sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where round =" + intRound + " order by eventid asc";
-            //}
-            //else
-            //{
-            //    Console.WriteLine("群：" + strGrpID + "查询伤害时失败，内容为：BC=" + intBossCode + "，ROUND=" + intRound + "。\r\n");
-            //    dtDmgRec = null;
-            //    return false;
-            //}
             try
             {
-                dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRecByBCnRound);
+                dtDmgRecords = DBHelper.GetDataTable(sqlQryDmgRecByBCnRound);
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
                 Console.WriteLine("群：" + strGrpID + "查询伤害时失败，SQL：" + sqlQryDmgRecByBCnRound + "。\r\n" + oex);
-                dtDmgRec = null;
+                dtDmgRecords = null;
                 return false;
             }
         }
