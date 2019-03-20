@@ -40,6 +40,7 @@ namespace Marchen.BLL
                 }
                 else
                 {
+                    Console.WriteLine("伤害表检查pass");
                     return true;
                 }
             }
@@ -64,19 +65,24 @@ namespace Marchen.BLL
             int intMultiplier = 0;
             if (intUnitType == 0)
             {
+                Console.WriteLine("伤害值单位为无");
                 intMultiplier = 1;
             }
-            else if (intMultiplier == 1)
+            else if (intUnitType == 1)
             {
+                Console.WriteLine("伤害值单位为千");
                 intMultiplier = 1000;
             }
-            else if (intMultiplier == 2)
+            else if (intUnitType == 2)
             {
+                Console.WriteLine("伤害值单位为万");
                 intMultiplier = 10000;
             }
             else
             {
-                throw new Exception("处理伤害值时收到了非指定的倍率类型");
+                Console.WriteLine("处理伤害值时收到了非指定的倍率类型，值为：" + intUnitType.ToString());
+                intResultDamage = -1;
+                return false;
             }
             if (!decimal.TryParse(Regex.Replace(e, @"[^\d.\d]", ""), out decimal dclOutDamage))
             {
@@ -87,7 +93,7 @@ namespace Marchen.BLL
             }
             else
             {
-                if (!int.TryParse(decimal.Round((dclOutDamage * intMultiplier), 0).ToString(), out int intOutDamage))
+                if (!int.TryParse(decimal.Round(dclOutDamage * intMultiplier, 0).ToString(), out int intOutDamage))
                 {
                     Console.WriteLine("无法识别伤害，输入值为：" + e);
                     MsgMessage += new Message("无法识别伤害，请检查输入的伤害值。\r\n");
@@ -113,6 +119,7 @@ namespace Marchen.BLL
                     else
                     {
                         intResultDamage = intOutDamage;
+                        Console.WriteLine("伤害识别与转换完成，输出为：" + intResultDamage);
                         return true;
                     }
                 }
@@ -199,7 +206,7 @@ namespace Marchen.BLL
                 }
                 else if (e.ToLower().Contains("k"))
                 {
-                    if (DamageAnalyzation(2, e, out int intResultDamage))
+                    if (DamageAnalyzation(1, e, out int intResultDamage))
                     {
                         intDMG = intResultDamage;
                     }
@@ -210,7 +217,7 @@ namespace Marchen.BLL
                 }
                 else if (Regex.Replace(e, @"[^0-9]+", "").Length > 1)
                 {
-                    if (DamageAnalyzation(2, e, out int intResultDamage))
+                    if (DamageAnalyzation(0, e, out int intResultDamage))
                     {
                         intDMG = intResultDamage;
                     }
@@ -241,19 +248,23 @@ namespace Marchen.BLL
                 {
                     Console.WriteLine("伤害已保存，档案号=" + intEID.ToString() + "，B" + intBossCode.ToString() + "，" + intRound.ToString() + "周目，数值：" + intDMG.ToString() + "，补时标识：" + intExTime);
                     MsgMessage = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
+                    Console.WriteLine("伤害以保存，启动退刀");
+                    Console.WriteLine("退刀前的信息\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                     CaseQueue.QueueQuit(strGrpID, strUserID);
                 }
                 else
                 {
                     MsgMessage += new Message("与数据库失去连接，伤害保存失败。\r\n");
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 }
             }
             else
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
 
         /// <summary>

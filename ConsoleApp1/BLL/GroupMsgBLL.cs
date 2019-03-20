@@ -16,9 +16,53 @@ namespace Marchen.BLL
         /// </summary>
         protected static Message MsgMessage;
 
+        /// <summary>
+        /// 读取上限值
+        /// </summary>
+
         private static void LoadValueLimits()
         {
-
+            if (RecordDAL.QueryLimits(out DataTable dtLimits))
+            {
+                if (dtLimits.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dtLimits.Rows.Count; i++)
+                    {
+                        if (dtLimits.Rows[i]["TYPE"].ToString() == "DAMAGE_MAX")
+                        {
+                            ValueLimits.DamageLimitMax = int.Parse(dtLimits.Rows[i]["VALUE"].ToString());
+                        }
+                        if (dtLimits.Rows[i]["TYPE"].ToString() == "ROUND_MAX")
+                        {
+                            ValueLimits.RoundLimitMax = int.Parse(dtLimits.Rows[i]["VALUE"].ToString());
+                        }
+                    }
+                    if (ValueLimits.DamageLimitMax == 0)
+                    {
+                        Console.WriteLine("未能获取伤害上限，请检查TTL_LIMITS表中是否有DAMAGE_MAX行目");
+                        return;
+                    }
+                    else if (ValueLimits.RoundLimitMax == 0)
+                    {
+                        Console.WriteLine("未能获取周目上限，请检查TTL_LIMITS表中是否有ROUND_MAX行目");
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine("获取上限值成功，以下是获取到的上限值：");
+                        Console.WriteLine("伤害上限：" + ValueLimits.DamageLimitMax.ToString());
+                        Console.WriteLine("周目上限：" + ValueLimits.RoundLimitMax.ToString());
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("向数据库读取上限值时无返回条目，请检查TTL_LIMITS表。");
+                }
+            }
+            else
+            {
+                return;
+            }
         }
         /// <summary>
         /// 获取指定日期的0点时间
@@ -80,6 +124,7 @@ namespace Marchen.BLL
                 string strUserID = receivedMessage.UserId.ToString();
                 string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
                 string strUserNickName = memberInfo.Nickname.ToString().Trim();
+                LoadValueLimits();
                 if (strUserGrpCard == null || strUserGrpCard == "")
                 {
                     strUserGrpCard = strUserNickName;
