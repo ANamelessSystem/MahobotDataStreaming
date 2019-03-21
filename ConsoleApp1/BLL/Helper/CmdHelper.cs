@@ -12,6 +12,76 @@ namespace Marchen.BLL
     class CmdHelper : GroupMsgBLL
     {
         /// <summary>
+        /// 读取上限值
+        /// </summary>
+        public static bool LoadValueLimits()
+        {
+            if (RecordDAL.QueryLimits(out DataTable dtLimits))
+            {
+                if (dtLimits.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dtLimits.Rows.Count; i++)
+                    {
+                        if (dtLimits.Rows[i]["TYPE"].ToString() == "DAMAGE_MAX")
+                        {
+                            ValueLimits.DamageLimitMax = int.Parse(dtLimits.Rows[i]["VALUE"].ToString());
+                        }
+                        if (dtLimits.Rows[i]["TYPE"].ToString() == "ROUND_MAX")
+                        {
+                            ValueLimits.RoundLimitMax = int.Parse(dtLimits.Rows[i]["VALUE"].ToString());
+                        }
+                        if (dtLimits.Rows[i]["TYPE"].ToString() == "BOSS_MAX")
+                        {
+                            ValueLimits.BossLimitMax = int.Parse(dtLimits.Rows[i]["VALUE"].ToString());
+                        }
+                    }
+                    if (ValueLimits.DamageLimitMax == 0)
+                    {
+                        Console.WriteLine("未能获取伤害上限，请检查TTL_LIMITS表中是否有DAMAGE_MAX项");
+                        return false;
+                    }
+                    else if (ValueLimits.RoundLimitMax == 0)
+                    {
+                        Console.WriteLine("未能获取周目上限，请检查TTL_LIMITS表中是否有ROUND_MAX项");
+                        return false;
+                    }
+                    else if (ValueLimits.BossLimitMax == 0)
+                    {
+                        Console.WriteLine("未能获取BOSS编号上限，请检查TTL_LIMITS表中是否有BOSS_MAX项");
+                        return false;
+                    }
+                    else
+                    {
+                        Console.WriteLine("获取上限值成功，以下是获取到的上限值：");
+                        Console.WriteLine("伤害上限：" + ValueLimits.DamageLimitMax.ToString());
+                        Console.WriteLine("周目上限：" + ValueLimits.RoundLimitMax.ToString());
+                        Console.WriteLine("BOSS编号上限：" + ValueLimits.BossLimitMax.ToString());
+                        return true;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("向数据库读取上限值时无返回条目，请检查TTL_LIMITS表。");
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 获取指定日期的0点时间
+        /// </summary>
+        /// <param name="datetime">指定日期</param>
+        /// <returns>返回指定日期的0点时间</returns>
+        public static DateTime GetZeroTime(DateTime datetime)
+        {
+            return new DateTime(datetime.Year, datetime.Month, datetime.Day);
+        }
+
+        /// <summary>
         /// 命令内容中含有的参数提取器
         /// </summary>
         /// <param name="strCmdContext"></param>

@@ -17,74 +17,6 @@ namespace Marchen.BLL
         protected static Message MsgMessage;
 
         /// <summary>
-        /// 读取上限值
-        /// </summary>
-        private static void LoadValueLimits()
-        {
-            if (RecordDAL.QueryLimits(out DataTable dtLimits))
-            {
-                if (dtLimits.Rows.Count > 0)
-                {
-                    for (int i = 0; i < dtLimits.Rows.Count; i++)
-                    {
-                        if (dtLimits.Rows[i]["TYPE"].ToString() == "DAMAGE_MAX")
-                        {
-                            ValueLimits.DamageLimitMax = int.Parse(dtLimits.Rows[i]["VALUE"].ToString());
-                        }
-                        if (dtLimits.Rows[i]["TYPE"].ToString() == "ROUND_MAX")
-                        {
-                            ValueLimits.RoundLimitMax = int.Parse(dtLimits.Rows[i]["VALUE"].ToString());
-                        }
-                        if (dtLimits.Rows[i]["TYPE"].ToString() == "BOSS_MAX")
-                        {
-                            ValueLimits.BossLimitMax = int.Parse(dtLimits.Rows[i]["VALUE"].ToString());
-                        }
-                    }
-                    if (ValueLimits.DamageLimitMax == 0)
-                    {
-                        Console.WriteLine("未能获取伤害上限，请检查TTL_LIMITS表中是否有DAMAGE_MAX项");
-                        return;
-                    }
-                    else if (ValueLimits.RoundLimitMax == 0)
-                    {
-                        Console.WriteLine("未能获取周目上限，请检查TTL_LIMITS表中是否有ROUND_MAX项");
-                        return;
-                    }
-                    else if (ValueLimits.BossLimitMax == 0)
-                    {
-                        Console.WriteLine("未能获取BOSS编号上限，请检查TTL_LIMITS表中是否有BOSS_MAX项");
-                        return;
-                    }
-                    else
-                    {
-                        Console.WriteLine("获取上限值成功，以下是获取到的上限值：");
-                        Console.WriteLine("伤害上限：" + ValueLimits.DamageLimitMax.ToString());
-                        Console.WriteLine("周目上限：" + ValueLimits.RoundLimitMax.ToString());
-                        Console.WriteLine("BOSS编号上限：" + ValueLimits.BossLimitMax.ToString());
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("向数据库读取上限值时无返回条目，请检查TTL_LIMITS表。");
-                }
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        /// <summary>
-        /// 获取指定日期的0点时间
-        /// </summary>
-        /// <param name="datetime">指定日期</param>
-        /// <returns>返回指定日期的0点时间</returns>
-        private static DateTime GetZeroTime(DateTime datetime)
-        {
-            return new DateTime(datetime.Year, datetime.Month, datetime.Day);
-        }
-
-        /// <summary>
         /// 解析收到的来自群的内容
         /// </summary>
         /// <param name="receivedMessage">收到的消息内容</param>
@@ -134,7 +66,6 @@ namespace Marchen.BLL
                 string strUserID = receivedMessage.UserId.ToString();
                 string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
                 string strUserNickName = memberInfo.Nickname.ToString().Trim();
-                LoadValueLimits();
                 if (strUserGrpCard == null || strUserGrpCard == "")
                 {
                     strUserGrpCard = strUserNickName;
@@ -196,11 +127,6 @@ namespace Marchen.BLL
                     cmdType = "remainnotice";
                     Console.WriteLine("识别为提醒未出满三刀的成员");
                 }
-                else if (strCmdContext == "导出统计表")
-                {
-                    cmdType = "fileoutput";
-                    Console.WriteLine("识别为导出统计表");
-                }
                 else
                 {
                     cmdType = "unknown";
@@ -209,19 +135,37 @@ namespace Marchen.BLL
                 switch (cmdType)
                 {
                     case "queueadd":
-                        CaseQueue.QueueAdd(strGrpID, strUserID, strUserGrpCard);
+                        {
+                            CaseQueue.QueueAdd(strGrpID, strUserID, strUserGrpCard);
+                        }
                         break;
                     case "queueshow":
-                        CaseQueue.QueueShow(strGrpID, strUserID);
+                        {
+                            CaseQueue.QueueShow(strGrpID, strUserID);
+                        }
                         break;
                     case "queuequit":
-                        CaseQueue.QueueQuit(strGrpID, strUserID);
+                        {
+                            CaseQueue.QueueQuit(strGrpID, strUserID);
+                        }
                         break;
                     case "clear":
-                        CaseQueue.QueueClear(strGrpID, strUserID, memberInfo);
+                        {
+                            CaseQueue.QueueClear(strGrpID, strUserID, memberInfo);
+                        }
                         break;
                     case "debrief":
-                        CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
+                        {
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
+                        }
                         break;
                     case "help":
                         {
@@ -232,153 +176,41 @@ namespace Marchen.BLL
                             message += new Message("额外时间的伤害记录：【@MahoBot 伤害 补时 B(n) (n)周目 （伤害值）】\r\n");
                             message += new Message("掉线记录：【@MahoBot 掉线 (是否补时)】可记录一次掉线或额外时间掉线\r\n");
                             message += new Message("其他功能及用例请参考群文件的命令表\r\n");
+                            message += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }
-                        message += Message.At(long.Parse(strUserID));
-                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         break;
                     case "timeout":
-                        CaseDamage.DmgTimeOut(strGrpID, strUserID, strCmdContext);
+                        {
+                            CaseDamage.DmgTimeOut(strGrpID, strUserID, strCmdContext);
+                        }
                         break;
                     case "dmgmod":
-                        CaseDamage.DmgModify(strGrpID, strUserID, strCmdContext, memberInfo);
+                        {
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            CaseDamage.DmgModify(strGrpID, strUserID, strCmdContext, memberInfo);
+                        }
                         break;
                     case "dmgshow":
-                        CaseDamage.RecordQuery(strGrpID, strUserID, strCmdContext);
+                        {
+                            CaseDamage.RecordQuery(strGrpID, strUserID, strCmdContext);
+                        }
                         break;
                     case "remainshow":
                         {
-                            if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
-                            {
-                                DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                                DateTime dtStart = GetZeroTime(dtNow).AddHours(4);//每天凌晨4点开始
-                                DateTime dtEnd = GetZeroTime(dtNow.AddDays(1)).AddHours(4);//第二天凌晨4点结束
-                                if (dtNow.Hour >= 0 && dtNow.Hour < 4)
-                                {
-                                    dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
-                                    dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束
-                                }
-                                if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
-                                {
-                                    message += new Message("截至目前尚有余刀的成员：");
-                                    int intCount = 0;
-                                    string strLeft1 = "";
-                                    string strLeft2 = "";
-                                    string strLeft3 = "";
-                                    for (int i = 0; i < dtInsuff.Rows.Count; i++)
-                                    {
-                                        string strUID = dtInsuff.Rows[i]["userid"].ToString();
-                                        int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
-                                        if (intCountMain == 2)
-                                        {
-                                            intCount += 1;
-                                            strLeft1 += "\r\nID：" + strUID + "，剩余1刀";
-                                        }
-                                        if (intCountMain == 1)
-                                        {
-                                            intCount += 2;
-                                            strLeft2 += "\r\nID：" + strUID + "，剩余2刀";
-                                        }
-                                        if (intCountMain == 0)
-                                        {
-                                            intCount += 3;
-                                            strLeft3 += "\r\nID：" + strUID + "，剩余3刀";
-                                        }
-                                    }
-                                    message += new Message(strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
-                                    message += new Message("\r\n合计剩余" + intCount.ToString() + "刀");
-                                }
-                                else
-                                {
-                                    message += new Message("与数据库失去连接，查询失败。\r\n");
-                                    message += Message.At(long.Parse(strUserID));
-                                }
-                            }
-                            else
-                            {
-                                message += new Message("与数据库失去连接，查询失败。\r\n");
-                                message += Message.At(long.Parse(strUserID));
-                            }
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                            CaseRemind.ShowRemainStrikes(strGrpID, strUserID);
                         }
                         break;
                     case "remainnotice":
                         {
-                            if (!(memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager))
-                            {
-                                message += new Message("拒绝：仅有管理员或群主可执行出刀提醒指令。\r\n");
-                                message += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                                return;
-                            }
-                            if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
-                            {
-                                DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                                DateTime dtStart = GetZeroTime(dtNow).AddHours(4);//每天凌晨4点开始
-                                DateTime dtEnd = GetZeroTime(dtNow.AddDays(1)).AddHours(4);//第二天凌晨4点结束
-                                if (dtNow.Hour >= 0 && dtNow.Hour < 4)
-                                {
-                                    //0点后日期变换，开始日期需查到昨天
-                                    dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
-                                    dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束
-                                }
-                                if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
-                                {
-                                    message += new Message("请以下成员尽早出刀：");
-                                    for (int i = 0; i < dtInsuff.Rows.Count; i++)
-                                    {
-                                        string strUID = dtInsuff.Rows[i]["userid"].ToString();
-                                        string strCountMain = dtInsuff.Rows[i]["cmain"].ToString();
-                                        if (int.Parse(strCountMain) < 3)
-                                        {
-                                            message += new Message("\r\nID：" + strUID + "，剩余" + (3 - int.Parse(strCountMain)).ToString() + "刀 ") + Message.At(long.Parse(strUID));
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    message += new Message("与数据库失去连接，查询失败。\r\n");
-                                    message += Message.At(long.Parse(strUserID));
-                                }
-                            }
-                            else
-                            {
-                                message += new Message("与数据库失去连接，查询失败。\r\n");
-                                message += Message.At(long.Parse(strUserID));
-                            }
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                        }
-                        break;
-                    case "fileoutput":
-                        {
-                            //if (!(memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager))
-                            //{
-                            //    message += new Message("拒绝：仅有管理员或群主可执行导出伤害表。\r\n");
-                            //    message += Message.At(long.Parse(strUserID));
-                            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                            //    return;
-                            //}
-                            //if (!(strGrpID == "877184755"))
-                            //{
-                            //    message += new Message("拒绝：调试功能只开放给特定群。\r\n");
-                            //    message += Message.At(long.Parse(strUserID));
-                            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                            //    return;
-                            //}
-                            //if (RecordDAL.QueryDamageTable(strGrpID, out DataTable dtDmgReport))
-                            //{
-                            //    string fileName = "C:\\MahoBotOutput\\wdll.csv";
-                            //    SaveCSV(dtDmgReport, fileName);
-                            //    try
-                            //    {
-                            //        var fileMessage = Message.LocalImage(@"C:\MahoBotOutput\wdll.csv");
-                            //        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), fileMessage).Wait();
-                            //    }
-                            //    catch (Exception ex)
-                            //    {
-                            //        Console.WriteLine(ex);
-                            //        return;
-                            //    }
-                            //}
+                            CaseRemind.NoticeRemainStrikers(strGrpID, strUserID, memberInfo);
                         }
                         break;
                     case "unknown":
