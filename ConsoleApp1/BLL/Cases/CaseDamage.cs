@@ -91,6 +91,14 @@ namespace Marchen.BLL
             }
             else
             {
+                Regex rgxPattern = new Regex(@"^\d+(\.\d+)?$");
+                if (!rgxPattern.IsMatch(dclOutDamage.ToString()))
+                {
+                    Console.WriteLine("无法识别伤害，输入值为：" + dclOutDamage);
+                    MsgMessage += new Message("无法识别伤害，请检查输入的伤害值。\r\n");
+                    CommonVariables.IntDMG = -1;
+                    return false;
+                }
                 if (!int.TryParse(decimal.Round(dclOutDamage * intMultiplier, 0).ToString(), out int intOutDamage))
                 {
                     Console.WriteLine("无法识别伤害，输入值为：" + e);
@@ -151,8 +159,6 @@ namespace Marchen.BLL
                 {
                     Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + CommonVariables.IntBossCode.ToString() + "，" + CommonVariables.IntRound.ToString() + "周目，数值：" + CommonVariables.IntDMG.ToString() + "，补时标识：" + CommonVariables.IntEXT);
                     MsgMessage = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
-                    //Console.WriteLine("伤害以保存，启动退刀");
-                    //Console.WriteLine("退刀前的信息\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                     CaseQueue.QueueQuit(strGrpID, strUserID);
                 }
                 else
@@ -212,6 +218,13 @@ namespace Marchen.BLL
             if (!CmdSpliter(strCmdContext))
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (CommonVariables.IntEID == -1)
+            {
+                MsgMessage += new Message("未识别出需要修改的档案号。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
@@ -476,7 +489,7 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            CommonVariables.IntRound = intOutRound;
+                            CommonVariables.IntRound = int.Parse(Regex.Replace(intOutRound.ToString(), @"[^\d.\d]", ""));
                         }
                     }
                 }
@@ -490,7 +503,16 @@ namespace Marchen.BLL
                     }
                     else
                     {
-                        CommonVariables.IntEID = intOutEID;
+                        if (intOutEID < 1)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString() + "无法识别档案号，元素为：" + e.ToString());
+                            MsgMessage += new Message("所填入的档案号（" + intOutEID + "）低于有效值（1）。\r\n");
+                            isCorrect = false;
+                        }
+                        else
+                        {
+                            CommonVariables.IntEID = intOutEID;
+                        }
                     }
                 }
                 else if (e.ToLower().Contains("u"))
@@ -503,7 +525,7 @@ namespace Marchen.BLL
                     }
                     else
                     {
-                        CommonVariables.DouUID = douOutUID;
+                        CommonVariables.DouUID = double.Parse(Regex.Replace(douOutUID.ToString(), @"[^\d.\d]", ""));
                     }
                 }
                 else if (e.ToLower().Contains("b"))
@@ -530,20 +552,27 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            CommonVariables.IntBossCode = intOutBC;
+                            CommonVariables.IntBossCode = int.Parse(Regex.Replace(intOutBC.ToString(), @"[^\d.\d]", ""));
                         }
                     }
                 }
-                else if (e.ToLower().Contains("w") || e.Contains("万"))
+                else if (e.ToLower().Contains("w"))
                 {
-                    if (!DamageAnalyzation(2, e))
+                    if (!DamageAnalyzation(2, e.ToLower().Replace("w", "")))
+                    {
+                        isCorrect = false;
+                    }
+                }
+                else if (e.Contains("万"))
+                {
+                    if (!DamageAnalyzation(2, e.Replace("万", "")))
                     {
                         isCorrect = false;
                     }
                 }
                 else if (e.ToLower().Contains("k"))
                 {
-                    if (!DamageAnalyzation(1, e))
+                    if (!DamageAnalyzation(1, e.ToLower().Replace("k", "")))
                     {
                         isCorrect = false;
                     }

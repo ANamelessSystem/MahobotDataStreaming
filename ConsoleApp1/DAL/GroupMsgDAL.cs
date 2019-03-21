@@ -474,6 +474,12 @@ namespace Marchen.DAL
                     elementCounter += 1;
                 }
             }
+            if (elementCounter < 1)
+            {
+                Console.WriteLine("群：" + strGrpID + "查询伤害时失败：无查询条件。");
+                dtDmgRecords = null;
+                return false;
+            }
             sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from GD_" + strGrpID + " where " + sqlPaddingPattern + " order by eventid asc";
             Console.WriteLine("将要查询的SQL语句为："+sqlQryDmgRecByBCnRound);
             try
