@@ -140,6 +140,7 @@ namespace Marchen.BLL
         /// <param name="strCmdContext"></param>
         public static void DmgRecAdd(string strGrpID, string strUserID, string strCmdContext)
         {
+            bool isCorrect = true;
             if (!DmgTblCheck(strGrpID))
             {
                 MsgMessage += Message.At(long.Parse(strUserID));
@@ -155,6 +156,28 @@ namespace Marchen.BLL
             }
             else
             {
+                if (CommonVariables.IntDMG == -1)
+                {
+                    MsgMessage += new Message("未能找到伤害值。\r\n");
+                    isCorrect = false;
+                }
+                if (CommonVariables.IntRound == -1)
+                {
+                    MsgMessage += new Message("未能找到周目值。\r\n");
+                    isCorrect = false;
+                }
+                if (CommonVariables.IntBossCode == -1)
+                {
+                    MsgMessage += new Message("未能找到BOSS编号。\r\n");
+                    isCorrect = false;
+                }
+                if (!isCorrect)
+                {
+                    MsgMessage += new Message("伤害保存失败。\r\n输入【@MahoBot help】获取帮助。\r\n");
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    return;
+                }
                 if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
                 {
                     Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + CommonVariables.IntBossCode.ToString() + "，" + CommonVariables.IntRound.ToString() + "周目，数值：" + CommonVariables.IntDMG.ToString() + "，补时标识：" + CommonVariables.IntEXT);
