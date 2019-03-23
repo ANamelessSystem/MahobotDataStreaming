@@ -36,6 +36,10 @@ namespace Marchen.BLL
             }
             else
             {
+                if (CommonVariables.IntEXT == -1)
+                {
+                    CommonVariables.IntEXT = 0;
+                }
                 if (CommonVariables.IntDMG == -1)
                 {
                     MsgMessage += new Message("未能找到伤害值。\r\n");
@@ -88,6 +92,10 @@ namespace Marchen.BLL
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
+            }
+            if (CommonVariables.IntEXT == -1)
+            {
+                CommonVariables.IntEXT = 0;
             }
             if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
             {

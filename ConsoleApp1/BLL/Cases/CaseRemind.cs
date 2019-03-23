@@ -150,7 +150,8 @@ namespace Marchen.BLL
                 if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
                 {
                     MsgMessage += new Message("截至目前尚有余刀的成员：");
-                    int intCount = 0;
+                    int intCountLeft = 0;
+                    int intCountUsed = 0;
                     string strLeft1 = "";
                     string strLeft2 = "";
                     string strLeft3 = "";
@@ -158,24 +159,30 @@ namespace Marchen.BLL
                     {
                         string strUID = dtInsuff.Rows[i]["userid"].ToString();
                         int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
+                        if (intCountMain == 3)
+                        {
+                            intCountUsed += 3;
+                        }
                         if (intCountMain == 2)
                         {
-                            intCount += 1;
+                            intCountUsed += 2;
+                            intCountLeft += 1;
                             strLeft1 += "\r\nID：" + strUID + "，剩余1刀";
                         }
                         if (intCountMain == 1)
                         {
-                            intCount += 2;
+                            intCountUsed += 1;
+                            intCountLeft += 2;
                             strLeft2 += "\r\nID：" + strUID + "，剩余2刀";
                         }
                         if (intCountMain == 0)
                         {
-                            intCount += 3;
+                            intCountLeft += 3;
                             strLeft3 += "\r\nID：" + strUID + "，剩余3刀";
                         }
                     }
                     MsgMessage += new Message(strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
-                    MsgMessage += new Message("\r\n合计剩余" + intCount.ToString() + "刀");
+                    MsgMessage += new Message("\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀");
                 }
                 else
                 {

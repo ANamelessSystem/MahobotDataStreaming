@@ -94,6 +94,8 @@ namespace Marchen.BLL
             CommonVariables.IntBossCode = -1;
             CommonVariables.IntRound = -1;
             CommonVariables.IntDMG = -1;
+            CommonVariables.IntEXT = -1;
+            CommonVariables.IntEXT = -1;
             string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string e in sArray)
             {
