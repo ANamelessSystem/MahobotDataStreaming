@@ -155,10 +155,16 @@ namespace Marchen.BLL
                     string strLeft1 = "";
                     string strLeft2 = "";
                     string strLeft3 = "";
+                    string strErr = "";
                     for (int i = 0; i < dtInsuff.Rows.Count; i++)
                     {
                         string strUID = dtInsuff.Rows[i]["userid"].ToString();
                         int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
+                        if (intCountMain > 3)
+                        {
+                            intCountUsed += 3;
+                            strErr = "\r\nID：" + strUID + "，非补时刀数大于3刀，请检查";
+                        }
                         if (intCountMain == 3)
                         {
                             intCountUsed += 3;
@@ -183,6 +189,10 @@ namespace Marchen.BLL
                     }
                     MsgMessage += new Message(strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
                     MsgMessage += new Message("\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀");
+                    if (strErr != null || strErr != "")
+                    {
+                        MsgMessage += new Message("\r\n--------------------" + strErr + "");
+                    }
                 }
                 else
                 {
