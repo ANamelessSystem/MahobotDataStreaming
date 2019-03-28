@@ -41,7 +41,7 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void QueueShow(string strGrpID, string strUserID)
         {
-            if (ConsoleProperties.IsHpShow)
+            if (GroupProperties.IsHpShow)
             {
                 //Console.WriteLine("查询HP前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                 HpShow(strGrpID, strUserID);

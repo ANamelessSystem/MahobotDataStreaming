@@ -12,10 +12,11 @@ namespace Marchen.BLL
     class CmdHelper : GroupMsgBLL
     {
         /// <summary>
-        /// 读取上限值
+        /// 读取数据库中储存的上限值
         /// </summary>
         public static bool LoadValueLimits()
         {
+            bool isCorrect = false;
             if (RecordDAL.QueryLimits(out DataTable dtLimits))
             {
                 if (dtLimits.Rows.Count > 0)
@@ -38,17 +39,17 @@ namespace Marchen.BLL
                     if (ValueLimits.DamageLimitMax == 0)
                     {
                         Console.WriteLine("未能获取伤害上限，请检查TTL_LIMITS表中是否有DAMAGE_MAX项");
-                        return false;
+                        //return false;
                     }
                     else if (ValueLimits.RoundLimitMax == 0)
                     {
                         Console.WriteLine("未能获取周目上限，请检查TTL_LIMITS表中是否有ROUND_MAX项");
-                        return false;
+                        //return false;
                     }
                     else if (ValueLimits.BossLimitMax == 0)
                     {
                         Console.WriteLine("未能获取BOSS编号上限，请检查TTL_LIMITS表中是否有BOSS_MAX项");
-                        return false;
+                        //return false;
                     }
                     else
                     {
@@ -56,19 +57,16 @@ namespace Marchen.BLL
                         Console.WriteLine("伤害上限：" + ValueLimits.DamageLimitMax.ToString());
                         Console.WriteLine("周目上限：" + ValueLimits.RoundLimitMax.ToString());
                         Console.WriteLine("BOSS编号上限：" + ValueLimits.BossLimitMax.ToString());
-                        return true;
+                        isCorrect = true;
                     }
                 }
                 else
                 {
                     Console.WriteLine("向数据库读取上限值时无返回条目，请检查TTL_LIMITS表。");
-                    return false;
+                    //return false;
                 }
             }
-            else
-            {
-                return false;
-            }
+            return isCorrect;
         }
 
         /// <summary>
@@ -82,7 +80,7 @@ namespace Marchen.BLL
         }
 
         /// <summary>
-        /// 命令内容中含有的参数提取器
+        /// 提取命令内容的方法
         /// </summary>
         /// <param name="strCmdContext"></param>
         public static bool CmdSpliter(string strCmdContext)
