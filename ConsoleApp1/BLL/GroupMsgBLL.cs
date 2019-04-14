@@ -127,6 +127,21 @@ namespace Marchen.BLL
                     cmdType = "remainnotice";
                     Console.WriteLine("识别为提醒未出满三刀的成员");
                 }
+                else if (strCmdContext.ToLower() == "nla")
+                {
+                    cmdType = "namelistalt";
+                    Console.WriteLine("识别为名单列表增加指定人或更新指定人");
+                }
+                else if (strCmdContext.ToLower() == "nls")
+                {
+                    cmdType = "namelistshow";
+                    Console.WriteLine("识别为展示名单列表");
+                }
+                else if (strCmdContext.Contains("nld"))
+                {
+                    cmdType = "namelistdel";
+                    Console.WriteLine("识别为名单列表删除指定人");
+                }
                 else
                 {
                     cmdType = "unknown";
@@ -211,6 +226,21 @@ namespace Marchen.BLL
                     case "remainnotice":
                         {
                             CaseRemind.NoticeRemainStrikers(strGrpID, strUserID, memberInfo);
+                        }
+                        break;
+                    case "namelistalt":
+                        {
+                            CaseNameList.NameListAdd(strGrpID, strUserID, strUserGrpCard);
+                        }
+                        break;
+                    case "namelistshow":
+                        {
+                            CaseNameList.NameListShow(strGrpID, strUserID);
+                        }
+                        break;
+                    case "namelistdel":
+                        {
+                            CaseNameList.NameListDelete(strGrpID, strUserID, strCmdContext, memberInfo);
                         }
                         break;
                     case "unknown":

@@ -70,6 +70,7 @@ namespace Marchen.DAL
         /// </returns>
         public static bool AddQueue(string strGrpID, string strUserID, string strUserGrpCard)
         {
+            //查询队列表中的最大序列值，如果查询结果是非空，则序号为查询的最大序号+1，如果查询结果为空则使用1
             DataTable dtMaxSeq = new DataTable();
             int intSequence = 1;
             string sqlQryMaxSeq = "select max(seq) as maxseq from TTL_Queue where grpid ='" + strGrpID + "'";
@@ -109,7 +110,7 @@ namespace Marchen.DAL
         /// </returns>
         public static bool ShowQueue(string strGrpID, out DataTable dtQueue)
         {
-            string sqlQrySeq = "select id,seq,name from TTL_Queue where grpid = '" + strGrpID + "' order by seq asc";
+            string sqlQrySeq = "select id,seq,name from TTL_Queue where grpid = '" + strGrpID + "' and seq > 0 order by seq asc";
             try
             {
                 dtQueue = DBHelper.GetDataTable(sqlQrySeq);
@@ -132,7 +133,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QuitQueue(string strGrpID, string strUserID, out int deletedCount)
         {
-            string sqlQryTopId = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' group by id)";
+            string sqlQryTopId = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
             try
             {
                 deletedCount = DBHelper.ExecuteCommand(sqlQryTopId);
@@ -154,7 +155,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool ClearQueue(string strGrpID, out int deletedCount)
         {
-            string sqlClrQue = "delete from TTL_Queue where grpid = '" + strGrpID + "'";
+            string sqlClrQue = "delete from TTL_Queue where grpid = '" + strGrpID + "' and seq > 0";
             try
             {
                 deletedCount = DBHelper.ExecuteCommand(sqlClrQue);
@@ -163,6 +164,108 @@ namespace Marchen.DAL
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
                 Console.WriteLine("清空队列时跳出错误，SQL：" + sqlClrQue + "。\r\n" + orex);
+                deletedCount = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 增加或更新名单的方法
+        /// </summary>
+        /// <param name="strGrpID"></param>
+        /// <param name="strUserID"></param>
+        /// <param name="strUserGrpCard"></param>
+        /// <returns></returns>
+        public static bool UpdateNameList(string strGrpID, string strUserID, string strUserGrpCard)
+        {
+            DataTable dtExistsID;
+            string sqlQryExistsID = "select * from TTL_Queue where grpid ='" + strGrpID + "' and ID = '"+ strUserID +"' and seq = 0";
+            try
+            {
+                dtExistsID = DBHelper.GetDataTable(sqlQryExistsID);
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("查询是否已存在名单时发生错误，SQL：" + sqlQryExistsID + "。\r\n" + orex);
+                return false;
+            }
+            if (dtExistsID.Rows.Count == 1)
+            {
+                string sqlUpdateName = "update TTL_Queue set name = '" + strUserGrpCard + "' where ID = '" + strUserID + "' and grpid = '" + strGrpID + "'";
+                try
+                {
+                    DBHelper.ExecCmdNoCount(sqlUpdateName);
+                    return true;
+                }
+                catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+                {
+                    Console.WriteLine("更新名单时发生错误，SQL：" + sqlUpdateName + "。\r\n" + orex);
+                    return false;
+                }
+            }
+            else if (dtExistsID.Rows.Count == 0)
+            {
+                string sqlInsertName = "insert into TTL_Queue(seq,id,name,grpid) values(" + 0 + ",'" + strUserID + "','" + strUserGrpCard + "','" + strGrpID + "')";
+                try
+                {
+                    DBHelper.ExecCmdNoCount(sqlInsertName);
+                    return true;
+                }
+                catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+                {
+                    Console.WriteLine("新增名单时发生错误，SQL：" + sqlInsertName + "。\r\n" + orex);
+                    return false;
+                }
+            }
+            else
+            {
+                Console.WriteLine("返回未能预料到的结果，停止执行");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 读取当前名单的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtNameList"></param>
+        /// <returns>
+        /// true：执行成功；false：执行失败。
+        /// </returns>
+        public static bool ShowNameList(string strGrpID, out DataTable dtNameList)
+        {
+            string sqlShowNameList = "select id,name from TTL_Queue where grpid = '" + strGrpID + "' and seq = 0 order by id asc";
+            try
+            {
+                dtNameList = DBHelper.GetDataTable(sqlShowNameList);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("查询名单列表时跳出错误，SQL：" + sqlShowNameList + "。\r\n" + orex);
+                dtNameList = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 删除名单的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">用户QQ号</param>
+        /// <param name="deletedCount">被删除的行数</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool NameListDelete(string strGrpID, string strUserID, out int deletedCount)
+        {
+            string sqlDeleteNameList = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = 0";
+            try
+            {
+                deletedCount = DBHelper.ExecuteCommand(sqlDeleteNameList);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("删除名单时跳出错误，SQL：" + sqlDeleteNameList + "。\r\n" + orex);
                 deletedCount = 0;
                 return false;
             }
