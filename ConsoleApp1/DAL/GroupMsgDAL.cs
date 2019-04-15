@@ -270,6 +270,28 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
+        /// <summary>
+        /// 删除名单的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">用户QQ号</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool MemberListCheck(string strGrpID, string strUserID,out DataTable dtCheckResult)
+        {
+            dtCheckResult = null;
+            string sqlCheckMemberInMemberList = "select * from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = 0";
+            try
+            {
+                dtCheckResult = DBHelper.GetDataTable(sqlCheckMemberInMemberList);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("查询名单时跳出错误，SQL：" + sqlCheckMemberInMemberList + "。\r\n" + orex);
+                return false;
+            }
+        }
     }
 
     class RecordDAL

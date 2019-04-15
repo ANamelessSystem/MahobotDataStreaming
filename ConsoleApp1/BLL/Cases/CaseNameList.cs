@@ -116,5 +116,36 @@ namespace Marchen.BLL
             MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
+
+        /// <summary>
+        /// 检查成员是否已报名
+        /// </summary>
+        /// <param name="strGrpID"></param>
+        /// <param name="strUserID"></param>
+        public static bool CheckMemberInNL(string strGrpID, string strUserID)
+        {
+            if (QueueDAL.MemberListCheck(strGrpID, strUserID, out DataTable dtCheckResult))
+            {
+                if (dtCheckResult.Rows.Count == 1)
+                {
+                    return true;
+                }
+                else if (dtCheckResult.Rows.Count == 0)
+                {
+                    MsgMessage += new Message("未能在成员列表中找到信息，\r\n如尚未报名，请先使用nla命令报名再进行排队或上报操作。\r\n");
+                    return false;
+                }
+                else
+                {
+                    MsgMessage += new Message("数据库错误，检查成员名单时返回结果超出预想值。\r\n");
+                    return false;
+                }
+            }
+            else
+            {
+                MsgMessage += new Message("数据库错误，检查成员名单失败。\r\n");
+                return false;
+            }
+        }
     }
 }
