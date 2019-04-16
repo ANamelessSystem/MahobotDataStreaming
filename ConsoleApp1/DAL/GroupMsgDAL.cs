@@ -175,6 +175,7 @@ namespace Marchen.DAL
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
         /// <param name="strUserGrpCard"></param>
+        /// <param name="intExcType">-1:失败，0:新增，1:更新</param>
         /// <returns></returns>
         public static bool UpdateNameList(string strGrpID, string strUserID, string strUserGrpCard)
         {
@@ -232,7 +233,7 @@ namespace Marchen.DAL
         /// <returns>
         /// true：执行成功；false：执行失败。
         /// </returns>
-        public static bool ShowNameList(string strGrpID, out DataTable dtNameList)
+        public static bool QryNameList(string strGrpID, out DataTable dtNameList)
         {
             string sqlShowNameList = "select id,name from TTL_Queue where grpid = '" + strGrpID + "' and seq = 0 order by id asc";
             try

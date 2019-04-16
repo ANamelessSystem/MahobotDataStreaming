@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Data;
 using Marchen.DAL;
 using Marchen.Model;
@@ -19,9 +17,12 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void NameListAdd(string strGrpID, string strUserID, string strUserGrpCard)
         {
+            //有bug，如果命令是更新的话满人的 情况无法更新
+            //30人判断的这部分做在DAL层
+            //仍然需要一个out数值决定是否显示成员数量
             if (QueueDAL.UpdateNameList(strGrpID, strUserID, strUserGrpCard))
             {
-                MsgMessage += new Message("已成功更新成员名单信息");
+                MsgMessage += new Message("已成功更新成员名单信息。\r\n");
             }
             else
             {
@@ -38,7 +39,7 @@ namespace Marchen.BLL
         /// <param name="strUserID"></param>
         public static void NameListShow(string strGrpID, string strUserID)
         {
-            if (QueueDAL.ShowNameList(strGrpID, out DataTable dtNameList))
+            if (QueueDAL.QryNameList(strGrpID, out DataTable dtNameList))
             {
                 if (dtNameList.Rows.Count > 0)
                 {
