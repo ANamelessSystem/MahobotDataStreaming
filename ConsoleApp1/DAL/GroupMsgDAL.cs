@@ -291,24 +291,35 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 删除名单的方法
+        /// 获取成员报名状态及数量
         /// </summary>
-        /// <param name="strGrpID">群号</param>
-        /// <param name="strUserID">用户QQ号</param>
-        /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool MemberListCheck(string strGrpID, string strUserID,out DataTable dtCheckResult)
+        /// <param name="strGrpID"></param>
+        /// <param name="strUserID"></param>
+        /// <returns>0:不存在；1:存在；-1：执行错误</returns>
+        public static int MemberCheck(string strGrpID, string strUserID)
         {
-            dtCheckResult = null;
-            string sqlCheckMemberInMemberList = "select * from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = 0";
-            try
+            if (QryNameList(strGrpID, out DataTable dtNameList))
             {
-                dtCheckResult = DBHelper.GetDataTable(sqlCheckMemberInMemberList);
-                return true;
+                DataRow[] drExistsID = dtNameList.Select("id=" + strUserID);
+                if (drExistsID.Length == 1)
+                {
+                    return 1;
+                }
+                if (drExistsID.Length == 0)
+                {
+                    Console.WriteLine("成员未报名。USERID:" + strUserID);
+                    return 0;
+                }
+                else
+                {
+                    Console.WriteLine("检查成员是否报名时返回结果不唯一。USERID=" + strUserID);
+                    return -1;
+                }
             }
-            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            else
             {
-                Console.WriteLine("查询名单时跳出错误，SQL：" + sqlCheckMemberInMemberList + "。\r\n" + orex);
-                return false;
+                Console.WriteLine("检查成员是否报名时发生错误。");
+                return -1;
             }
         }
     }
