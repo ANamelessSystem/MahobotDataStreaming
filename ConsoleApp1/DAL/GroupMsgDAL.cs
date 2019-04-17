@@ -179,48 +179,69 @@ namespace Marchen.DAL
         /// <returns></returns>
         public static bool UpdateNameList(string strGrpID, string strUserID, string strUserGrpCard)
         {
-            DataTable dtExistsID;
-            string sqlQryExistsID = "select * from TTL_Queue where grpid ='" + strGrpID + "' and ID = '"+ strUserID +"' and seq = 0";
-            try
+            //DataTable dtExistsID;
+            //DataTable dtMembersCount;
+            //string sqlQryExistsID = "select * from TTL_Queue where grpid ='" + strGrpID + "' and ID = '"+ strUserID +"' and seq = 0";
+            //string sqlCountMember = "select * from TTL";
+            //try
+            //{
+            //    dtExistsID = DBHelper.GetDataTable(sqlQryExistsID);
+            //}
+            //catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            //{
+            //    Console.WriteLine("查询是否已存在名单时发生错误，SQL：" + sqlQryExistsID + "。\r\n" + orex);
+            //    return false;
+            //}
+            //if (dtExistsID.Rows.Count == 1)
+            //{
+            //    string sqlUpdateName = "update TTL_Queue set name = '" + strUserGrpCard + "' where ID = '" + strUserID + "' and grpid = '" + strGrpID + "'";
+            //    try
+            //    {
+            //        DBHelper.ExecCmdNoCount(sqlUpdateName);
+            //        return true;
+            //    }
+            //    catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            //    {
+            //        Console.WriteLine("更新名单时发生错误，SQL：" + sqlUpdateName + "。\r\n" + orex);
+            //        return false;
+            //    }
+            //}
+            //else if (dtExistsID.Rows.Count == 0)
+            //{
+            //    string sqlInsertName = "insert into TTL_Queue(seq,id,name,grpid) values(" + 0 + ",'" + strUserID + "','" + strUserGrpCard + "','" + strGrpID + "')";
+            //    try
+            //    {
+            //        DBHelper.ExecCmdNoCount(sqlInsertName);
+            //        return true;
+            //    }
+            //    catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            //    {
+            //        Console.WriteLine("新增名单时发生错误，SQL：" + sqlInsertName + "。\r\n" + orex);
+            //        return false;
+            //    }
+            //}
+            //else
+            //{
+            //    Console.WriteLine("返回未能预料到的结果，停止执行");
+            //    return false;
+            //}
+            if (QryNameList(strGrpID, out DataTable dtNameList))
             {
-                dtExistsID = DBHelper.GetDataTable(sqlQryExistsID);
-            }
-            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
-            {
-                Console.WriteLine("查询是否已存在名单时发生错误，SQL：" + sqlQryExistsID + "。\r\n" + orex);
-                return false;
-            }
-            if (dtExistsID.Rows.Count == 1)
-            {
-                string sqlUpdateName = "update TTL_Queue set name = '" + strUserGrpCard + "' where ID = '" + strUserID + "' and grpid = '" + strGrpID + "'";
-                try
+                //dtNameList.Rows.Count
+                DataRow[] drExistsID = dtNameList.Select("id=" + strUserID);
+                if (drExistsID.Length > 0)
                 {
-                    DBHelper.ExecCmdNoCount(sqlUpdateName);
                     return true;
                 }
-                catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+                if (drExistsID.Length < 0)
                 {
-                    Console.WriteLine("更新名单时发生错误，SQL：" + sqlUpdateName + "。\r\n" + orex);
-                    return false;
-                }
-            }
-            else if (dtExistsID.Rows.Count == 0)
-            {
-                string sqlInsertName = "insert into TTL_Queue(seq,id,name,grpid) values(" + 0 + ",'" + strUserID + "','" + strUserGrpCard + "','" + strGrpID + "')";
-                try
-                {
-                    DBHelper.ExecCmdNoCount(sqlInsertName);
                     return true;
                 }
-                catch (Oracle.ManagedDataAccess.Client.OracleException orex)
-                {
-                    Console.WriteLine("新增名单时发生错误，SQL：" + sqlInsertName + "。\r\n" + orex);
-                    return false;
-                }
+                else
+                { return false; }
             }
             else
             {
-                Console.WriteLine("返回未能预料到的结果，停止执行");
                 return false;
             }
         }
