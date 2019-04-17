@@ -17,12 +17,13 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void NameListAdd(string strGrpID, string strUserID, string strUserGrpCard)
         {
-            //有bug，如果命令是更新的话满人的 情况无法更新
-            //30人判断的这部分做在DAL层
-            //仍然需要一个out数值决定是否显示成员数量
-            if (QueueDAL.UpdateNameList(strGrpID, strUserID, strUserGrpCard))
+            if (QueueDAL.UpdateNameList(strGrpID, strUserID, strUserGrpCard, out int intMemberCount))
             {
-                MsgMessage += new Message("已成功更新成员名单信息。\r\n");
+                MsgMessage += new Message("已成功更新成员名单信息(" + intMemberCount.ToString() + "/30)。\r\n");
+            }
+            else if (intMemberCount == 30 || intMemberCount > 30)
+            {
+                MsgMessage += new Message("名单已满30人，无法新增成员，请先清除无效成员。\r\n");
             }
             else
             {
