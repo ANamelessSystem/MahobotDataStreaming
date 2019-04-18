@@ -203,6 +203,27 @@ namespace Marchen.BLL
                         MsgMessage += new Message(strOutput2 + "\r\n--------------------\r\n");
                     }
                     Console.WriteLine(strOutput2);
+                    //订阅提醒功能
+                    int intHpNow = int.Parse(strHpRemain);
+                    int intRoundNow = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
+                    int intBCNow = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
+                    int intProgType;
+                    if (intHpNow > 3000000)
+                    {
+                        intProgType = 0;//完整血量
+                    }
+                    else if (intHpNow > 1500000)
+                    {
+                        intProgType = 1;//伪尾刀
+                    }
+                    else
+                    {
+                        intProgType = 2;//真尾刀
+                    }
+                    if (SubscribeDAL.BossReminder(strGrpID,intRoundNow,intBCNow,intProgType,out DataTable dtSubsMembers))
+                    {
+
+                    }
                 }
                 catch (Exception ex)
                 {

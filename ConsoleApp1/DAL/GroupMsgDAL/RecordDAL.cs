@@ -214,28 +214,6 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 根据群号查询伤害表的方法
-        /// </summary>
-        /// <param name="strGrpID">群号</param>
-        /// <param name="dtDmgReport">dt格式伤害表</param>
-        /// <returns>true：执行成功；false：执行失败。</returns>
-        //public static bool QueryDamageTable(string strGrpID, out DataTable dtDmgReport)
-        //{
-        //    string sqlQueryDmgTbl = "select * from GD_" + strGrpID;
-        //    try
-        //    {
-        //        dtDmgReport = DBHelper.GetDataTable(sqlQueryDmgTbl);
-        //        return true;
-        //    }
-        //    catch (Oracle.ManagedDataAccess.Client.OracleException oex)
-        //    {
-        //        Console.WriteLine("查询伤害表时发生错误：" + oex);
-        //        dtDmgReport = null;
-        //        return false;
-        //    }
-        //}
-
-        /// <summary>
         /// 查询BOSS进度的方法
         /// </summary>
         /// <param name="strGrpID">群号</param>

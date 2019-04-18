@@ -16,7 +16,7 @@ namespace Marchen.DAL
         /// <returns></returns>
         public static bool AddBossSubs(string strGrpID, string strUserID,int intBossCode)
         {
-            string sqlAddSubs = "insert into TTL_BOSSSUBS(userid,grpid,bc) values('" + strUserID + "','" + strGrpID + "'," + intBossCode + ")";
+            string sqlAddSubs = "insert into TTL_BOSSSUBS(userid,grpid,bc,round,progress) values('" + strUserID + "','" + strGrpID + "'," + intBossCode + ",0,0)";
             try
             {
                 DBHelper.ExecCmdNoCount(sqlAddSubs);
@@ -73,6 +73,42 @@ namespace Marchen.DAL
             {
                 Console.WriteLine("删除BOSS订阅状态时发生错误，SQL：" + sqlDelSubs + "。\r\n" + oex);
                 intDelCount = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 查询已订阅该状态BOSS的成员
+        /// </summary>
+        /// <param name="strGrpID"></param>
+        /// <param name="intRound"></param>
+        /// <param name="intBossCode"></param>
+        /// <param name="intProgressType">BOSS进度类型，0:现在的BOSS剩余血量300w以上，1:现在BOSS血量剩余150w以上，2:现在BOSS血量不足150w</param>
+        public static bool BossReminder(string strGrpID, int intRound, int intBossCode, int intProgressType, out DataTable dtSubsMembers)
+        {
+            string sqlQrySubs = "";
+            if (intProgressType == 0 || intProgressType == 1)
+            {
+                sqlQrySubs = "select USERID,BC from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and PROGRESS != " + intProgressType + "";
+            }
+            if (intProgressType == 2)
+            {
+                intBossCode += 1;
+                if (intBossCode > 5)
+                {
+                    intBossCode = 1;
+                }
+                sqlQrySubs = "select USERID,BC from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and PROGRESS != " + intProgressType + "";
+            }
+            try
+            {
+                dtSubsMembers = DBHelper.GetDataTable(sqlQrySubs);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("查询预约表时出现错误，SQL：" + sqlQrySubs + "\r\n" + oex);
+                dtSubsMembers = null;
                 return false;
             }
         }
