@@ -62,7 +62,8 @@ namespace Marchen.BLL
                 }
                 #endregion
                 Console.WriteLine("接收到一条来自群：" + strGrpID + "的Notice，开始解析内容");
-                string strCmdContext = "";
+                string strCmdHead = strRawcontext.Replace(cmdAtMeAlone, "").Trim().Split(' ')[0];
+                string strCmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Trim().Replace(strCmdHead, "").Trim();
                 string strUserID = receivedMessage.UserId.ToString();
                 string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
                 string strUserNickName = memberInfo.Nickname.ToString().Trim();
@@ -70,7 +71,6 @@ namespace Marchen.BLL
                 {
                     strUserGrpCard = strUserNickName;
                 }
-                strCmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Trim();
                 string cmdType = "";
                 if (strCmdContext.ToLower() == "c1")
                 {
