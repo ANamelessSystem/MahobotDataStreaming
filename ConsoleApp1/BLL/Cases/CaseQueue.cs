@@ -19,6 +19,21 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void QueueAdd(string strGrpID, string strUserID, string strUserGrpCard)
         {
+            int intMemberStatus = QueueDAL.MemberCheck(strGrpID, strUserID);
+            if (intMemberStatus == 0)
+            {
+                MsgMessage += new Message("尚未报名，无法加入队列。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            else if (intMemberStatus == -1)
+            {
+                MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
             if (QueueDAL.AddQueue(strGrpID, strUserID, strUserGrpCard))
             {
                 MsgMessage += new Message("已加入队列\r\n--------------------\r\n");

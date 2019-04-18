@@ -128,20 +128,20 @@ namespace Marchen.DAL
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">用户QQ号</param>
-        /// <param name="deletedCount">被删除的行数</param>
+        /// <param name="intDelCount">被删除的行数</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool QuitQueue(string strGrpID, string strUserID, out int deletedCount)
+        public static bool QuitQueue(string strGrpID, string strUserID, out int intDelCount)
         {
             string sqlQryTopId = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
             try
             {
-                deletedCount = DBHelper.ExecuteCommand(sqlQryTopId);
+                intDelCount = DBHelper.ExecuteCommand(sqlQryTopId);
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
                 Console.WriteLine("修改队列时跳出错误，SQL：" + sqlQryTopId + "。\r\n" + orex);
-                deletedCount = 0;
+                intDelCount = 0;
                 return false;
             }
         }
@@ -290,7 +290,7 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 获取成员报名状态及数量
+        /// 获取成员报名状态及数量，返回值0:不存在；1:存在；-1：执行错误
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>

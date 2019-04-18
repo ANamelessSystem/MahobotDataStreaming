@@ -20,6 +20,21 @@ namespace Marchen.BLL
         /// <param name="strCmdContext"></param>
         public static void DmgRecAdd(string strGrpID, string strUserID, string strCmdContext)
         {
+            int intMemberStatus = QueueDAL.MemberCheck(strGrpID, strUserID);
+            if (intMemberStatus == 0)
+            {
+                MsgMessage += new Message("尚未报名，无法上传伤害。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            else if (intMemberStatus == -1)
+            {
+                MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
             bool isCorrect = true;
             if (!CmdHelper.DmgTblCheck(strGrpID))
             {

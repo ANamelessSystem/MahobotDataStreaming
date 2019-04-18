@@ -12,11 +12,11 @@ namespace Marchen.DAL
         /// 伤害上报的方法
         /// </summary>
         /// <param name="strGrpID">群号</param>
-        /// <param name="strUserID"></param>
-        /// <param name="intDMG"></param>
-        /// <param name="intRound"></param>
-        /// <param name="intBossCode"></param>
-        /// <param name="intEID"></param>
+        /// <param name="strUserID">用户ID(qq号)</param>
+        /// <param name="intDMG">伤害值</param>
+        /// <param name="intRound">周目值</param>
+        /// <param name="intBossCode">BOSS代码</param>
+        /// <param name="intEID">事件ID</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool DamageDebrief(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime, out int intEID)
         {

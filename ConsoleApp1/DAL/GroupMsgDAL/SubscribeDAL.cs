@@ -52,5 +52,29 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
+        /// <summary>
+        /// 删除BOSS订阅的方法
+        /// </summary>
+        /// <param name="strGrpID"></param>
+        /// <param name="strUserID"></param>
+        /// <param name="intBossCode"></param>
+        /// <param name="intDelCount"></param>
+        /// <returns></returns>
+        public static bool DelBossSubs(string strGrpID, string strUserID, int intBossCode,out int intDelCount)
+        {
+            string sqlDelSubs = "delete from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "' and BC=" + intBossCode + ")";
+            try
+            {
+                intDelCount = DBHelper.ExecuteCommand(sqlDelSubs);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("删除BOSS订阅状态时发生错误，SQL：" + sqlDelSubs + "。\r\n" + oex);
+                intDelCount = 0;
+                return false;
+            }
+        }
     }
 }

@@ -20,6 +20,21 @@ namespace Marchen.BLL
         /// <param name="intBossCode"></param>
         public static void SubsAdd(string strGrpID, string strUserID, string strCmdContext)
         {
+            int intMemberStatus = QueueDAL.MemberCheck(strGrpID, strUserID);
+            if (intMemberStatus == 0)
+            {
+                MsgMessage += new Message("尚未报名，订阅BOSS。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            else if (intMemberStatus == -1)
+            {
+                MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
@@ -46,7 +61,7 @@ namespace Marchen.BLL
                         {
                             strOutput += "、B" + dtSubsStatus.Rows[i]["BC"];
                         }
-                        MsgMessage += new Message("已成功订阅BOSS。\r\n目前正在订阅的BOSS为：" + strOutput + "\r\n");
+                        MsgMessage += new Message("已成功订阅。\r\n目前正在订阅的BOSS为：" + strOutput + "\r\n");
                     }
                     else
                     {
@@ -84,7 +99,7 @@ namespace Marchen.BLL
                     }
                     strOutput += "B" + dtSubsStatus.Rows[i]["BC"];
                 }
-                MsgMessage += new Message("已成功订阅BOSS。\r\n目前正在订阅的BOSS为：" + strOutput + "\r\n");
+                MsgMessage += new Message("目前正在订阅的BOSS为：" + strOutput + "\r\n");
             }
             else
             {
@@ -117,36 +132,23 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-        //    if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
-        //    {
-        //        DataRow[] drExistsBoss = dtSubsStatus.Select("BC=" + CommonVariables.IntBossCode);
-        //        if (drExistsBoss.Length == 0)
-        //        {
-        //            if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode))
-        //            {
-        //                string strOutput = "B" + CommonVariables.IntBossCode.ToString() + "(new)";
-        //                for (int i = 0; i < dtSubsStatus.Rows.Count; i++)
-        //                {
-        //                    strOutput += "、B" + dtSubsStatus.Rows[i]["BC"];
-        //                }
-        //                MsgMessage += new Message("已成功订阅BOSS。\r\n目前正在订阅的BOSS为：" + strOutput + "\r\n");
-        //            }
-        //            else
-        //            {
-        //                MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
-        //            }
-        //        }
-        //        else
-        //        {
-        //            MsgMessage += new Message("已订阅过本BOSS，无法重复订阅。\r\n");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
-        //    }
-        //    MsgMessage += Message.At(long.Parse(strUserID));
-        //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            if (SubscribeDAL.DelBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode, out int intDelCount))
+            {
+                if (intDelCount > 0)
+                {
+                    MsgMessage += new Message("退订成功。\r\n");
+                }
+                else
+                {
+                    MsgMessage += new Message("尚未订阅该BOSS。\r\n");
+                }
+            }
+            else
+            {
+                MsgMessage += new Message("与数据库失去连接，退订失败。\r\n");
+            }
+            MsgMessage += Message.At(long.Parse(strUserID));
+            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
     }
 }
