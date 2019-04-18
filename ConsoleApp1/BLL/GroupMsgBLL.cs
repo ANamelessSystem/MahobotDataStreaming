@@ -142,6 +142,21 @@ namespace Marchen.BLL
                     cmdType = "namelistdel";
                     Console.WriteLine("识别为名单列表删除指定人");
                 }
+                else if (strCmdContext.Contains("订阅") && !strCmdContext.Contains("查"))
+                {
+                    cmdType = "bosssubsadd";
+                    Console.WriteLine("识别为新增BOSS订阅");
+                }
+                else if (strCmdContext.Contains("订阅") && strCmdContext.Contains("查"))
+                {
+                    cmdType = "bosssubsshow";
+                    Console.WriteLine("识别为查看BOSS订阅");
+                }
+                else if (strCmdContext.Contains("退订"))
+                {
+                    cmdType = "bosssubscancel";
+                    Console.WriteLine("识别为取消boss订阅");
+                }
                 else
                 {
                     cmdType = "unknown";
@@ -241,6 +256,37 @@ namespace Marchen.BLL
                     case "namelistdel":
                         {
                             CaseNameList.NameListDelete(strGrpID, strUserID, strCmdContext, memberInfo);
+                        }
+                        break;
+                    case "bosssubsadd":
+                        {
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            CaseSubscribe.SubsAdd(strGrpID, strUserID, strCmdContext);
+                        }
+                        break;
+                    case "bosssubsshow":
+                        {
+                            CaseSubscribe.SubsShow(strGrpID, strUserID);
+                        }
+                        break;
+                    case "bosssubscancel":
+                        {
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            CaseSubscribe.SubsDel(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     case "unknown":
