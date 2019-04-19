@@ -210,17 +210,20 @@ namespace Marchen.BLL
                     int intProgType;
                     if (intHpNow > 3000000)
                     {
-                        intProgType = 0;//完整血量
+                        //提醒到订阅类型0
+                        intProgType = 0;
                     }
-                    else if (intHpNow > 1500000)
+                    else if (intHpNow > 1000000)
                     {
-                        intProgType = 1;//伪尾刀
+                        //提醒到订阅类型1
+                        intProgType = 1;
                     }
                     else
                     {
-                        intProgType = 2;//真尾刀
+                        //提醒到下一个的订阅类型0
+                        intProgType = 2;
                     }
-                    if (SubscribeDAL.BossReminder(strGrpID,intRoundNow,intBCNow,intProgType,out DataTable dtSubsMembers))
+                    if (SubscribeDAL.BossReminder(strGrpID, intRoundNow, intBCNow, intProgType, out DataTable dtSubsMembers))
                     {
 
                     }

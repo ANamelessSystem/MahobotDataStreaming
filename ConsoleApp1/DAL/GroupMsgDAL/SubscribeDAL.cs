@@ -83,22 +83,30 @@ namespace Marchen.DAL
         /// <param name="strGrpID"></param>
         /// <param name="intRound"></param>
         /// <param name="intBossCode"></param>
-        /// <param name="intProgressType">BOSS进度类型，0:现在的BOSS剩余血量300w以上，1:现在BOSS血量剩余150w以上，2:现在BOSS血量不足150w</param>
-        public static bool BossReminder(string strGrpID, int intRound, int intBossCode, int intProgressType, out DataTable dtSubsMembers)
+        /// <param name="intProgType">进度，0:大于300w血，1:大于150w血，2:小于150w血</param>
+        public static bool BossReminder(string strGrpID, int intRound, int intBossCode, int intProgType, out DataTable dtSubsMembers)
         {
             string sqlQrySubs = "";
-            if (intProgressType == 0 || intProgressType == 1)
+            if (intProgType == 0)
             {
-                sqlQrySubs = "select USERID,BC from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and PROGRESS != " + intProgressType + "";
+                //已到达提醒
+                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 0 and FINISHFLAG != 1";
             }
-            if (intProgressType == 2)
+            if (intProgType == 1)
             {
+                //尾刀撞刀专用提醒
+                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 1 and FINISHFLAG != 1";
+            }
+            if (intProgType == 2)
+            {
+                //下一个BOSS的预提醒
                 intBossCode += 1;
                 if (intBossCode > 5)
                 {
-                    intBossCode = 1;
+                    intBossCode = intBossCode - 5;
+                    intRound += 1;
                 }
-                sqlQrySubs = "select USERID,BC from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and PROGRESS != " + intProgressType + "";
+                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 0 and FINISHFLAG != 0";
             }
             try
             {

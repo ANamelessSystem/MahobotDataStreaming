@@ -159,6 +159,11 @@ namespace Marchen.BLL
                     cmdType = "bosssubscancel";
                     Console.WriteLine("识别为取消boss订阅");
                 }
+                else if (strCmdHead.ToLower() == "测试")
+                {
+                    cmdType = "test";
+                    Console.WriteLine("test");
+                }
                 else
                 {
                     cmdType = "unknown";
@@ -289,6 +294,11 @@ namespace Marchen.BLL
                                 return;
                             }
                             CaseSubscribe.SubsDel(strGrpID, strUserID, strCmdContext);
+                        }
+                        break;
+                    case "test":
+                        {
+
                         }
                         break;
                     case "unknown":
