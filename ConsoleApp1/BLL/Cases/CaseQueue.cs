@@ -186,6 +186,13 @@ namespace Marchen.BLL
         {
             if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
             {
+                if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
+                {
+                    if (dtBossProgress.Rows[0][0] is DBNull)//判断数据库中字段是否为Null
+                    {
+                        return;
+                    }
+                }
                 try
                 {
                     string strHpRemain = dtBossProgress.Rows[0]["hpremain"].ToString();
