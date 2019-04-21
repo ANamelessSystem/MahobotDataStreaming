@@ -93,7 +93,7 @@ namespace Marchen.DAL
             if (intProgType == 1)
             {
                 //尾刀撞刀专用提醒
-                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 1 and FINISHFLAG != 2";
+                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and (ROUND = " + intRound + " and FINISHFLAG != 2) or ROUND < " + intRound + " and SUBSTYPE = 1";
             }
             if (intProgType == 2)
             {
