@@ -20,6 +20,7 @@ namespace Marchen.BLL
         /// <param name="strCmdContext"></param>
         public static void DmgRecAdd(string strGrpID, string strUserID, string strCmdContext)
         {
+            //检查是否成员
             int intMemberStatus = QueueDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
             {
@@ -35,13 +36,16 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
+            //数据正误标记位
             bool isCorrect = true;
+            //检查是否有伤害表（下期去掉单独的伤害表）
             if (!CmdHelper.DmgTblCheck(strGrpID))
             {
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
+            //分拆命令
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
@@ -51,6 +55,7 @@ namespace Marchen.BLL
             }
             else
             {
+                //识别出来的数据处理
                 if (CommonVariables.IntEXT == -1)
                 {
                     CommonVariables.IntEXT = 0;
@@ -70,6 +75,7 @@ namespace Marchen.BLL
                     MsgMessage += new Message("未能找到BOSS编号。\r\n");
                     isCorrect = false;
                 }
+                //判断数据正误标记位
                 if (!isCorrect)
                 {
                     MsgMessage += new Message("伤害保存失败。\r\n输入【@MahoBot help】获取帮助。\r\n");
@@ -77,10 +83,14 @@ namespace Marchen.BLL
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     return;
                 }
+                //执行上传
                 if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
                 {
                     Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + CommonVariables.IntBossCode.ToString() + "，" + CommonVariables.IntRound.ToString() + "周目，数值：" + CommonVariables.IntDMG.ToString() + "，补时标识：" + CommonVariables.IntEXT);
                     MsgMessage = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
+                    //执行退订
+                    CaseSubscribe.SubsDelAuto(strGrpID, strUserID, CommonVariables.IntBossCode);
+                    //执行退队
                     CaseQueue.QueueQuit(strGrpID, strUserID);
                 }
                 else
@@ -360,7 +370,5 @@ namespace Marchen.BLL
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             return;
         }
-
-        
     }
 }

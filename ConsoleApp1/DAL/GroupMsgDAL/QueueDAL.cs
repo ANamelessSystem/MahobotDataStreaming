@@ -180,7 +180,7 @@ namespace Marchen.DAL
         {
             if (QryNameList(strGrpID, out DataTable dtNameList))
             {
-                DataRow[] drExistsID = dtNameList.Select("id=" + strUserID);
+                DataRow[] drExistsID = dtNameList.Select("id='" + strUserID + "'");
                 intMemberCount = dtNameList.Rows.Count;
                 if (drExistsID.Length == 1)
                 {
@@ -299,7 +299,7 @@ namespace Marchen.DAL
         {
             if (QryNameList(strGrpID, out DataTable dtNameList))
             {
-                DataRow[] drExistsID = dtNameList.Select("id=" + strUserID);
+                DataRow[] drExistsID = dtNameList.Select("id='" + strUserID + "'");
                 if (drExistsID.Length == 1)
                 {
                     return 1;

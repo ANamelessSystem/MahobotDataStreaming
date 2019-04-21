@@ -146,6 +146,7 @@ namespace Marchen.BLL
                 }
                 else if (strCmdHead.ToLower() == "s1" || strCmdHead.ToLower() == "订阅")
                 {
+                    //需要另外参数
                     cmdType = "bosssubsadd";
                     Console.WriteLine("识别为新增BOSS订阅");
                 }
@@ -156,6 +157,7 @@ namespace Marchen.BLL
                 }
                 else if (strCmdHead.ToLower() == "s3" || strCmdHead.ToLower() == "退订")
                 {
+                    //需要另外参数
                     cmdType = "bosssubscancel";
                     Console.WriteLine("识别为取消boss订阅");
                 }

@@ -49,17 +49,30 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
+            if (CommonVariables.IntSubsType == -1)
+            {
+                CommonVariables.IntSubsType = 0;
+            }
             if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
             {
-                DataRow[] drExistsBoss = dtSubsStatus.Select("BC=" + CommonVariables.IntBossCode);
+                DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + CommonVariables.IntBossCode + "'");
                 if (drExistsBoss.Length == 0)
                 {
-                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode))
+                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode, CommonVariables.IntSubsType))
                     {
-                        string strOutput = "B" + CommonVariables.IntBossCode.ToString() +"(new)";
+                        string strOutput = "B" + CommonVariables.IntBossCode.ToString();
+                        if (CommonVariables.IntSubsType == 1)
+                        {
+                            strOutput += "(尾)";
+                        }
+                        strOutput += "(new)";
                         for (int i = 0; i < dtSubsStatus.Rows.Count; i++)
                         {
                             strOutput += "、B" + dtSubsStatus.Rows[i]["BC"];
+                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                            {
+                                strOutput += "(尾)";
+                            }
                         }
                         MsgMessage += new Message("已成功订阅。\r\n目前正在订阅的BOSS为：" + strOutput + "\r\n");
                     }
@@ -98,6 +111,10 @@ namespace Marchen.BLL
                         strOutput += "、";
                     }
                     strOutput += "B" + dtSubsStatus.Rows[i]["BC"];
+                    if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                    {
+                        strOutput += "(尾)";
+                    }
                 }
                 MsgMessage += new Message("目前正在订阅的BOSS为：" + strOutput + "\r\n");
             }
@@ -111,7 +128,7 @@ namespace Marchen.BLL
 
 
         /// <summary>
-        /// 取消boss订阅
+        /// 取消boss订阅（主命令）
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
@@ -136,7 +153,7 @@ namespace Marchen.BLL
             {
                 if (intDelCount > 0)
                 {
-                    MsgMessage += new Message("退订成功。\r\n");
+                    MsgMessage += new Message("退订B"+ CommonVariables.IntBossCode + "成功。\r\n");
                 }
                 else
                 {
@@ -149,6 +166,27 @@ namespace Marchen.BLL
             }
             MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+        }
+
+        /// <summary>
+        /// 取消boss订阅（调用）
+        /// </summary>
+        /// <param name="strGrpID"></param>
+        /// <param name="strUserID"></param>
+        /// <param name="strCmdContext"></param>
+        public static void SubsDelAuto(string strGrpID, string strUserID, int intBossCode)
+        {
+            if (SubscribeDAL.DelBossSubs(strGrpID, strUserID, intBossCode, out int intDelCount))
+            {
+                if (intDelCount > 0)
+                {
+                    MsgMessage += new Message("【已自动退订B" + intBossCode + "。】\r\n");
+                }
+            }
+            else
+            {
+                MsgMessage += new Message("与数据库失去连接，退订失败。\r\n");
+            }
         }
     }
 }

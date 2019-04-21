@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Data;
 
 namespace Marchen.DAL
@@ -14,9 +12,9 @@ namespace Marchen.DAL
         /// <param name="strUserID"></param>
         /// <param name="intBossCode"></param>
         /// <returns></returns>
-        public static bool AddBossSubs(string strGrpID, string strUserID,int intBossCode)
+        public static bool AddBossSubs(string strGrpID, string strUserID,int intBossCode,int intSubsType)
         {
-            string sqlAddSubs = "insert into TTL_BOSSSUBS(userid,grpid,bc,round,progress) values('" + strUserID + "','" + strGrpID + "'," + intBossCode + ",0,0)";
+            string sqlAddSubs = "insert into TTL_BOSSSUBS(userid,grpid,bc,round,substype,finishflag) values('" + strUserID + "','" + strGrpID + "'," + intBossCode + ",0,"+ intSubsType + ",0)";
             try
             {
                 DBHelper.ExecCmdNoCount(sqlAddSubs);
@@ -63,7 +61,7 @@ namespace Marchen.DAL
         /// <returns></returns>
         public static bool DelBossSubs(string strGrpID, string strUserID, int intBossCode,out int intDelCount)
         {
-            string sqlDelSubs = "delete from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "' and BC=" + intBossCode + ")";
+            string sqlDelSubs = "delete from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "' and BC=" + intBossCode;
             try
             {
                 intDelCount = DBHelper.ExecuteCommand(sqlDelSubs);
@@ -90,12 +88,12 @@ namespace Marchen.DAL
             if (intProgType == 0)
             {
                 //已到达提醒
-                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 0 and FINISHFLAG != 1";
+                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + (intRound+1) + " and SUBSTYPE = 0 and FINISHFLAG != 2";
             }
             if (intProgType == 1)
             {
                 //尾刀撞刀专用提醒
-                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 1 and FINISHFLAG != 1";
+                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 1 and FINISHFLAG != 2";
             }
             if (intProgType == 2)
             {
@@ -106,7 +104,7 @@ namespace Marchen.DAL
                     intBossCode = intBossCode - 5;
                     intRound += 1;
                 }
-                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 0 and FINISHFLAG != 0";
+                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 0 and FINISHFLAG != 1";
             }
             try
             {
@@ -117,6 +115,44 @@ namespace Marchen.DAL
             {
                 Console.WriteLine("查询预约表时出现错误，SQL：" + sqlQrySubs + "\r\n" + oex);
                 dtSubsMembers = null;
+                return false;
+            }
+        }
+
+        public static bool UpdateRemindFlag(string strGrpID,string strUserID, int intRound, int intBossCode, int intProgType)
+        {
+
+            string sqlUpdateSubs = "";
+            if (intProgType == 0)
+            {
+                sqlUpdateSubs = "update TTL_BOSSSUBS set FINISHFLAG = 2，ROUND = " + intRound + " where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and USERID = '" + strUserID + "'";
+            }
+            else if (intProgType == 1)
+            {
+                sqlUpdateSubs = "update TTL_BOSSSUBS set FINISHFLAG = 2，ROUND = " + intRound + " where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and USERID = '" + strUserID + "'";
+            }
+            else if (intProgType == 2)
+            {
+                intBossCode += 1;
+                if (intBossCode > 5)
+                {
+                    intBossCode = intBossCode - 5;
+                    intRound += 1;
+                }
+                sqlUpdateSubs = "update TTL_BOSSSUBS set FINISHFLAG = 1，ROUND = " + intRound + " where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and USERID = '" + strUserID + "'";
+            }
+            else
+            {
+                throw new Exception("收到非设计范围内的BOSS血量状态代码");
+            }
+            try
+            {
+                DBHelper.ExecCmdNoCount(sqlUpdateSubs);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("更新预约表已提醒状态时出现错误，SQL：" + sqlUpdateSubs + "\r\n" + oex);
                 return false;
             }
         }

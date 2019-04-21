@@ -30,5 +30,6 @@ namespace Marchen.Model
         public static int IntEID { get; set; }
         public static int IntDMG { get; set; }
         public static int IntEXT { get; set; }
+        public static int IntSubsType { get; set; }
     }
 }

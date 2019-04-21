@@ -59,7 +59,7 @@ namespace Marchen.BLL
             if (GroupProperties.IsHpShow)
             {
                 //Console.WriteLine("查询HP前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
-                HpShow(strGrpID, strUserID);
+                HpShowAndSubsCheck(strGrpID);
                 //Console.WriteLine("查询HP后的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
             }
             else
@@ -179,12 +179,10 @@ namespace Marchen.BLL
         }
 
         /// <summary>
-        /// 显示血量
+        /// 显示血量并检查提醒表
         /// </summary>
         /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="strUserGrpCard"></param>
-        public static void HpShow(string strGrpID, string strUserID)
+        public static void HpShowAndSubsCheck(string strGrpID)
         {
             if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
             {
@@ -225,7 +223,34 @@ namespace Marchen.BLL
                     }
                     if (SubscribeDAL.BossReminder(strGrpID, intRoundNow, intBCNow, intProgType, out DataTable dtSubsMembers))
                     {
-
+                        if (dtSubsMembers.Rows.Count > 0)
+                        {
+                            string strRemindContext = "[公会战进度提醒]\r\n您所在群："+strGrpID+"，BOSS进度已到B"+intBCNow+"，目前血量："+strHpRemain+"\r\n如时间方便，请做好本战准备。";
+                            if (strHpRemain.Length > 4 && !strHpRemain.Contains("-"))
+                            {
+                                strRemindContext = "[公会战进度提醒]\r\n您所在群：" + strGrpID + "，BOSS进度已到B" + intBCNow + "，目前血量：" + strHpRemain.Substring(0, strHpRemain.Length - 4) + "万\r\n如时间方便，请做好本战准备。";
+                            }
+                            else if (strHpRemain.Length > 0)
+                            {
+                                strRemindContext = "[公会战进度提醒]\r\n您所在群：" + strGrpID + "，BOSS进度已到B" + intBCNow + "，目前血量：" + strHpRemain + "\r\n如时间方便，请做好本战准备。";
+                            }
+                            for (int i = 0; i < dtSubsMembers.Rows.Count; i++)
+                            {
+                                long lUserID = long.Parse(dtSubsMembers.Rows[i]["USERID"].ToString());
+                                ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, strRemindContext);
+                                Console.WriteLine("已私聊通知" + lUserID.ToString() + "(" + strGrpID + ")");
+                                SubscribeDAL.UpdateRemindFlag(strGrpID, lUserID.ToString(), intRoundNow, intBCNow, intProgType);
+                                Console.WriteLine("已更新通知状态" + lUserID.ToString() + "(" + strGrpID + ")");
+                            }
+                        }
+                        else
+                        {
+                            //无人订阅
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("提醒查询失败");
                     }
                 }
                 catch (Exception ex)
