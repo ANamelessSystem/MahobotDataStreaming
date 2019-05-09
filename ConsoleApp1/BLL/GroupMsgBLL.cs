@@ -26,9 +26,15 @@ namespace Marchen.BLL
             MsgMessage = new Message("");
             string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
             string cmdAtMeAlone = "[CQ:at,qq=" + SelfProperties.SelfID + "]";
+            string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
+            if (strGrpID == "569396886")
+            {
+                GroupMsgBLL4D2.D2MsgHandler(receivedMessage, memberInfo);
+                return;
+            }
             if (strRawcontext.Contains(cmdAtMeAlone))
             {
-                string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
+                //string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
                 var message = new Message("");
                 int vfyCode = QueueDAL.GroupRegVerify(strGrpID);
                 #region 有效性验证不通过
