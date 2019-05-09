@@ -8,54 +8,62 @@ namespace Marchen.DAL
     class QueueDAL
     {
         /// <summary>
-        /// 验证群组是否启用bot服务的方法
+        /// 查询本群是否激活bot功能与属于哪一个游戏的群
         /// </summary>
-        /// <param name="groupId">群号</param>
-        /// <returns>
-        /// 1：验证通过；0：未开启bot服务；10：数据库故障；11：信息表数据有误；12：预料外的错误。
-        /// </returns>
-        public static int GroupRegVerify(string groupId)
+        /// <param name="strGrpID">群号</param>
+        /// <param name="intStat">状态：0：未激活；1：激活；-2：无资料；-1：数据库问题；-100：非指定游戏，不执行</param>
+        /// <param name="intType">游戏类型：0：公主连接</param>
+        /// <returns></returns>
+        public static bool GroupRegVerify(string strGrpID,out DataTable dtVfyResult)
         {
-            string sqlGrpVfy = "select ORG_STAT from TTL_ORGLIST where ORG_ID='" + groupId + "' and ORG_TYPE = 0";
-            DataTable dtGrpStat = new DataTable();
+            string sqlGrpVfy = "select ORG_STAT,ORG_TYPE from TTL_ORGLIST where ORG_ID='" + strGrpID + "'";
             try
             {
-                dtGrpStat = DBHelper.GetDataTable(sqlGrpVfy);
+                dtVfyResult = DBHelper.GetDataTable(sqlGrpVfy);
+                return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex1)
             {
                 Console.WriteLine(orex1);
-                Console.WriteLine("进行群有效性查询时，数据库连接失败");
-                return 10;
+                Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，数据库连接失败");
+                dtVfyResult = null;
+                return false;
             }
-            if (dtGrpStat.Rows.Count == 0)
-            {
-                return 0;
-            }
-            else if (dtGrpStat.Rows.Count > 1)
-            {
-                Console.WriteLine("进行群有效性查询时，查出非单一结果");
-                return 11;
-            }
-            else
-            {
-                int grpVfyFlag = int.Parse(dtGrpStat.Rows[0]["ORG_STAT"].ToString());
-                if (grpVfyFlag == 1)
-                {
-                    Console.WriteLine("进行群有效性查询时，验证通过");
-                    return 1;
-                }
-                else if (grpVfyFlag == 0)
-                {
-                    Console.WriteLine("进行群有效性查询时，验证未通过");
-                    return 0;
-                }
-                else
-                {
-                    Console.WriteLine("进行群有效性查询时，发生了预料外的错误");
-                    return 12;
-                }
-            }
+            //if (dtGrpStat.Rows.Count == 0)
+            //{
+            //    Console.WriteLine("群：" + strGrpID + "不在激活列表内");
+            //    intStat = -2;
+            //}
+            //else if (dtGrpStat.Rows.Count > 1)
+            //{
+            //    Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查出非单一结果");
+            //    intStat = -2;
+            //}
+            //else
+            //{
+            //    intStat = int.Parse(dtGrpStat.Rows[0]["ORG_STAT"].ToString());
+            //    int intType = int.Parse(dtGrpStat.Rows[0]["ORG_TYPE"].ToString());
+            //    if (intType == 0)//如果本群注册为公主连接群
+            //    {
+            //        if (intStat == 1)
+            //        {
+            //            Console.WriteLine("群：" + strGrpID + "，验证通过");
+            //        }
+            //        else if (intStat == 0)
+            //        {
+            //            Console.WriteLine("群：" + strGrpID + "状态为未激活");
+            //        }
+            //        else
+            //        {
+            //            Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，发生了预料外的错误");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        intStat = -100;
+            //        //其他游戏的群不动作，通过转发端口转发传到下一个程序
+            //    }
+            //}
         }
 
         /// <summary>

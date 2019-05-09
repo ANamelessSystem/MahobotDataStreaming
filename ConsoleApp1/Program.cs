@@ -104,6 +104,7 @@ namespace Marchen.Garden
                 else if (message.Endpoint is PrivateEndpoint)
                 {
                     //处理私聊消息
+                    PrivateMsgBLL.PriMsgReco(message);
                 }
                 else
                 {

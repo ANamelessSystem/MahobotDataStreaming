@@ -11,6 +11,42 @@ namespace Marchen.BLL
 {
     class GroupMsgBLL
     {
+        private static void GroupVerification(string strGrpID)
+        {
+            if (QueueDAL.GroupRegVerify(strGrpID, out DataTable dtVfyResult))
+            {
+                if (dtVfyResult.Rows.Count == 1)
+                {
+                    int intGrpStat = int.Parse(dtVfyResult.Rows[0]["ORG_STAT"].ToString());
+                    int intGrpType = int.Parse(dtVfyResult.Rows[0]["ORG_TYPE"].ToString());
+                    if (intGrpStat != 1)
+                    {
+                        MsgMessage += new Message("本群已关闭bot功能，请联系bot维护团队。\r\n");
+                        Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
+                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                        return;
+                    }
+                    if (intGrpType != 0)
+                    {
+                        //非公主连接，等待下一个程序响应
+                        return;
+                    }
+                }
+                else
+                {
+                    MsgMessage += new Message("本群激活状态有误，请联系bot维护团队。\r\n");
+                    Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    return;
+                }
+            }
+            else
+            {
+                MsgMessage += new Message("验证时连接数据库失败，请联系bot维护团队。\r\n");
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+        }
         /// <summary>
         /// 消息
         /// </summary>
@@ -28,45 +64,15 @@ namespace Marchen.BLL
             string cmdAtMeAlone = "[CQ:at,qq=" + SelfProperties.SelfID + "]";
             string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
             if (strGrpID == "569396886" || strGrpID == "877184755")
+            //if (strGrpID == "877184755")
             {
                 GroupMsgBLL4D2.D2MsgHandler(receivedMessage, memberInfo);
                 return;
             }
             if (strRawcontext.Contains(cmdAtMeAlone))
             {
-                //string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
                 var message = new Message("");
-                int vfyCode = QueueDAL.GroupRegVerify(strGrpID);
-                #region 有效性验证不通过
-                if (vfyCode == 0)
-                {
-                    message += new Message("vfycode0：bot服务尚未在本群开启，请管理员联系bot维护团队。\r\n");
-                    message += Message.At(receivedMessage.UserId);
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                    return;
-                }
-                if (vfyCode == 10)
-                {
-                    message += new Message("vfycode10：无法连接主数据库，请联系bot维护团队。\r\n");
-                    message += Message.At(receivedMessage.UserId);
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                    return;
-                }
-                if (vfyCode == 11)
-                {
-                    message += new Message("vfycode11：本群的服务设置有误，请联系bot维护团队。\r\n");
-                    message += Message.At(receivedMessage.UserId);
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                    return;
-                }
-                if (vfyCode == 12)
-                {
-                    message += new Message("vfycode12：业务流出现错误，请联系bot维护团队。\r\n");
-                    message += Message.At(receivedMessage.UserId);
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                    return;
-                }
-                #endregion
+                GroupVerification(strGrpID);
                 Console.WriteLine("接收到一条来自群：" + strGrpID + "的Notice，开始解析内容");
                 //分离命令头和命令体，命令头：功能识别区，命令体：数据包含区。
                 string strCmdHead = strRawcontext.Replace(cmdAtMeAlone, "").Trim().Split(' ')[0];

@@ -7,17 +7,17 @@ using System.Text.RegularExpressions;
 using Marchen.DAL;
 using Sisters.WudiLib.Responses;
 
-namespace Marchen.BLL
+namespace Marchen
 {
-    class GroupMsgBLL4D2
+    class PrivateMsgBLL
     {
         protected static Message D2Message;
-        public static void D2MsgHandler(MessageContext receivedMessage, GroupMemberInfo memberInfo)
+        public static void PriMsgReco(MessageContext receivedMessage)
         {
             D2Message = new Message("");
             string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
             string d2StartTag = "#zt";
-            string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
+            long lUserID = receivedMessage.UserId;
             var message = new Message("");
             if (strRawcontext.ToLower().Trim().Split(' ')[0] == "#zt")
             {
@@ -37,8 +37,7 @@ namespace Marchen.BLL
                             {
                                 Console.WriteLine("无法找到任何结果");
                                 D2Message += new Message("无法找到任何结果\r\n");
-                                D2Message += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                                ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, D2Message).Wait();
                                 return;
                             }
                             string strColor = null;
@@ -56,10 +55,9 @@ namespace Marchen.BLL
                                 var imgLocation = Message.LocalImage(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
                                 Console.WriteLine(@"C:\D2ZT\ZTR_" + strColor + ".png");
                                 Console.WriteLine(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
-                                D2Message += new Message("\r\n所输入的参数于【1号终端】内找到唯一结果：/r/n" + strOutput1 + "\r\n");
+                                D2Message += new Message("\r\n所输入的参数于【1号终端】内找到唯一结果：\r\n" + strOutput1);
                                 Console.WriteLine(strOutput1);
-                                D2Message += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), imgColor + imgLocation + D2Message).Wait();
+                                ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, imgColor + imgLocation + D2Message).Wait();
                                 return;
                             }
                             else
@@ -75,10 +73,9 @@ namespace Marchen.BLL
                                     var imgLocation = Message.LocalImage(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
                                     Console.WriteLine(@"C:\D2ZT\ZTR_" + strColor + ".png");
                                     Console.WriteLine(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
-                                    D2Message += new Message("\r\n所输入的参数于【2号终端或3号终端】内找到唯一结果：\r\n" + strOutput2 + "\r\n");
+                                    D2Message += new Message("\r\n所输入的参数于【2号终端或3号终端】内找到唯一结果：\r\n" + strOutput2);
                                     Console.WriteLine(strOutput2);
-                                    D2Message += Message.At(long.Parse(strUserID));
-                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), imgColor + imgLocation + D2Message).Wait();
+                                    ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, imgColor + imgLocation + D2Message).Wait();
                                     return;
                                 }
                                 if (dtCRResult1.Rows.Count > 1)
@@ -92,8 +89,7 @@ namespace Marchen.BLL
                                         Console.WriteLine(strOutputM);
                                     }
                                     var imgCnR = Message.LocalImage(@"C:\D2ZT\ZTCR.jpg");
-                                    D2Message += Message.At(long.Parse(strUserID));
-                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID),imgCnR + D2Message).Wait();
+                                    ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID,imgCnR + D2Message).Wait();
                                     return;
                                 }
                             }
@@ -101,8 +97,7 @@ namespace Marchen.BLL
                         else
                         {
                             D2Message += new Message("未识别所输入参数的格式\r\n");
-                            D2Message += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID),D2Message).Wait();
+                            ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, D2Message).Wait();
                             return;
                         }
                     }
@@ -129,16 +124,14 @@ namespace Marchen.BLL
                                     Console.WriteLine(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
                                     D2Message += new Message("\r\n" + strOutput1 + "\r\n");
                                     Console.WriteLine(strOutput1);
-                                    D2Message += Message.At(long.Parse(strUserID));
-                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), imgColor + imgLocation + D2Message).Wait();
+                                    ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, imgColor + imgLocation + D2Message).Wait();
                                     return;
                                 }
                                 else if (dtCRResult3.Rows.Count == 0 || dtCRResult3 is null)
                                 {
                                     Console.WriteLine("无结果");
                                     D2Message += new Message("无结果\r\n");
-                                    D2Message += Message.At(long.Parse(strUserID));
-                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                                    ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, D2Message).Wait();
                                     return;
                                 }
                                 else
@@ -151,8 +144,7 @@ namespace Marchen.BLL
                                         Console.WriteLine(strOutputM);
                                     }
                                     var imgCnR = Message.LocalImage(@"C:\D2ZT\ZTCR.jpg");
-                                    D2Message += Message.At(long.Parse(strUserID));
-                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID),imgCnR + D2Message).Wait();
+                                    ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, imgCnR + D2Message).Wait();
                                     return;
                                 }
                             }
@@ -160,8 +152,7 @@ namespace Marchen.BLL
                             {
                                 D2Message += new Message("参数不正确\r\n");
                                 Console.WriteLine("参数不正确");
-                                D2Message += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                                ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, D2Message).Wait();
                                 return;
                             }
                         }
@@ -170,8 +161,7 @@ namespace Marchen.BLL
                             Console.WriteLine(ex2);
                             D2Message += new Message("缺少参数\r\n");
                             Console.WriteLine("缺少参数");
-                            D2Message += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                            ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, D2Message).Wait();
                             return;
                         }
                     }
@@ -179,8 +169,7 @@ namespace Marchen.BLL
                     {
                         D2Message += new Message("缺少参数\r\n");
                         Console.WriteLine("缺少参数");
-                        D2Message += Message.At(long.Parse(strUserID));
-                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                        ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, D2Message).Wait();
                         return;
                     }
                 }
@@ -189,8 +178,7 @@ namespace Marchen.BLL
                     Console.WriteLine(ex);
                     D2Message += new Message("无法解析\r\n");
                     Console.WriteLine("无法解析");
-                    D2Message += Message.At(long.Parse(strUserID));
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                    ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, D2Message).Wait();
                     return;
                 }
             }
