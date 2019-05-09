@@ -14,6 +14,7 @@ namespace Marchen.BLL
         protected static Message D2Message;
         public static void D2MsgHandler(MessageContext receivedMessage, GroupMemberInfo memberInfo)
         {
+            Console.WriteLine("启动D2MsgHandle");
             D2Message = new Message("");
             string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
             string d2StartTag = "#zt";
@@ -43,17 +44,29 @@ namespace Marchen.BLL
                     //唯一结果，显示图片
                     strColor = dtCRResult.Rows[0]["nodecolor"].ToString();
                     intLocation = int.Parse(dtCRResult.Rows[0]["nodeno"].ToString());
+                    string strOutput1 = strColor + intLocation.ToString();
+                    D2Message += new Message(strOutput1 + "\r\n");
+                    Console.WriteLine(strOutput1);
+                    D2Message += Message.At(long.Parse(strUserID));
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                    return;
                 }
                 else if (dtCRResult.Rows.Count == 0 || dtCRResult is null)
                 {
-                    //无结果
+                    Console.WriteLine("无结果");
+                    D2Message += Message.At(long.Parse(strUserID));
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                    return;
                 }
                 for (int i = 0; i < dtCRResult.Rows.Count; i++)
                 {
                     D2Message += new Message("返回多组结果，请确认\r\n");
-                    string strOutput = "显示屏1：" + dtCRResult.Rows[i]["CS1"].ToString() + "，显示屏2：" + dtCRResult.Rows[i]["CS2"].ToString() + "，显示屏3：" + dtCRResult.Rows[i]["CS2"].ToString() + "；颜色：" + dtCRResult.Rows[i]["nodecolor"].ToString() + "，位置：" + dtCRResult.Rows[i]["nodeno"].ToString();
-                    D2Message += new Message(strOutput + "\r\n");
-                    Console.WriteLine(strOutput);
+                    string strOutputM = "显示屏1：" + dtCRResult.Rows[i]["CS1"].ToString() + "，显示屏2：" + dtCRResult.Rows[i]["CS2"].ToString() + "，显示屏3：" + dtCRResult.Rows[i]["CS2"].ToString() + "；颜色：" + dtCRResult.Rows[i]["nodecolor"].ToString() + "，位置：" + dtCRResult.Rows[i]["nodeno"].ToString();
+                    D2Message += new Message(strOutputM + "\r\n");
+                    Console.WriteLine(strOutputM);
+                    D2Message += Message.At(long.Parse(strUserID));
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
+                    return;
                 }
             }
             
