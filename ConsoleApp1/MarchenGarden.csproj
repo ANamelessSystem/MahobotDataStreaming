@@ -21,8 +21,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.18.3" />
-    <PackageReference Include="Sisters.WudiLib" Version="0.0.2-alpha" />
+    <PackageReference Include="Google.Apis" Version="1.40.0" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.18.6" />
+    <PackageReference Include="Sisters.WudiLib" Version="0.0.4.2" />
   </ItemGroup>
 
 </Project>
