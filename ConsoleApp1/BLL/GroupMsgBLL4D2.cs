@@ -35,8 +35,8 @@ namespace Marchen.BLL
                             DataTable dtCRResult1 = DBHelper.GetDataTable("select ID,NODENAME,NODECOLOR,NODENO,CS1,CS2,CS3 from SP_D2ZEROTIME where CS1='" + strCR1 + "' or CS2='" + strCR1 + "' or CS3='" + strCR1 + "'");
                             if (dtCRResult1.Rows.Count == 0 || dtCRResult1 is null)
                             {
-                                Console.WriteLine("无法找到任何结果");
-                                D2Message += new Message("无法找到任何结果\r\n");
+                                Console.WriteLine("未找到任何结果");
+                                D2Message += new Message("未找到任何结果\r\n");
                                 D2Message += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), D2Message).Wait();
                                 return;
@@ -51,12 +51,12 @@ namespace Marchen.BLL
                                 //唯一结果，显示图片
                                 strColor = drIsCS1[0]["NODECOLOR"].ToString();
                                 intLocation = int.Parse(drIsCS1[0]["NODENO"].ToString());
-                                string strOutput1 = "显示屏1：" + drIsCS1[0]["CS1"].ToString() + "，显示屏2：" + drIsCS1[0]["CS2"].ToString() + "，显示屏3：" + drIsCS1[0]["CS3"].ToString() + "；颜色：" + drIsCS1[0]["NODECOLOR"].ToString() + "，位置：" + drIsCS1[0]["NODENO"].ToString();
+                                string strOutput1 = "屏1，屏2，屏3，位置：\r\n————————————\r\n" + drIsCS1[0]["CS1"].ToString() + "，" + drIsCS1[0]["CS2"].ToString() + "，" + drIsCS1[0]["CS3"].ToString() + "，" + drIsCS1[0]["NODECOLOR"].ToString() + drIsCS1[0]["NODENO"].ToString() + "；";
                                 var imgColor = Message.LocalImage(@"C:\D2ZT\ZTR_" + strColor + ".png");
                                 var imgLocation = Message.LocalImage(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
                                 Console.WriteLine(@"C:\D2ZT\ZTR_" + strColor + ".png");
                                 Console.WriteLine(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
-                                D2Message += new Message("\r\n所输入的参数于【1号终端】内找到唯一结果：/r/n" + strOutput1 + "\r\n");
+                                D2Message += new Message("\r\n所输入的参数于【1号终端】内找到唯一结果：\r\n" + strOutput1 + "\r\n");
                                 Console.WriteLine(strOutput1);
                                 D2Message += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), imgColor + imgLocation + D2Message).Wait();
@@ -70,7 +70,7 @@ namespace Marchen.BLL
                                     //在除了终端1以外的终端发现了唯一解，显示指引图片并用文字注明这并非根据终端1检索
                                     strColor = dtCRResult1.Rows[0]["NODECOLOR"].ToString();
                                     intLocation = int.Parse(dtCRResult1.Rows[0]["NODENO"].ToString());
-                                    string strOutput2 = "显示屏1：" + dtCRResult1.Rows[0]["CS1"].ToString() + "，显示屏2：" + dtCRResult1.Rows[0]["CS2"].ToString() + "，显示屏3：" + dtCRResult1.Rows[0]["CS3"].ToString() + "；颜色：" + dtCRResult1.Rows[0]["NODECOLOR"].ToString() + "，位置：" + dtCRResult1.Rows[0]["NODENO"].ToString();
+                                    string strOutput2 = "屏1，屏2，屏3，位置：\r\n————————————\r\n" + dtCRResult1.Rows[0]["CS1"].ToString() + "，" + dtCRResult1.Rows[0]["CS2"].ToString() + "，" + dtCRResult1.Rows[0]["CS3"].ToString() + "，" + dtCRResult1.Rows[0]["NODECOLOR"].ToString() + dtCRResult1.Rows[0]["NODENO"].ToString() + "；";
                                     var imgColor = Message.LocalImage(@"C:\D2ZT\ZTR_" + strColor + ".png");
                                     var imgLocation = Message.LocalImage(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
                                     Console.WriteLine(@"C:\D2ZT\ZTR_" + strColor + ".png");
@@ -84,11 +84,11 @@ namespace Marchen.BLL
                                 if (dtCRResult1.Rows.Count > 1)
                                 {
                                     //总之返回的结果不止一个
+                                    D2Message += new Message("\r\n返回多组结果，请确认：\r\n屏1，屏2，屏3，位置：\r\n————————————");
                                     for (int i = 0; i < dtCRResult1.Rows.Count; i++)
                                     {
-                                        D2Message += new Message("\r\n返回多组结果，请确认\r\n");
-                                        string strOutputM = "显示屏1：" + dtCRResult1.Rows[i]["CS1"].ToString() + "，显示屏2：" + dtCRResult1.Rows[i]["CS2"].ToString() + "，显示屏3：" + dtCRResult1.Rows[i]["CS3"].ToString() + "；颜色：" + dtCRResult1.Rows[i]["NODECOLOR"].ToString() + "，位置：" + dtCRResult1.Rows[i]["NODENO"].ToString();
-                                        D2Message += new Message(strOutputM + "\r\n");
+                                        string strOutputM = "\r\n" + drIsCS1[i]["CS1"].ToString() + "，" + drIsCS1[i]["CS2"].ToString() + "，" + drIsCS1[i]["CS3"].ToString() + "，" + drIsCS1[i]["NODECOLOR"].ToString() + drIsCS1[i]["NODENO"].ToString() + "；";
+                                        D2Message += new Message(strOutputM);
                                         Console.WriteLine(strOutputM);
                                     }
                                     var imgCnR = Message.LocalImage(@"C:\D2ZT\ZTCR.jpg");
@@ -122,7 +122,7 @@ namespace Marchen.BLL
                                     //唯一结果，显示图片
                                     strColor = dtCRResult3.Rows[0]["NODECOLOR"].ToString();
                                     intLocation = int.Parse(dtCRResult3.Rows[0]["NODENO"].ToString());
-                                    string strOutput1 = "显示屏1：" + dtCRResult3.Rows[0]["CS1"].ToString() + "，显示屏2：" + dtCRResult3.Rows[0]["CS2"].ToString() + "，显示屏3：" + dtCRResult3.Rows[0]["CS3"].ToString() + "；颜色：" + dtCRResult3.Rows[0]["NODECOLOR"].ToString() + "，位置：" + dtCRResult3.Rows[0]["NODENO"].ToString();
+                                    string strOutput1 = "屏1，屏2，屏3，位置：\r\n————————————\r\n" + dtCRResult3.Rows[0]["CS1"].ToString() + "，" + dtCRResult3.Rows[0]["CS2"].ToString() + "，" + dtCRResult3.Rows[0]["CS3"].ToString() + "，" + dtCRResult3.Rows[0]["NODECOLOR"].ToString() + dtCRResult3.Rows[0]["NODENO"].ToString() + "；";
                                     var imgColor = Message.LocalImage(@"C:\D2ZT\ZTR_" + strColor + ".png");
                                     var imgLocation = Message.LocalImage(@"C:\D2ZT\ZTC_" + intLocation.ToString() + ".png");
                                     Console.WriteLine(@"C:\D2ZT\ZTR_" + strColor + ".png");
@@ -143,10 +143,10 @@ namespace Marchen.BLL
                                 }
                                 else
                                 {
+                                    D2Message += new Message("\r\n返回多组结果，请确认：\r\n屏1，屏2，屏3，位置：\r\n————————————");
                                     for (int i = 0; i < dtCRResult3.Rows.Count; i++)
                                     {
-                                        D2Message += new Message("\r\n返回多组结果，请确认\r\n");
-                                        string strOutputM = "显示屏1：" + dtCRResult3.Rows[i]["CS1"].ToString() + "，显示屏2：" + dtCRResult3.Rows[i]["CS2"].ToString() + "，显示屏3：" + dtCRResult3.Rows[i]["CS3"].ToString() + "；颜色：" + dtCRResult3.Rows[i]["nodecolor"].ToString() + "，位置：" + dtCRResult3.Rows[i]["nodeno"].ToString();
+                                        string strOutputM = "\r\n" + dtCRResult3.Rows[i]["CS1"].ToString() + "，" + dtCRResult3.Rows[i]["CS2"].ToString() + "，" + dtCRResult3.Rows[i]["CS3"].ToString() + "，" + dtCRResult3.Rows[i]["NODECOLOR"].ToString() + dtCRResult3.Rows[i]["NODENO"].ToString() + "；";
                                         D2Message += new Message(strOutputM + "\r\n");
                                         Console.WriteLine(strOutputM);
                                     }
