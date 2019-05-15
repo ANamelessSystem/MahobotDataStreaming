@@ -63,7 +63,7 @@ namespace Marchen.BLL
             string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
             string cmdAtMeAlone = "[CQ:at,qq=" + SelfProperties.SelfID + "]";
             string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
-            if (strGrpID == "569396886" || strGrpID == "877184755")
+            if (strGrpID == "569396886")
             //if (strGrpID == "877184755")
             {
                 //2019.05.15
