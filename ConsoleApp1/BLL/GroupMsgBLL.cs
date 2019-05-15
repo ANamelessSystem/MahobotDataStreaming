@@ -66,7 +66,8 @@ namespace Marchen.BLL
             if (strGrpID == "569396886" || strGrpID == "877184755")
             //if (strGrpID == "877184755")
             {
-                GroupMsgBLL4D2.D2MsgHandler(receivedMessage, memberInfo);
+                //2019.05.15
+                //GroupMsgBLL4D2.D2MsgHandler(receivedMessage, memberInfo);
                 return;
             }
             if (strRawcontext.Contains(cmdAtMeAlone))

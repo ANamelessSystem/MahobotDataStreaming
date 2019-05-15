@@ -104,7 +104,8 @@ namespace Marchen.Garden
                 else if (message.Endpoint is PrivateEndpoint)
                 {
                     //处理私聊消息
-                    PrivateMsgBLL.PriMsgReco(message);
+                    //2019.05.15
+                    //PrivateMsgBLL.PriMsgReco(message);
                 }
                 else
                 {
