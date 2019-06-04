@@ -101,7 +101,7 @@ namespace Marchen.BLL
                     cmdType = "queuequit";
                     Console.WriteLine("识别为退出排刀");
                 }
-                else if (strCmdHead.ToLower() == "清空队列")
+                else if (strCmdHead.ToLower() == "clear" || strCmdHead.ToLower() == "清空队列")
                 {
                     //管理功能，不设快捷键
                     cmdType = "clear";
@@ -117,7 +117,7 @@ namespace Marchen.BLL
                     cmdType = "help";
                     Console.WriteLine("识别为说明书呈报");
                 }
-                else if (strCmdHead.ToLower() == "掉线")
+                else if (strCmdHead.ToLower() == "timeout" || strCmdHead.ToLower() == "掉线")
                 {
                     cmdType = "timeout";
                     Console.WriteLine("识别为掉线");

@@ -97,21 +97,21 @@ namespace Marchen.BLL
             string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string e in sArray)
             {
-                if (e == "补时")
+                if (e == "补时" || e.ToLower() == "ext")
                 {
                     CommonVariables.IntEXT = 1;
                 }
-                else if (e == "非补时")
+                else if (e == "非补时" || e.ToLower() == "noext")
                 {
                     CommonVariables.IntEXT = 0;
                 }
-                else if (e == "掉线")
+                else if (e == "掉线" || e.ToLower() == "timeout")
                 {
                     CommonVariables.IntBossCode = 0;
                     CommonVariables.IntRound = 0;
                     CommonVariables.IntDMG = 0;
                 }
-                else if (e == "尾刀")
+                else if (e == "尾刀" || e.ToLower() == "last")
                 {
                     CommonVariables.IntSubsType = 1;
                 }
@@ -143,7 +143,35 @@ namespace Marchen.BLL
                         }
                     }
                 }
-                else if (e.ToLower().Contains("e"))
+                else if (e.ToLower().Contains("r"))
+                {
+                    if (!int.TryParse(e.ToLower().Replace("r", ""), out int intOutRound))
+                    {
+                        Console.WriteLine(DateTime.Now.ToString() + "无法识别周目数，元素为：" + e.ToString());
+                        MsgMessage += new Message("无法识别周目数，请确保填入的周目数为数字。\r\n");
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        if (intOutRound > ValueLimits.RoundLimitMax)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString() + "周目数过高，输入字串为：" + e.ToString() + "，上限值为：" + ValueLimits.RoundLimitMax.ToString());
+                            MsgMessage += new Message("所填入的周目数(" + intOutRound.ToString() + ")高于目前设定的上限值（" + ValueLimits.RoundLimitMax.ToString() + "）。\r\n");
+                            isCorrect = false;
+                        }
+                        else if (intOutRound < 1)
+                        {
+                            Console.WriteLine(DateTime.Now.ToString() + "周目数过低，输入字串为：" + e.ToString());
+                            MsgMessage += new Message("所填入的周目数（" + intOutRound.ToString() + "）低于有效值（1）。\r\n");
+                            isCorrect = false;
+                        }
+                        else
+                        {
+                            CommonVariables.IntRound = int.Parse(Regex.Replace(intOutRound.ToString(), @"[^\d.\d]", ""));
+                        }
+                    }
+                }
+                else if (e.ToLower().Contains("e") && !e.ToLower().Contains("ext"))
                 {
                     if (!int.TryParse(e.ToLower().Replace("e", ""), out int intOutEID))
                     {
@@ -208,28 +236,28 @@ namespace Marchen.BLL
                 }
                 else if (e.ToLower().Contains("w"))
                 {
-                    if (!CmdHelper.DamageAnalyzation(2, e.ToLower().Replace("w", "")))
+                    if (!DamageAnalyzation(2, e.ToLower().Replace("w", "")))
                     {
                         isCorrect = false;
                     }
                 }
                 else if (e.Contains("万"))
                 {
-                    if (!CmdHelper.DamageAnalyzation(2, e.Replace("万", "")))
+                    if (!DamageAnalyzation(2, e.Replace("万", "")))
                     {
                         isCorrect = false;
                     }
                 }
                 else if (e.ToLower().Contains("k"))
                 {
-                    if (!CmdHelper.DamageAnalyzation(1, e.ToLower().Replace("k", "")))
+                    if (!DamageAnalyzation(1, e.ToLower().Replace("k", "")))
                     {
                         isCorrect = false;
                     }
                 }
                 else if (Regex.Replace(e, @"[^0-9]+", "").Length > 0)
                 {
-                    if (!CmdHelper.DamageAnalyzation(0, e))
+                    if (!DamageAnalyzation(0, e))
                     {
                         isCorrect = false;
                     }
@@ -296,17 +324,17 @@ namespace Marchen.BLL
             int intMultiplier = 0;
             if (intUnitType == 0)
             {
-                Console.WriteLine("伤害值单位为无");
+                //Console.WriteLine("伤害值单位为无");
                 intMultiplier = 1;
             }
             else if (intUnitType == 1)
             {
-                Console.WriteLine("伤害值单位为千");
+                //Console.WriteLine("伤害值单位为千");
                 intMultiplier = 1000;
             }
             else if (intUnitType == 2)
             {
-                Console.WriteLine("伤害值单位为万");
+                //Console.WriteLine("伤害值单位为万");
                 intMultiplier = 10000;
             }
             else
