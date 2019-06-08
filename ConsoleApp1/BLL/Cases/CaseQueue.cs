@@ -179,6 +179,56 @@ namespace Marchen.BLL
         }
 
         /// <summary>
+        /// 将一个队列记录修改为等待救援
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        public static void QueueSos(string strGrpID, string strUserID,string strCmdContext)
+        {
+            //bool isCorrect = true;
+            //分拆命令
+            if (!CmdHelper.CmdSpliter(strCmdContext))
+            {
+                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (CommonVariables.IntBossCode == -1)
+            {
+                MsgMessage += new Message("未能找到BOSS编号。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (CommonVariables.IntRound == -1)
+            {
+                //备用
+            }
+            if (QueueDAL.SosQueue(strGrpID, strUserID, CommonVariables.IntBossCode, CommonVariables.IntRound, out int updCount))
+            {
+                if (updCount > 0)
+                {
+                    Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀置为等待救援状态。");
+                    MsgMessage += new Message("已将较早一次队列记录置为等待救援状态。\r\n--------------------\r\n");
+                }
+                else
+                {
+                    Console.WriteLine("群：" + strGrpID + "，" + strUserID + "修改队列状态失败：未找到记录。");
+                    MsgMessage += new Message("未找到队列记录，请先进入队列再改为等待救援状态。\r\n--------------------\r\n");
+                }
+                QueueShow(strGrpID, strUserID);
+            }
+            else
+            {
+                MsgMessage += new Message("与数据库失去连接，修改队列状态失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            }
+        }
+
+
+        /// <summary>
         /// 显示血量并检查提醒表
         /// </summary>
         /// <param name="strGrpID"></param>

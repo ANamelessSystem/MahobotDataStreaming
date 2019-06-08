@@ -140,15 +140,15 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QuitQueue(string strGrpID, string strUserID, out int intDelCount)
         {
-            string sqlQryTopId = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
+            string sqlDelTopQueue = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
             try
             {
-                intDelCount = DBHelper.ExecuteCommand(sqlQryTopId);
+                intDelCount = DBHelper.ExecuteCommand(sqlDelTopQueue);
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
-                Console.WriteLine("修改队列时跳出错误，SQL：" + sqlQryTopId + "。\r\n" + orex);
+                Console.WriteLine("修改队列时跳出错误，SQL：" + sqlDelTopQueue + "。\r\n" + orex);
                 intDelCount = 0;
                 return false;
             }
@@ -172,6 +172,29 @@ namespace Marchen.DAL
             {
                 Console.WriteLine("清空队列时跳出错误，SQL：" + sqlClrQue + "。\r\n" + orex);
                 deletedCount = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 挂树等救的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="intUpdCount">受到影响的行数</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool SosQueue(string strGrpID, string strUserID,int intBossCode,int intRound, out int intUpdCount)
+        {
+            string sqlSosTopQueue = "update TTL_Queue set sosflag = '1',bc = '" + intBossCode + "',round = '" + intRound + "' where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
+            try
+            {
+                intUpdCount = DBHelper.ExecuteCommand(sqlSosTopQueue);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("修改队列时跳出错误，SQL：" + sqlSosTopQueue + "。\r\n" + orex);
+                intUpdCount = 0;
                 return false;
             }
         }

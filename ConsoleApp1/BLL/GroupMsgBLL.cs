@@ -63,19 +63,12 @@ namespace Marchen.BLL
             string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
             string cmdAtMeAlone = "[CQ:at,qq=" + SelfProperties.SelfID + "]";
             string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
-            if (strGrpID == "569396886")
-            //if (strGrpID == "877184755")
-            {
-                //2019.05.15
-                //GroupMsgBLL4D2.D2MsgHandler(receivedMessage, memberInfo);
-                return;
-            }
             if (strRawcontext.Contains(cmdAtMeAlone))
             {
                 var message = new Message("");
                 GroupVerification(strGrpID);
                 Console.WriteLine("接收到一条来自群：" + strGrpID + "的Notice，开始解析内容");
-                //分离命令头和命令体，命令头：功能识别区，命令体：数据包含区。
+                //分离命令头和命令体，命令头(strCmdHead)：功能识别区，命令体(strCmdContext)：数据包含区。
                 string strCmdHead = strRawcontext.Replace(cmdAtMeAlone, "").Trim().Split(' ')[0];
                 string strCmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Replace(strCmdHead, "").Trim();
                 string strUserID = receivedMessage.UserId.ToString();
@@ -86,28 +79,28 @@ namespace Marchen.BLL
                     strUserGrpCard = strUserNickName;
                 }
                 string cmdType = "";
-                if (strCmdHead.ToLower() == "c1" || strCmdHead.ToLower() == "排队")
+                if (strCmdHead.ToLower() == "c1" || strCmdHead == "排队")
                 {
                     cmdType = "queueadd";
                     Console.WriteLine("识别为开始排刀");
                 }
-                else if (strCmdHead.ToLower() == "c2" || strCmdHead.ToLower() == "查看排队")
+                else if (strCmdHead.ToLower() == "c2" || strCmdHead == "查看排队")
                 {
                     cmdType = "queueshow";
                     Console.WriteLine("识别为查询排刀");
                 }
-                else if (strCmdHead.ToLower() == "c3" || strCmdHead.ToLower() == "退出排队")
+                else if (strCmdHead.ToLower() == "c3" || strCmdHead == "退出排队")
                 {
                     cmdType = "queuequit";
                     Console.WriteLine("识别为退出排刀");
                 }
-                else if (strCmdHead.ToLower() == "clear" || strCmdHead.ToLower() == "清空队列")
+                else if (strCmdHead.ToLower() == "clear" || strCmdHead == "清空队列")
                 {
                     //管理功能，不设快捷键
                     cmdType = "clear";
                     Console.WriteLine("识别为清空指令");
                 }
-                else if (strCmdHead.ToLower() == "dmg" || strCmdHead.ToLower() == "伤害")
+                else if (strCmdHead.ToLower() == "dmg" || strCmdHead == "伤害")
                 {
                     cmdType = "debrief";
                     Console.WriteLine("识别为伤害上报");
@@ -117,58 +110,58 @@ namespace Marchen.BLL
                     cmdType = "help";
                     Console.WriteLine("识别为说明书呈报");
                 }
-                else if (strCmdHead.ToLower() == "timeout" || strCmdHead.ToLower() == "掉线")
+                else if (strCmdHead.ToLower() == "timeout" || strCmdHead == "掉线")
                 {
                     cmdType = "timeout";
                     Console.WriteLine("识别为掉线");
                 }
-                else if (strCmdHead.ToLower() == "mod" || strCmdHead.ToLower() == "修改")
+                else if (strCmdHead.ToLower() == "mod" || strCmdHead == "修改")
                 {
                     cmdType = "dmgmod";
                     Console.WriteLine("识别为伤害修改");
                 }
-                else if (strCmdHead.ToLower() == "show" || strCmdHead.ToLower() == "查看")
+                else if (strCmdHead.ToLower() == "show" || strCmdHead == "查看")
                 {
                     cmdType = "dmgshow";
                     Console.WriteLine("识别为伤害查看");
                 }
-                else if (strCmdHead.ToLower() == "f1" || strCmdHead.ToLower() == "查刀")
+                else if (strCmdHead.ToLower() == "f1" || strCmdHead == "查刀")
                 {
                     cmdType = "remainshow";
                     Console.WriteLine("识别为未出满三刀的成员查询");
                 }
-                else if (strCmdHead.ToLower() == "f2" || strCmdHead.ToLower() == "提醒出刀")
+                else if (strCmdHead.ToLower() == "f2" || strCmdHead == "提醒出刀")
                 {
                     cmdType = "remainnotice";
                     Console.WriteLine("识别为提醒未出满三刀的成员");
                 }
-                else if (strCmdHead.ToLower() == "nla" || strCmdHead.ToLower() == "报名")
+                else if (strCmdHead.ToLower() == "nla" || strCmdHead == "报名")
                 {
                     cmdType = "namelistalt";
                     Console.WriteLine("识别为名单列表增加指定人或更新指定人");
                 }
-                else if (strCmdHead.ToLower() == "nls" || strCmdHead.ToLower() == "查看报名")
+                else if (strCmdHead.ToLower() == "nls" || strCmdHead == "查看报名")
                 {
                     cmdType = "namelistshow";
                     Console.WriteLine("识别为展示名单列表");
                 }
-                else if (strCmdHead.ToLower() == "nld" || strCmdHead.ToLower() == "删除报名")
+                else if (strCmdHead.ToLower() == "nld" || strCmdHead == "删除报名")
                 {
                     cmdType = "namelistdel";
                     Console.WriteLine("识别为名单列表删除指定人");
                 }
-                else if (strCmdHead.ToLower() == "s1" || strCmdHead.ToLower() == "订阅")
+                else if (strCmdHead.ToLower() == "s1" || strCmdHead == "订阅")
                 {
                     //需要另外参数
                     cmdType = "bosssubsadd";
                     Console.WriteLine("识别为新增BOSS订阅");
                 }
-                else if (strCmdHead.ToLower() == "s2" || strCmdHead.ToLower() == "查看订阅")
+                else if (strCmdHead.ToLower() == "s2" || strCmdHead == "查看订阅")
                 {
                     cmdType = "bosssubsshow";
                     Console.WriteLine("识别为查看BOSS订阅");
                 }
-                else if (strCmdHead.ToLower() == "s3" || strCmdHead.ToLower() == "退订")
+                else if (strCmdHead.ToLower() == "s3" || strCmdHead == "退订")
                 {
                     //需要另外参数
                     cmdType = "bosssubscancel";
@@ -178,6 +171,11 @@ namespace Marchen.BLL
                 {
                     cmdType = "test";
                     Console.WriteLine("test");
+                }
+                else if (strCmdHead.ToLower() == "sos" || strCmdHead == "救")
+                {
+                    cmdType = "sos";
+                    Console.WriteLine("挂树等救");
                 }
                 else
                 {
@@ -314,6 +312,19 @@ namespace Marchen.BLL
                     case "test":
                         {
                             //CaseHelp.test();
+                        }
+                        break;
+                    case "sos":
+                        {
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            CaseQueue.QueueSos(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     case "unknown":
