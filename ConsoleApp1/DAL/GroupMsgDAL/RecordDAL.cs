@@ -22,7 +22,7 @@ namespace Marchen.DAL
         {
             DataTable dtMaxEID = new DataTable();
             int intEventID = 1;
-            string sqlQryMaxEID = "select max(eventid) as maxeid from GD_" + strGrpID;
+            string sqlQryMaxEID = "select max(eventid) as maxeid from TTL_DMGRECORDS where GRPID = '" + strGrpID + "' and TIME >= trunc(sysdate,'mm')+1 and TIME < trunc(add_months(sysdate,1),'mm')+1";
             try
             {
                 dtMaxEID = DBHelper.GetDataTable(sqlQryMaxEID);
