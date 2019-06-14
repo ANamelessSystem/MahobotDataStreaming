@@ -37,7 +37,7 @@ namespace Marchen.DAL
             {
                 intEventID = int.Parse(dtMaxEID.Rows[0]["maxeid"].ToString()) + 1;
             }
-            string sqlDmgDbrf = "insert into GD_" + strGrpID + "(userid,dmg,round,bc,extime,time,eventid) values('" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ",sysdate," + intEventID + ")";
+            string sqlDmgDbrf = "insert into TTL_DMGRECORDS (grpid,userid,dmg,round,bc,extime,time,eventid) values('" + strGrpID + "','" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ",sysdate," + intEventID + ")";
             try
             {
                 DBHelper.ExecuteCommand(sqlDmgDbrf);
@@ -106,7 +106,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDmgRecByEID(int intEID, string strGrpID, out DataTable dtDmgRec)
         {
-            string sqlQryDmgRec = "select userid,dmg,round,bc,extime from GD_" + strGrpID + " where eventid =" + intEID;
+            string sqlQryDmgRec = "select userid,dmg,round,bc,extime from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and eventid =" + intEID + " and time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1";
             try
             {
                 dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRec);
@@ -133,7 +133,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool DamageUpdate(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime, int intEID)
         {
-            string sqlDmgDbrf = " update GD_" + strGrpID + " set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " where eventid = " + intEID;
+            string sqlDmgDbrf = " update TTL_DMGRECORDS set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " where time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1 and grpid = '" + strGrpID + "' and eventid = " + intEID + "";
             try
             {
                 DBHelper.ExecuteCommand(sqlDmgDbrf);
@@ -152,21 +152,21 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtTableCount">返回dt</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool CheckClanDmgTable(string strGrpID, out DataTable dtTableCount)
-        {
-            string sqlCheckTableExist = "select count(*) as count from user_tables where table_name = 'GD_" + strGrpID + "'";
-            try
-            {
-                dtTableCount = DBHelper.GetDataTable(sqlCheckTableExist);
-                return true;
-            }
-            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
-            {
-                Console.WriteLine("查询伤害表是否存在时返回错误，SQL：" + sqlCheckTableExist + "。\r\n" + oex);
-                dtTableCount = null;
-                return false;
-            }
-        }
+        //public static bool CheckClanDmgTable(string strGrpID, out DataTable dtTableCount)
+        //{
+        //    string sqlCheckTableExist = "select count(*) as count from user_tables where table_name = 'GD_" + strGrpID + "'";
+        //    try
+        //    {
+        //        dtTableCount = DBHelper.GetDataTable(sqlCheckTableExist);
+        //        return true;
+        //    }
+        //    catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+        //    {
+        //        Console.WriteLine("查询伤害表是否存在时返回错误，SQL：" + sqlCheckTableExist + "。\r\n" + oex);
+        //        dtTableCount = null;
+        //        return false;
+        //    }
+        //}
 
         /// <summary>
         /// 查询数据库时间的方法
