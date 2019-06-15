@@ -185,8 +185,6 @@ namespace Marchen.BLL
         /// <param name="strUserID">QQ号</param>
         public static void QueueSos(string strGrpID, string strUserID,string strCmdContext)
         {
-            //bool isCorrect = true;
-            //分拆命令
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
@@ -203,7 +201,14 @@ namespace Marchen.BLL
             }
             if (CommonVariables.IntRound == -1)
             {
-                //备用
+                if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
+                {
+                    CommonVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
+                    if (CommonVariables.IntBossCode < int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) && int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) == 5)
+                    {
+                        CommonVariables.IntRound += 1;//如果检测到BC有人没提交，另外的人挂在了下周目B1、B2的情况，增加周目数
+                    }
+                }
             }
             if (QueueDAL.SosQueue(strGrpID, strUserID, CommonVariables.IntBossCode, CommonVariables.IntRound, out int updCount))
             {

@@ -82,16 +82,16 @@ namespace Marchen.BLL
                     return;
                 }
                 //请求目前进度
-                int intBC_Old = 0;
-                int intRound_Old = 0;
+                int intBC_Progress = 0;
+                int intRound_Progress = 0;
                 if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
                 {
                     if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
                     {
                         if (!(dtBossProgress.Rows[0][0] is DBNull))
                         {
-                            intBC_Old = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
-                            intRound_Old = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
+                            intBC_Progress = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
+                            intRound_Progress = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
                         }
                     }
                 }
@@ -103,10 +103,10 @@ namespace Marchen.BLL
                     return;
                 }
                 //第一刀不检查，它有可能发生在凌晨，你来不及处理，所以你放过它吧
-                if (intBC_Old != 0 && intRound_Old != 0)
+                if (intBC_Progress != 0 && intRound_Progress != 0)
                 {
                     //检查是否跳周目（非B1但输了比目前高的周目）
-                    if (intRound_Old < CommonVariables.IntRound && CommonVariables.IntBossCode != 1)
+                    if (intRound_Progress < CommonVariables.IntRound && CommonVariables.IntBossCode != 1)
                     {
                         MsgMessage += new Message("周目数可能有误（可能跨周目），已拒绝本次提交，请重新检查。\r\n");
                         MsgMessage += Message.At(long.Parse(strUserID));
@@ -114,7 +114,7 @@ namespace Marchen.BLL
                         return;
                     }
                     //检查是否跳了BOSS（输了比目前高的非连续的BOSS）
-                    if ((intBC_Old + 1) < CommonVariables.IntBossCode)
+                    if ((intBC_Progress + 1) < CommonVariables.IntBossCode && CommonVariables.IntRound >= intRound_Progress)
                     {
                         MsgMessage += new Message("BOSS代码可能有误（可能跨BOSS），已拒绝本次提交，请重新检查。\r\n");
                         MsgMessage += Message.At(long.Parse(strUserID));
@@ -169,6 +169,13 @@ namespace Marchen.BLL
             {
                 CommonVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
                 CommonVariables.IntBossCode = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
+            }
+            else
+            {
+                MsgMessage += new Message("与数据库失去连接，掉线记录失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
             }
             if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
             {

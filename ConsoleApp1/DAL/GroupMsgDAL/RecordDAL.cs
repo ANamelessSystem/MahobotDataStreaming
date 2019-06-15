@@ -223,7 +223,9 @@ namespace Marchen.DAL
         {
             string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from "+
                                       "(select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, nvl(sum(b.DMG), 0) as totaldmg from "+
-                                      "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate) a " +
+                                      "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where "+
+                                      "grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate and "+
+                                      "round = (select max(round) from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate)) a " +
                                       "left join(select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME >= trunc(sysdate, 'mm') + 1 and TIME <= sysdate) b " +
                                       "on a.MAXBC = b.bc and a.maxround = b.round) c " +
                                       "left join(select roundmin, roundmax, bc, hp from ttl_hpset) d on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
