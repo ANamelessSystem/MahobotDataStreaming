@@ -379,7 +379,7 @@ namespace Marchen.BLL
                     else if (intOutDamage < 1)
                     {
                         Console.WriteLine("伤害值过低，输入字串为：" + e);
-                        MsgMessage += new Message("所填入的伤害值（" + intOutDamage.ToString() + "）低于有效值（1）。\r\n");
+                        MsgMessage += new Message("所填入的伤害值（" + intOutDamage.ToString() + "）低于有效值（1），如为掉线请使用掉线指令记录。\r\n");
                         CommonVariables.IntDMG = -1;
                         return false;
                     }

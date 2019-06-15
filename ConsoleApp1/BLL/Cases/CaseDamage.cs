@@ -161,6 +161,15 @@ namespace Marchen.BLL
             {
                 CommonVariables.IntEXT = 0;
             }
+            if (CommonVariables.IntDMG == -1)
+            {
+                CommonVariables.IntDMG = 0;
+            }
+            if (RecordDAL.GetBossProgress(strGrpID,out DataTable dtBossProgress))
+            {
+                CommonVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
+                CommonVariables.IntBossCode = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
+            }
             if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
             {
                 MsgMessage = new Message("掉线已记录，档案号为： " + intEID.ToString() + "\r\n--------------------\r\n");
