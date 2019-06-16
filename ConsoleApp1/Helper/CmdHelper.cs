@@ -274,46 +274,6 @@ namespace Marchen.BLL
         }
 
         /// <summary>
-        /// 检查数据库的后台表是否已经创建
-        /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="outMsgMessage"></param>
-        /// <returns></returns>
-        //public static bool DmgTblCheck(string strGrpID)
-        //{
-        //    if (RecordDAL.CheckClanDmgTable(strGrpID, out DataTable dtTableCount))
-        //    {
-        //        if (int.Parse(dtTableCount.Rows[0]["count"].ToString()) == 0)
-        //        {
-        //            if (RecordDAL.CreateTablesForGuildDamage(strGrpID))
-        //            {
-        //                Console.WriteLine("已成功为公会群" + strGrpID + "建立伤害表。");
-        //                MsgMessage += new Message("(未找到本公会伤害后台数据表，已自动建立。)\r\n");
-        //                return true;
-        //            }
-        //            else
-        //            {
-        //                Console.WriteLine("为公会群" + strGrpID + "建立伤害表过程中失败。");
-        //                MsgMessage += new Message("(公会伤害后台数据表建立失败。)\r\n");
-        //                return false;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            Console.WriteLine("伤害表检查pass");
-        //            return true;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        Console.WriteLine("读取公会群" + strGrpID + "的伤害表失败。");
-        //        MsgMessage += new Message("与数据库失去连接，读取本公会伤害表失败。\r\n");
-        //        return false;
-        //    }
-        //}
-
-        /// <summary>
         /// 伤害值的转换，以及有效性检测
         /// </summary>
         /// <param name="intUnitType"></param>

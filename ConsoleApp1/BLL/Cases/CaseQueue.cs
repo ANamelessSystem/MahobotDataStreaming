@@ -206,7 +206,7 @@ namespace Marchen.BLL
                     CommonVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
                     if (CommonVariables.IntBossCode < int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) && int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) == 5)
                     {
-                        CommonVariables.IntRound += 1;//如果检测到BC有人没提交，另外的人挂在了下周目B1、B2的情况，增加周目数
+                        CommonVariables.IntRound += 1;//如果检测到BC有人没提交，另外的人挂在了下周目的BOSS的情况，增加周目数
                     }
                 }
             }
@@ -234,9 +234,9 @@ namespace Marchen.BLL
 
 
         /// <summary>
-        /// 显示血量并检查提醒表
+        /// 显示血量并检查是否有预定列表
         /// </summary>
-        /// <param name="strGrpID"></param>
+        /// <param name="strGrpID">群号</param>
         public static void HpShowAndSubsCheck(string strGrpID)
         {
             if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
@@ -248,32 +248,69 @@ namespace Marchen.BLL
                         return;
                     }
                 }
+                //string strHpRemain = dtBossProgress.Rows[0]["hpremain"].ToString();
+                int intHPNow = int.Parse(dtBossProgress.Rows[0]["hpremain"].ToString());
+                int intRoundNow = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
+                int intBCNow = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
+                string strFormatedHP = "";
                 try
                 {
-                    string strHpRemain = dtBossProgress.Rows[0]["hpremain"].ToString();
                     string strOutput2 = "";
-                    if (strHpRemain.Length > 4 && !strHpRemain.Contains("-"))
+                    if (intHPNow > 9999)
                     {
-                        strOutput2 = "目前进度：" + dtBossProgress.Rows[0]["maxround"].ToString() + "周目，B" + dtBossProgress.Rows[0]["maxbc"].ToString() + "，剩余血量(推测)=" + strHpRemain.Substring(0, strHpRemain.Length - 4) + "万";
-                        MsgMessage += new Message(strOutput2 + "\r\n--------------------\r\n");
+                        //5位正数以上自动转换为以万为单位优化显示
+                        strFormatedHP = intHPNow.ToString().Substring(0, intHPNow.ToString().Length - 4) + "万";
                     }
-                    else if (strHpRemain.Length > 0)
+                    else if (intHPNow <= 9999 && intHPNow >= -9999)
                     {
-                        strOutput2 = "目前进度：" + dtBossProgress.Rows[0]["maxround"].ToString() + "周目，B" + dtBossProgress.Rows[0]["maxbc"].ToString() + "，剩余血量(推测)=" + strHpRemain;
-                        MsgMessage += new Message(strOutput2 + "\r\n--------------------\r\n");
+                        //正负4位数（小误差），自动跳到下个BOSS
+                        if (intBCNow == ValueLimits.BossLimitMax)
+                        {
+                            //现在为B5，需要跳到下周目B1的情况
+                            if (QueueDAL.GetBossMaxHP(1, intRoundNow + 1, out DataTable dtBossMaxHP))
+                            {
+                                Console.WriteLine("误差内跳到下个BOSS");
+                                intBCNow = 1;
+                                intRoundNow += 1;
+                                intHPNow = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString());
+                                strFormatedHP = intHPNow.ToString().Substring(0, intHPNow.ToString().Length - 4) + "万";
+                            }
+                            else
+                            {
+                                strFormatedHP = intHPNow.ToString();
+                            }
+                        }
+                        else
+                        {
+                            if (QueueDAL.GetBossMaxHP(intBCNow + 1, intRoundNow, out DataTable dtBossMaxHP))
+                            {
+                                Console.WriteLine("误差内跳到下个BOSS");
+                                intBCNow += 1;
+                                intHPNow = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString());
+                                strFormatedHP = intHPNow.ToString().Substring(0, intHPNow.ToString().Length - 4) + "万";
+                            }
+                            else
+                            {
+                                strFormatedHP = intHPNow.ToString();
+                            }
+                        }
                     }
+                    else
+                    {
+                        //剩余情况应为长度超过4位的负数，偏差比较大，不简化会比较显眼
+                        strFormatedHP = intHPNow.ToString();
+                    }
+                    strOutput2 = "目前进度：" + intRoundNow.ToString() + "周目，B" + intBCNow.ToString() + "，剩余血量(推测)=" + strFormatedHP;
+                    MsgMessage += new Message(strOutput2 + "\r\n--------------------\r\n");
                     Console.WriteLine(strOutput2);
                     //订阅提醒功能
-                    int intHpNow = int.Parse(strHpRemain);
-                    int intRoundNow = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
-                    int intBCNow = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
                     int intProgType;
-                    if (intHpNow > 3000000)
+                    if (intHPNow > 3000000)
                     {
                         //提醒到订阅类型0
                         intProgType = 0;
                     }
-                    else if (intHpNow > 1000000)
+                    else if (intHPNow > 1000000)
                     {
                         //提醒到订阅类型1
                         intProgType = 1;
@@ -287,15 +324,7 @@ namespace Marchen.BLL
                     {
                         if (dtSubsMembers.Rows.Count > 0)
                         {
-                            string strRemindContext = "[公会战进度提醒]\r\n您所在群："+strGrpID+"，BOSS进度已到B"+intBCNow+"，目前血量："+strHpRemain+"\r\n如时间方便，请做好本战准备。";
-                            if (strHpRemain.Length > 4 && !strHpRemain.Contains("-"))
-                            {
-                                strRemindContext = "[公会战进度提醒]\r\n您所在群：" + strGrpID + "，BOSS进度已到B" + intBCNow + "，目前血量：" + strHpRemain.Substring(0, strHpRemain.Length - 4) + "万\r\n如时间方便，请做好本战准备。";
-                            }
-                            else if (strHpRemain.Length > 0)
-                            {
-                                strRemindContext = "[公会战进度提醒]\r\n您所在群：" + strGrpID + "，BOSS进度已到B" + intBCNow + "，目前血量：" + strHpRemain + "\r\n如时间方便，请做好本战准备。";
-                            }
+                            string strRemindContext = "[公会战进度提醒]\r\n您所在群：" + strGrpID + "，BOSS进度已到B" + intBCNow + "，目前血量：" + strFormatedHP + "\r\n如时间方便，请做好本战准备。";
                             for (int i = 0; i < dtSubsMembers.Rows.Count; i++)
                             {
                                 long lUserID = long.Parse(dtSubsMembers.Rows[i]["USERID"].ToString());
@@ -305,14 +334,10 @@ namespace Marchen.BLL
                                 Console.WriteLine("已更新通知状态" + lUserID.ToString() + "(" + strGrpID + ")");
                             }
                         }
-                        else
-                        {
-                            //无人订阅
-                        }
                     }
                     else
                     {
-                        Console.WriteLine("提醒查询失败");
+                        Console.WriteLine("提醒查询失败（数据库错误）");
                     }
                 }
                 catch (Exception ex)

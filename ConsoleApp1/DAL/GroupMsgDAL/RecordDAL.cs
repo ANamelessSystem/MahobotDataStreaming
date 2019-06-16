@@ -147,28 +147,6 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 检查伤害统计表是否存在的方法
-        /// </summary>
-        /// <param name="strGrpID">群号</param>
-        /// <param name="dtTableCount">返回dt</param>
-        /// <returns>true：执行成功；false：执行失败。</returns>
-        //public static bool CheckClanDmgTable(string strGrpID, out DataTable dtTableCount)
-        //{
-        //    string sqlCheckTableExist = "select count(*) as count from user_tables where table_name = 'GD_" + strGrpID + "'";
-        //    try
-        //    {
-        //        dtTableCount = DBHelper.GetDataTable(sqlCheckTableExist);
-        //        return true;
-        //    }
-        //    catch (Oracle.ManagedDataAccess.Client.OracleException oex)
-        //    {
-        //        Console.WriteLine("查询伤害表是否存在时返回错误，SQL：" + sqlCheckTableExist + "。\r\n" + oex);
-        //        dtTableCount = null;
-        //        return false;
-        //    }
-        //}
-
-        /// <summary>
         /// 查询数据库时间的方法
         /// </summary>
         /// <param name="dtTimeNow">返回dt格式时间</param>
