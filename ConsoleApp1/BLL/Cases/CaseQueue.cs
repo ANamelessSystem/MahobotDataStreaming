@@ -34,7 +34,7 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (QueueDAL.AddQueue(strGrpID, strUserID, strUserGrpCard))
+            if (QueueDAL.AddQueue(strGrpID, strUserID))
             {
                 MsgMessage += new Message("已加入队列\r\n--------------------\r\n");
                 QueueShow(strGrpID, strUserID);
@@ -74,7 +74,15 @@ namespace Marchen.BLL
                     //Console.WriteLine("队列查询循环开始的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                     for (int i = 0; i < dtQueue.Rows.Count; i++)
                     {
-                        string strOutput = "顺序：" + dtQueue.Rows[i]["seq"].ToString() + "    " + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")";
+                        string strOutput = "";
+                        if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
+                        {
+                            strOutput = "【" + dtQueue.Rows[i]["seq"].ToString() + "】" + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["bc"].ToString() + "(周目" + dtQueue.Rows[i]["round"].ToString() + ")】";
+                        }
+                        else
+                        {
+                            strOutput = "【" + dtQueue.Rows[i]["seq"].ToString() + "】" + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")";
+                        }
                         MsgMessage += new Message(strOutput + "\r\n");
                         Console.WriteLine(strOutput);
                     }
@@ -206,7 +214,7 @@ namespace Marchen.BLL
                     CommonVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
                     if (CommonVariables.IntBossCode < int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) && int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) == 5)
                     {
-                        CommonVariables.IntRound += 1;//如果检测到BC有人没提交，另外的人挂在了下周目的BOSS的情况，增加周目数
+                        CommonVariables.IntRound += 1;//BOSS显示进度还在B5，挂树着已经到了下B1或B2的情况
                     }
                 }
             }
@@ -214,7 +222,7 @@ namespace Marchen.BLL
             {
                 if (updCount > 0)
                 {
-                    Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀置为等待救援状态。");
+                    Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀置为等待救援状态。（B" + CommonVariables.IntBossCode + "，" + CommonVariables.IntRound + "周目）");
                     MsgMessage += new Message("已将较早一次队列记录置为等待救援状态。\r\n--------------------\r\n");
                 }
                 else
@@ -303,7 +311,7 @@ namespace Marchen.BLL
                     strOutput2 = "目前进度：" + intRoundNow.ToString() + "周目，B" + intBCNow.ToString() + "，剩余血量(推测)=" + strFormatedHP;
                     MsgMessage += new Message(strOutput2 + "\r\n--------------------\r\n");
                     Console.WriteLine(strOutput2);
-                    //订阅提醒功能
+                    //订阅提醒
                     int intProgType;
                     if (intHPNow > 3000000)
                     {
@@ -339,6 +347,8 @@ namespace Marchen.BLL
                     {
                         Console.WriteLine("提醒查询失败（数据库错误）");
                     }
+                    //下树提醒
+
                 }
                 catch (Exception ex)
                 {

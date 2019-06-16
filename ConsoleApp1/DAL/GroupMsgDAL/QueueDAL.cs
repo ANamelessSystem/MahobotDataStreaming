@@ -71,11 +71,10 @@ namespace Marchen.DAL
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">用户QQ号</param>
-        /// <param name="strUserGrpCard">用户群名片</param>
         /// <returns>
         /// true：执行成功；false：执行失败。
         /// </returns>
-        public static bool AddQueue(string strGrpID, string strUserID, string strUserGrpCard)
+        public static bool AddQueue(string strGrpID, string strUserID)
         {
             //查询队列表中的最大序列值，如果查询结果是非空，则序号为查询的最大序号+1，如果查询结果为空则使用1
             DataTable dtMaxSeq = new DataTable();
@@ -94,7 +93,8 @@ namespace Marchen.DAL
             {
                 intSequence = int.Parse(dtMaxSeq.Rows[0]["maxseq"].ToString()) + 1;
             }
-            string sqlAddSeq = "insert into TTL_Queue(seq,id,name,grpid) values(" + intSequence + ",'" + strUserID + "','" + strUserGrpCard + "','" + strGrpID + "')";
+            string sqlSubQryUsrName = "(select name from TTL_Queue where id = '" + strUserID + "' and grpid = '" + strGrpID + "' and seq = 0 and rownum = 1)";
+            string sqlAddSeq = "insert into TTL_Queue(seq,id,name,grpid,sosflag) values(" + intSequence + ",'" + strUserID + "'," + sqlSubQryUsrName + ",'" + strGrpID + "','0')";
             try
             {
                 DBHelper.ExecuteCommand(sqlAddSeq);
@@ -117,7 +117,7 @@ namespace Marchen.DAL
         /// </returns>
         public static bool ShowQueue(string strGrpID, out DataTable dtQueue)
         {
-            string sqlQrySeq = "select id,seq,name from TTL_Queue where grpid = '" + strGrpID + "' and seq > 0 order by seq asc";
+            string sqlQrySeq = "select id,seq,name,sosflag,bc,round from TTL_Queue where grpid = '" + strGrpID + "' and seq > 0 order by seq asc";
             try
             {
                 dtQueue = DBHelper.GetDataTable(sqlQrySeq);
@@ -185,12 +185,12 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool SosQueue(string strGrpID, string strUserID,int intBossCode,int intRound, out int intUpdCount)
         {
-            string sqlSosTopQueue = "update TTL_Queue set sosflag = '1',bc = '" + intBossCode + "',round = '" + intRound + "' where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
+            string sqlSosTopQueue = "update TTL_Queue set sosflag = '1',bc = '" + intBossCode + "',round = '" + intRound + "' where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 and sosflag != 1 group by id)";
             try
             {
                 intUpdCount = DBHelper.ExecuteCommand(sqlSosTopQueue);
                 return true;
-            }
+            } 
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
                 Console.WriteLine("修改队列时跳出错误，SQL：" + sqlSosTopQueue + "。\r\n" + orex);
@@ -198,6 +198,23 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
+        public static bool GetSosList(string strGrpID, int intBCNow, int intRoundNow, out DataTable dtSosList)
+        {
+            string sqlGetSosList = "select ID from TTL_QUEUE where GRPID = '" + strGrpID + "' and SOSFLAG = '1' and ROUND < " + intRoundNow + " or (ROUND = " + intRoundNow + " and BC < " + intBCNow + ")";
+            try
+            {
+                dtSosList = DBHelper.GetDataTable(sqlGetSosList);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("获取BOSS的初期HP时发生错误，SQL：" + sqlGetSosList + "。\r\n" + orex);
+                dtSosList = null;
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// 获得BOSS初期HP值的方法
@@ -266,7 +283,7 @@ namespace Marchen.DAL
                     if (intMemberCount < 30)
                     {
                         //人数低于30，允许新增
-                        string sqlInsertName = "insert into TTL_Queue(seq,id,name,grpid) values(" + 0 + ",'" + strUserID + "','" + strUserGrpCard + "','" + strGrpID + "')";
+                        string sqlInsertName = "insert into TTL_Queue(seq,id,name,grpid,sosflag) values(" + 0 + ",'" + strUserID + "','" + strUserGrpCard + "','" + strGrpID + "','0')";
                         try
                         {
                             DBHelper.ExecCmdNoCount(sqlInsertName);
