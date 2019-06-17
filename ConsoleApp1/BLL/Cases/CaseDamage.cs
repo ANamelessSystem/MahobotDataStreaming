@@ -37,12 +37,6 @@ namespace Marchen.BLL
                 return;
             }
             bool isCorrect = true;//数据正误标记位
-            //if (!CmdHelper.DmgTblCheck(strGrpID))//检查是否有伤害表（下期去掉单独的伤害表）
-            //{
-            //    MsgMessage += Message.At(long.Parse(strUserID));
-            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-            //    return;
-            //}
             //分拆命令
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
