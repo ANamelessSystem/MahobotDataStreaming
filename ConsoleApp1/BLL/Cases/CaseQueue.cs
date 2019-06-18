@@ -348,25 +348,7 @@ namespace Marchen.BLL
                         Console.WriteLine("提醒查询失败（数据库错误）");
                     }
                     //下树提醒
-                    if (QueueDAL.GetSosList(strGrpID, intBCNow, intRoundNow, out DataTable dtSosList))
-                    {
-                        if (dtSosList != null && dtSosList.Rows.Count > 0)
-                        {
-                            if (!(dtSosList.Rows[0][0] is DBNull))
-                            {
-                                MsgMessage += new Message("请以下成员下树：");
-                                for (int i = 0; i < dtSosList.Rows.Count; i++)
-                                {
-                                    string strUID = dtSosList.Rows[i]["userid"].ToString();
-                                    MsgMessage += new Message("\r\n") + Message.At(long.Parse(strUID));
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("下树查询失败（数据库错误）");
-                    }
+
                 }
                 catch (Exception ex)
                 {

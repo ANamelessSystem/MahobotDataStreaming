@@ -37,8 +37,7 @@ namespace Marchen.DAL
             {
                 intEventID = int.Parse(dtMaxEID.Rows[0]["maxeid"].ToString()) + 1;
             }
-            string sqlDmgDbrf = "insert into TTL_DMGRECORDS(grpid,userid,dmg,round,bc,extime,time,eventid) " +
-                "values('" + strGrpID + "','" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ",sysdate," + intEventID + ")";
+            string sqlDmgDbrf = "insert into TTL_DMGRECORDS (grpid,userid,dmg,round,bc,extime,time,eventid) values('" + strGrpID + "','" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ",sysdate," + intEventID + ")";
             try
             {
                 DBHelper.ExecuteCommand(sqlDmgDbrf);
@@ -107,9 +106,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDmgRecByEID(int intEID, string strGrpID, out DataTable dtDmgRec)
         {
-            string sqlQryDmgRec = "select userid,dmg,round,bc,extime from TTL_DMGRECORDS " +
-                "where grpid = '" + strGrpID + "' and eventid =" + intEID + " and " +
-                "time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1";
+            string sqlQryDmgRec = "select userid,dmg,round,bc,extime from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and eventid =" + intEID + " and time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1";
             try
             {
                 dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRec);
@@ -136,9 +133,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool DamageUpdate(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime, int intEID)
         {
-            string sqlDmgDbrf = " update TTL_DMGRECORDS " +
-                "set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " " +
-                "where time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1 and grpid = '" + strGrpID + "' and eventid = " + intEID + "";
+            string sqlDmgDbrf = " update TTL_DMGRECORDS set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " where time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1 and grpid = '" + strGrpID + "' and eventid = " + intEID + "";
             try
             {
                 DBHelper.ExecuteCommand(sqlDmgDbrf);
@@ -182,12 +177,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryStrikeStatus(string strGrpID, DateTime dtStart, DateTime dtEnd, out DataTable dtInsuff)
         {
-            string sqlQueryStrikeStatus = "select distinct(a.userid),nvl(cm,0) as cmain,nvl(ce,0) as cex from " +
-                "(select id as userid from TTL_QUEUE where seq = 0 and grpid ='" + strGrpID + "') a " +
-                "left join (select userid,count(CASE WHEN EXTIME = 0 THEN 1 ELSE NULL END) as cm," +
-                "count(CASE WHEN EXTIME = 1 THEN 1 ELSE NULL END) as ce from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and " +
-                "time between to_date('" + dtStart + "', 'yyyy/mm/dd hh24:mi:ss') and to_date('" + dtEnd + "','yyyy/mm/dd hh24:mi:ss') group by userid) b " +
-                "on a.userid=b.userid";
+            string sqlQueryStrikeStatus = "select distinct(a.userid),nvl(cm,0) as cmain,nvl(ce,0) as cex from (select id as userid from TTL_QUEUE where seq = 0 and grpid ='" + strGrpID + "') a left join (select userid,count(CASE WHEN EXTIME = 0 THEN 1 ELSE NULL END) as cm,count(CASE WHEN EXTIME = 1 THEN 1 ELSE NULL END) as ce from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and time between to_date('" + dtStart + "', 'yyyy/mm/dd hh24:mi:ss') and to_date('" + dtEnd + "','yyyy/mm/dd hh24:mi:ss') group by userid) b on a.userid=b.userid";
             try
             {
                 dtInsuff = DBHelper.GetDataTable(sqlQueryStrikeStatus);
@@ -209,14 +199,14 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool GetBossProgress(string strGrpID, out DataTable dtProgress)
         {
-            string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from " +
-                "(select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, nvl(sum(b.DMG), 0) as totaldmg from " +
-                "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where " +
-                "grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate and round = (select max(round) from " +
-                "TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate)) a " +
-                "left join (select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME >= trunc(sysdate, 'mm') + 1 and TIME <= sysdate) b " +
-                "on a.MAXBC = b.bc and a.maxround = b.round) c " +
-                "left join (select roundmin, roundmax, bc, hp from ttl_hpset) d on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
+            string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from "+
+                                      "(select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, nvl(sum(b.DMG), 0) as totaldmg from "+
+                                      "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where "+
+                                      "grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate and "+
+                                      "round = (select max(round) from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate)) a " +
+                                      "left join(select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME >= trunc(sysdate, 'mm') + 1 and TIME <= sysdate) b " +
+                                      "on a.MAXBC = b.bc and a.maxround = b.round) c " +
+                                      "left join(select roundmin, roundmax, bc, hp from ttl_hpset) d on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
             try
             {
                 dtProgress = DBHelper.GetDataTable(sqlQueryProgress);
@@ -241,7 +231,7 @@ namespace Marchen.DAL
         public static bool QueryDmgRecords(int intBossCode, int intRound, double douUserID, string strGrpID, out DataTable dtDmgRecords)
         {
             //string strUserID = "";
-            //Console.WriteLine("启动数据库查询语句");
+            Console.WriteLine("启动数据库查询语句");
             string sqlQryDmgRecByBCnRound = "";
             string sqlPaddingPattern = "";
             int elementCounter = 0;

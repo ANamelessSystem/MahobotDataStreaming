@@ -185,9 +185,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool SosQueue(string strGrpID, string strUserID,int intBossCode,int intRound, out int intUpdCount)
         {
-            string sqlSosTopQueue = "update TTL_Queue set sosflag = '1',bc = '" + intBossCode + "',round = '" + intRound + "' " +
-                "where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue " +
-                "where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 and sosflag != 1 group by id)";
+            string sqlSosTopQueue = "update TTL_Queue set sosflag = '1',bc = '" + intBossCode + "',round = '" + intRound + "' where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 and sosflag != 1 group by id)";
             try
             {
                 intUpdCount = DBHelper.ExecuteCommand(sqlSosTopQueue);
@@ -203,9 +201,7 @@ namespace Marchen.DAL
 
         public static bool GetSosList(string strGrpID, int intBCNow, int intRoundNow, out DataTable dtSosList)
         {
-            string sqlGetSosList = "select ID as userid from TTL_QUEUE " +
-                "where GRPID = '" + strGrpID + "' and SOSFLAG = '1' and ROUND < " + intRoundNow + " " +
-                "or (ROUND = " + intRoundNow + " and BC < " + intBCNow + ")";
+            string sqlGetSosList = "select ID from TTL_QUEUE where GRPID = '" + strGrpID + "' and SOSFLAG = '1' and ROUND < " + intRoundNow + " or (ROUND = " + intRoundNow + " and BC < " + intBCNow + ")";
             try
             {
                 dtSosList = DBHelper.GetDataTable(sqlGetSosList);
