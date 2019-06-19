@@ -183,33 +183,36 @@ namespace Marchen.DAL
         /// <param name="strUserID">QQ号</param>
         /// <param name="intUpdCount">受到影响的行数</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool SosQueue(string strGrpID, string strUserID,int intBossCode,int intRound, out int intUpdCount)
+        public static bool UpdateQueueToSos(string strGrpID, string strUserID,int intBossCode,int intRound, out int intUpdCount)
         {
-            string sqlSosTopQueue = "update TTL_Queue set sosflag = '1',bc = '" + intBossCode + "',round = '" + intRound + "' where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 and sosflag != 1 group by id)";
+            string sqlUpdateQueueToSos = "update TTL_Queue set sosflag = '1',bc = '" + intBossCode + "',round = '" + intRound + "' " +
+                "where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue " +
+                "where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 and sosflag != 1 group by id)";
             try
             {
-                intUpdCount = DBHelper.ExecuteCommand(sqlSosTopQueue);
+                intUpdCount = DBHelper.ExecuteCommand(sqlUpdateQueueToSos);
                 return true;
             } 
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
-                Console.WriteLine("修改队列时跳出错误，SQL：" + sqlSosTopQueue + "。\r\n" + orex);
+                Console.WriteLine("修改队列时跳出错误，SQL：" + sqlUpdateQueueToSos + "。\r\n" + orex);
                 intUpdCount = 0;
                 return false;
             }
         }
 
-        public static bool GetSosList(string strGrpID, int intBCNow, int intRoundNow, out DataTable dtSosList)
+        public static bool QuerySosList(string strGrpID, int intBCNow, int intRoundNow, out DataTable dtSosList)
         {
-            string sqlGetSosList = "select ID from TTL_QUEUE where GRPID = '" + strGrpID + "' and SOSFLAG = '1' and ROUND < " + intRoundNow + " or (ROUND = " + intRoundNow + " and BC < " + intBCNow + ")";
-            try
+            string sqlQuerySosList = "select ID as userid from TTL_QUEUE " +
+                "where GRPID = '" + strGrpID + "' and SOSFLAG = '1' and ROUND < " + intRoundNow + " " +
+                "or (ROUND = " + intRoundNow + " and BC < " + intBCNow + ")"; try
             {
-                dtSosList = DBHelper.GetDataTable(sqlGetSosList);
+                dtSosList = DBHelper.GetDataTable(sqlQuerySosList);
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
-                Console.WriteLine("获取BOSS的初期HP时发生错误，SQL：" + sqlGetSosList + "。\r\n" + orex);
+                Console.WriteLine("获取BOSS的初期HP时发生错误，SQL：" + sqlQuerySosList + "。\r\n" + orex);
                 dtSosList = null;
                 return false;
             }

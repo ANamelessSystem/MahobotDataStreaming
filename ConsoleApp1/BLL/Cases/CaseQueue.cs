@@ -59,7 +59,7 @@ namespace Marchen.BLL
             if (GroupProperties.IsHpShow)
             {
                 //Console.WriteLine("查询HP前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
-                HpShowAndSubsCheck(strGrpID);
+                HpShowAndSubsCheck(strGrpID, strUserID);
                 //Console.WriteLine("查询HP后的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
             }
             else
@@ -218,7 +218,7 @@ namespace Marchen.BLL
                     }
                 }
             }
-            if (QueueDAL.SosQueue(strGrpID, strUserID, CommonVariables.IntBossCode, CommonVariables.IntRound, out int updCount))
+            if (QueueDAL.UpdateQueueToSos(strGrpID, strUserID, CommonVariables.IntBossCode, CommonVariables.IntRound, out int updCount))
             {
                 if (updCount > 0)
                 {
@@ -245,7 +245,7 @@ namespace Marchen.BLL
         /// 显示血量并检查是否有预定列表
         /// </summary>
         /// <param name="strGrpID">群号</param>
-        public static void HpShowAndSubsCheck(string strGrpID)
+        public static void HpShowAndSubsCheck(string strGrpID,string strInputUserID = "0")
         {
             if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
             {
@@ -348,7 +348,34 @@ namespace Marchen.BLL
                         Console.WriteLine("提醒查询失败（数据库错误）");
                     }
                     //下树提醒
-
+                    if (QueueDAL.QuerySosList(strGrpID, intBCNow, intRoundNow, out DataTable dtSosList))
+                    {
+                        if (dtSosList != null && dtSosList.Rows.Count > 0)
+                        {
+                            if (!(dtSosList.Rows[0][0] is DBNull))
+                            {
+                                MsgMessage += new Message("请以下成员下树：");
+                                for (int i = 0; i < dtSosList.Rows.Count; i++)
+                                {
+                                    //现在引用的类库（WUDILIB）在同一条信息at了多次同一个人时，显示效果会劣化，故在具备输入UID时避开第二次以上at该UID的情况发生
+                                    if (dtSosList.Rows[i]["userid"].ToString() != strInputUserID)
+                                    {
+                                        if (i > 0 && i < dtSosList.Rows.Count)
+                                        {
+                                            MsgMessage += new Message("、");
+                                        }
+                                        string strUID = dtSosList.Rows[i]["userid"].ToString();
+                                        MsgMessage += Message.At(long.Parse(strUID));
+                                    }
+                                }
+                                MsgMessage += new Message("\r\n--------------------\r\n");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("下树查询失败（数据库错误）");
+                    }
                 }
                 catch (Exception ex)
                 {
