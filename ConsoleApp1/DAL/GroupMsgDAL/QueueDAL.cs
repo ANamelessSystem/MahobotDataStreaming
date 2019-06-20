@@ -58,8 +58,7 @@ namespace Marchen.DAL
             {
                 intSequence = int.Parse(dtMaxSeq.Rows[0]["maxseq"].ToString()) + 1;
             }
-            string sqlSubQryUsrName = "(select MBRNAME from TTL_MBRLIST where MBRID = '" + strUserID + "' and GRPID = '" + strGrpID + "' and rownum = 1)";
-            string sqlAddSeq = "insert into TTL_Queue(seq,id,name,grpid,sosflag) values(" + intSequence + ",'" + strUserID + "'," + sqlSubQryUsrName + ",'" + strGrpID + "','0')";
+            string sqlAddSeq = "insert into TTL_Queue(seq,id,grpid,sosflag) values(" + intSequence + ",'" + strUserID + "','" + strGrpID + "','0')";
             try
             {
                 DBHelper.ExecuteCommand(sqlAddSeq);
@@ -82,7 +81,11 @@ namespace Marchen.DAL
         /// </returns>
         public static bool ShowQueue(string strGrpID, out DataTable dtQueue)
         {
-            string sqlQrySeq = "select id,seq,name,sosflag,bc,round from TTL_Queue where grpid = '" + strGrpID + "' and seq > 0 order by seq asc";
+            string sqlQrySeq = "select ID,SEQ,SOSFLAG,BC,ROUND,b.MBRNAME from TTL_QUEUE a " +
+                "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b " +
+                "on a.GRPID = b.GRPID and a.ID = b.MBRID " +
+                "where a.GRPID = '" + strGrpID + "' and a.SEQ > 0 order by a.SEQ asc";
+
             try
             {
                 dtQueue = DBHelper.GetDataTable(sqlQrySeq);
@@ -105,7 +108,7 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QuitQueue(string strGrpID, string strUserID, out int intDelCount)
         {
-            string sqlDelTopQueue = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
+            string sqlDelTopQueue = "delete from TTL_Queue where GRPID = '" + strGrpID + "' and ID = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
             try
             {
                 intDelCount = DBHelper.ExecuteCommand(sqlDelTopQueue);
@@ -251,16 +254,26 @@ namespace Marchen.DAL
                     if (intMemberCount < 30)
                     {
                         //人数低于30，允许新增
-                        string sqlInsertName = "insert into TTL_Queue(seq,id,name,grpid,sosflag) values(" + 0 + ",'" + strUserID + "','" + strUserGrpCard + "','" + strGrpID + "','0')";
-                        try
+                        if (QryNameListWithNull(strGrpID, out DataTable dtNullList))
                         {
-                            DBHelper.ExecCmdNoCount(sqlInsertName);
-                            intMemberCount += 1;
-                            return true;
+                            int intInsertSeq = int.Parse(dtNullList.Rows[0]["SEQNO"].ToString());
+                            string sqlAddNameList = "update TTL_MBRLIST set MBRID = '" + strUserID + "',MBRNAME = '" + strUserGrpCard + "' where SEQNO = " + intInsertSeq + " and GRPID = '" + strGrpID + "'";
+                            try
+                            {
+                                DBHelper.ExecCmdNoCount(sqlAddNameList);
+                                intMemberCount += 1;
+                                return true;
+                            }
+                            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+                            {
+                                Console.WriteLine("新增名单时发生错误，SQL：" + sqlAddNameList + "。\r\n" + orex);
+                                intMemberCount = -1;
+                                return false;
+                            }
                         }
-                        catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+                        else
                         {
-                            Console.WriteLine("新增名单时发生错误，SQL：" + sqlInsertName + "。\r\n" + orex);
+                            Console.WriteLine("新增名单时发生错误。");
                             intMemberCount = -1;
                             return false;
                         }
@@ -312,6 +325,30 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
+
+        /// <summary>
+        /// 读取当前名单空余处的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtNameList"></param>
+        /// <returns></returns>
+        public static bool QryNameListWithNull(string strGrpID, out DataTable dtNameList)
+        {
+            string sqlShowNameListWithNull = "select MBRID,MBRNAME,SEQNO from TTL_MBRLIST where GRPID = '" + strGrpID + "' and MBRID is null order by SEQNO asc";
+            try
+            {
+                dtNameList = DBHelper.GetDataTable(sqlShowNameListWithNull);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("查询名单列表时跳出错误，SQL：" + sqlShowNameListWithNull + "。\r\n" + orex);
+                dtNameList = null;
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// 删除名单的方法

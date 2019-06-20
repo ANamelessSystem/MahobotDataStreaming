@@ -77,11 +77,11 @@ namespace Marchen.BLL
                         string strOutput = "";
                         if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
                         {
-                            strOutput = "【" + dtQueue.Rows[i]["seq"].ToString() + "】" + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["bc"].ToString() + "(周目" + dtQueue.Rows[i]["round"].ToString() + ")】";
+                            strOutput = "【" + dtQueue.Rows[i]["SEQ"].ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】";
                         }
                         else
                         {
-                            strOutput = "【" + dtQueue.Rows[i]["seq"].ToString() + "】" + dtQueue.Rows[i]["name"].ToString() + "(" + dtQueue.Rows[i]["id"].ToString() + ")";
+                            strOutput = "【" + dtQueue.Rows[i]["SEQ"].ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")";
                         }
                         MsgMessage += new Message(strOutput + "\r\n");
                         Console.WriteLine(strOutput);
