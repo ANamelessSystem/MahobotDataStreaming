@@ -47,7 +47,7 @@ namespace Marchen.BLL
                     MsgMessage += new Message("目前名单("+ dtNameList.Rows.Count + "/30)：\r\n");
                     for (int i = 0; i < dtNameList.Rows.Count; i++)
                     {
-                        string strOutput = dtNameList.Rows[i]["name"].ToString() + "(" + dtNameList.Rows[i]["id"].ToString() + ")";
+                        string strOutput = dtNameList.Rows[i]["MBRNAME"].ToString() + "(" + dtNameList.Rows[i]["MBRID"].ToString() + ")";
                         MsgMessage += new Message(strOutput + "\r\n");
                         Console.WriteLine(strOutput);
                     }
