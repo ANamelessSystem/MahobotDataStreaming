@@ -357,18 +357,17 @@ namespace Marchen.DAL
         /// <param name="strUserID">用户QQ号</param>
         /// <param name="deletedCount">被删除的行数</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool NameListDelete(string strGrpID, string strUserID, out int deletedCount)
+        public static bool NameListDelete(string strGrpID, string strUserID)
         {
             string sqlDeleteNameList = "update TTL_MBRLIST set MBRID = null,MBRNAME = null where GRPID = '" + strGrpID + "' and MBRID = '" + strUserID + "'";
             try
             {
-                deletedCount = DBHelper.ExecuteCommand(sqlDeleteNameList);
+                DBHelper.ExecuteCommand(sqlDeleteNameList);
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
                 Console.WriteLine("删除名单时跳出错误，SQL：" + sqlDeleteNameList + "。\r\n" + orex);
-                deletedCount = 0;
                 return false;
             }
         }

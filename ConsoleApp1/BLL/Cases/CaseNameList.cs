@@ -89,22 +89,25 @@ namespace Marchen.BLL
             }
             if (strUserID == CommonVariables.DouUID.ToString() || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
             {
-                if (QueueDAL.NameListDelete(strGrpID, CommonVariables.DouUID.ToString(), out int deletedCount))
+                if (QueueDAL.QryNameList(strGrpID, out DataTable dtNameList))
                 {
-                    if (deletedCount > 0)
+                    DataRow[] drExistsID = dtNameList.Select("MBRID='" + CommonVariables.DouUID.ToString() + "'");
+                    if (drExistsID.Length == 1)
                     {
-                        Console.WriteLine("已将群：" + strGrpID + "，" + CommonVariables.DouUID.ToString() + "移除名单。");
-                        MsgMessage += new Message("已将"+ CommonVariables.DouUID.ToString() + "移出名单。");
+                        if (QueueDAL.NameListDelete(strGrpID, CommonVariables.DouUID.ToString()))
+                        {
+                            Console.WriteLine("已将群：" + strGrpID + "，" + CommonVariables.DouUID.ToString() + "移除名单。");
+                            MsgMessage += new Message("已将" + CommonVariables.DouUID.ToString() + "移出名单。");
+                        }
+                        else
+                        {
+                            MsgMessage += new Message("与数据库失去连接，删除名单失败。\r\n");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("群：" + strGrpID + "，" + CommonVariables.DouUID.ToString() + "移出名单失败：未找到记录。");
-                        MsgMessage += new Message("未找到对应人员的名单记录，无法删除。");
+                        MsgMessage += new Message("未找到对应人员的名单记录，无法删除。\r\n");
                     }
-                }
-                else
-                {
-                    MsgMessage += new Message("与数据库失去连接，删除名单失败。\r\n");
                 }
             }
             else
