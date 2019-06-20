@@ -29,41 +29,6 @@ namespace Marchen.DAL
                 dtVfyResult = null;
                 return false;
             }
-            //if (dtGrpStat.Rows.Count == 0)
-            //{
-            //    Console.WriteLine("群：" + strGrpID + "不在激活列表内");
-            //    intStat = -2;
-            //}
-            //else if (dtGrpStat.Rows.Count > 1)
-            //{
-            //    Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查出非单一结果");
-            //    intStat = -2;
-            //}
-            //else
-            //{
-            //    intStat = int.Parse(dtGrpStat.Rows[0]["ORG_STAT"].ToString());
-            //    int intType = int.Parse(dtGrpStat.Rows[0]["ORG_TYPE"].ToString());
-            //    if (intType == 0)//如果本群注册为公主连接群
-            //    {
-            //        if (intStat == 1)
-            //        {
-            //            Console.WriteLine("群：" + strGrpID + "，验证通过");
-            //        }
-            //        else if (intStat == 0)
-            //        {
-            //            Console.WriteLine("群：" + strGrpID + "状态为未激活");
-            //        }
-            //        else
-            //        {
-            //            Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，发生了预料外的错误");
-            //        }
-            //    }
-            //    else
-            //    {
-            //        intStat = -100;
-            //        //其他游戏的群不动作，通过转发端口转发传到下一个程序
-            //    }
-            //}
         }
 
         /// <summary>
@@ -93,7 +58,7 @@ namespace Marchen.DAL
             {
                 intSequence = int.Parse(dtMaxSeq.Rows[0]["maxseq"].ToString()) + 1;
             }
-            string sqlSubQryUsrName = "(select name from TTL_Queue where id = '" + strUserID + "' and grpid = '" + strGrpID + "' and seq = 0 and rownum = 1)";
+            string sqlSubQryUsrName = "(select MBRNAME from TTL_MBRLIST where MBRID = '" + strUserID + "' and GRPID = '" + strGrpID + "' and rownum = 1)";
             string sqlAddSeq = "insert into TTL_Queue(seq,id,name,grpid,sosflag) values(" + intSequence + ",'" + strUserID + "'," + sqlSubQryUsrName + ",'" + strGrpID + "','0')";
             try
             {
@@ -262,12 +227,12 @@ namespace Marchen.DAL
         {
             if (QryNameList(strGrpID, out DataTable dtNameList))
             {
-                DataRow[] drExistsID = dtNameList.Select("id='" + strUserID + "'");
+                DataRow[] drExistsID = dtNameList.Select("MBRID='" + strUserID + "'");
                 intMemberCount = dtNameList.Rows.Count;
                 if (drExistsID.Length == 1)
                 {
                     //存在，更新
-                    string sqlUpdateName = "update TTL_Queue set name = '" + strUserGrpCard + "' where ID = '" + strUserID + "' and grpid = '" + strGrpID + "'";
+                    string sqlUpdateName = "update TTL_MBRLIST set MBRNAME = '" + strUserGrpCard + "' where MBRID = '" + strUserID + "' and GRPID = '" + strGrpID + "'";
                     try
                     {
                         DBHelper.ExecCmdNoCount(sqlUpdateName);
@@ -334,7 +299,7 @@ namespace Marchen.DAL
         /// </returns>
         public static bool QryNameList(string strGrpID, out DataTable dtNameList)
         {
-            string sqlShowNameList = "select id,name from TTL_Queue where grpid = '" + strGrpID + "' and seq = 0 order by id asc";
+            string sqlShowNameList = "select MBRID,MBRNAME,SEQNO from TTL_MBRLIST where GRPID = '" + strGrpID + "' and MBRID is not null order by SEQNO asc";
             try
             {
                 dtNameList = DBHelper.GetDataTable(sqlShowNameList);
@@ -357,7 +322,32 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool NameListDelete(string strGrpID, string strUserID, out int deletedCount)
         {
-            string sqlDeleteNameList = "delete from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = 0";
+            string sqlDeleteNameList = "update TTL_MBRLIST set MBRID = null,MBRNAME = null where GRPID = '" + strGrpID + "' and MBRID = '" + strUserID + "'";
+            try
+            {
+                deletedCount = DBHelper.ExecuteCommand(sqlDeleteNameList);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("删除名单时跳出错误，SQL：" + sqlDeleteNameList + "。\r\n" + orex);
+                deletedCount = 0;
+                return false;
+            }
+        }
+
+
+
+        /// <summary>
+        /// 删除名单的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="intSeqNO">指定删除的序号</param>
+        /// <param name="deletedCount">被删除的行数</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool NameListDelete(string strGrpID, int intSeqNO, out int deletedCount)
+        {
+            string sqlDeleteNameList = "update TTL_MBRLIST set MBRID = null,MBRNAME = null where GRPID = '" + strGrpID + "' and SEQNO = '" + intSeqNO + "'";
             try
             {
                 deletedCount = DBHelper.ExecuteCommand(sqlDeleteNameList);
@@ -381,7 +371,7 @@ namespace Marchen.DAL
         {
             if (QryNameList(strGrpID, out DataTable dtNameList))
             {
-                DataRow[] drExistsID = dtNameList.Select("id='" + strUserID + "'");
+                DataRow[] drExistsID = dtNameList.Select("MBRID='" + strUserID + "'");
                 if (drExistsID.Length == 1)
                 {
                     return 1;

@@ -354,7 +354,7 @@ namespace Marchen.BLL
                         {
                             if (!(dtSosList.Rows[0][0] is DBNull))
                             {
-                                MsgMessage += new Message("请以下成员下树：");
+                                MsgMessage += new Message("下树提醒：");
                                 for (int i = 0; i < dtSosList.Rows.Count; i++)
                                 {
                                     //现在引用的类库（WUDILIB）在同一条信息at了多次同一个人时，显示效果会劣化，故在具备输入UID时避开第二次以上at该UID的情况发生
