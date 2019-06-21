@@ -182,12 +182,12 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryStrikeStatus(string strGrpID, DateTime dtStart, DateTime dtEnd, out DataTable dtInsuff)
         {
-            string sqlQueryStrikeStatus = "select distinct(a.userid),nvl(cm,0) as cmain,nvl(ce,0) as cex from " +
-                "(select id as userid from TTL_QUEUE where seq = 0 and grpid ='" + strGrpID + "') a " +
+            string sqlQueryStrikeStatus = "select distinct(a.MBRID),a.MBRNAME,nvl(cm,0) as cmain,nvl(ce,0) as cex from " +
+                "(select MBRID,MBRNAME from TTL_MBRLIST where grpid ='" + strGrpID + "' and MBRID is not null) a " +
                 "left join (select userid,count(CASE WHEN EXTIME = 0 THEN 1 ELSE NULL END) as cm," +
                 "count(CASE WHEN EXTIME = 1 THEN 1 ELSE NULL END) as ce from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and " +
                 "time between to_date('" + dtStart + "', 'yyyy/mm/dd hh24:mi:ss') and to_date('" + dtEnd + "','yyyy/mm/dd hh24:mi:ss') group by userid) b " +
-                "on a.userid=b.userid";
+                "on a.MBRID=b.userid";
             try
             {
                 dtInsuff = DBHelper.GetDataTable(sqlQueryStrikeStatus);

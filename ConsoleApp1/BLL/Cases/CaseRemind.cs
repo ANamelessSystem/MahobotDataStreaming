@@ -42,7 +42,7 @@ namespace Marchen.BLL
                     MsgMessage += new Message("请以下成员尽早出刀：");
                     for (int i = 0; i < dtInsuff.Rows.Count; i++)
                     {
-                        string strUID = dtInsuff.Rows[i]["userid"].ToString();
+                        string strUID = dtInsuff.Rows[i]["MBRID"].ToString();
                         string strCountMain = dtInsuff.Rows[i]["cmain"].ToString();
                         if (int.Parse(strCountMain) < 3)
                         {
@@ -158,12 +158,13 @@ namespace Marchen.BLL
                     string strErr = "";
                     for (int i = 0; i < dtInsuff.Rows.Count; i++)
                     {
-                        string strUID = dtInsuff.Rows[i]["userid"].ToString();
+                        string strUID = dtInsuff.Rows[i]["MBRID"].ToString();
+                        string strUName = dtInsuff.Rows[i]["MBRNAME"].ToString();
                         int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
                         if (intCountMain > 3)
                         {
                             intCountUsed += 3;
-                            strErr = "\r\nID：" + strUID + "，非补时刀数大于3刀，请检查";
+                            strErr = "\r\n刀数异常：" + strUName + "(" + strUID + ")，非补时刀数大于3刀，请检查";
                         }
                         if (intCountMain == 3)
                         {
@@ -173,25 +174,38 @@ namespace Marchen.BLL
                         {
                             intCountUsed += 2;
                             intCountLeft += 1;
-                            strLeft1 += "\r\nID：" + strUID + "，剩余1刀";
+                            strLeft1 += "\r\n剩余1刀：" + strUName + "(" + strUID + ")";
                         }
                         if (intCountMain == 1)
                         {
                             intCountUsed += 1;
                             intCountLeft += 2;
-                            strLeft2 += "\r\nID：" + strUID + "，剩余2刀";
+                            strLeft2 += "\r\n剩余2刀：" + strUName + "(" + strUID + ")";
                         }
                         if (intCountMain == 0)
                         {
                             intCountLeft += 3;
-                            strLeft3 += "\r\nID：" + strUID + "，剩余3刀";
+                            strLeft3 += "\r\n剩余3刀：" + strUName + "(" + strUID + ")";
                         }
                     }
-                    MsgMessage += new Message(strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
+                    MsgMessage += new Message("\r\n--------------------");
+                    if (strLeft1 != null || strLeft1 != "")
+                    {
+                        MsgMessage += new Message(strLeft1 + "\r\n--------------------");
+                    }
+                    if (strLeft2 != null || strLeft2 != "")
+                    {
+                        MsgMessage += new Message(strLeft2 + "\r\n--------------------");
+                    }
+                    if (strLeft3 != null || strLeft3 != "")
+                    {
+                        MsgMessage += new Message(strLeft3 + "\r\n--------------------");
+                    }
+                    //MsgMessage += new Message("\r\n--------------------" + strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
                     MsgMessage += new Message("\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀");
                     if (strErr != null || strErr != "")
                     {
-                        MsgMessage += new Message("\r\n--------------------" + strErr + "");
+                        MsgMessage += new Message("\r\n--------------------" + strErr + "\r\n异常刀数已计为3刀");
                     }
                 }
                 else
