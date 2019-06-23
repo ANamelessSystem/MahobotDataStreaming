@@ -189,23 +189,23 @@ namespace Marchen.BLL
                         }
                     }
                     MsgMessage += new Message("\r\n--------------------");
-                    if (strLeft1 != null || strLeft1 != "")
+                    if (strLeft1 != null && strLeft1 != "")
                     {
                         MsgMessage += new Message(strLeft1 + "\r\n--------------------");
                     }
-                    if (strLeft2 != null || strLeft2 != "")
+                    if (strLeft2 != null && strLeft2 != "")
                     {
                         MsgMessage += new Message(strLeft2 + "\r\n--------------------");
                     }
-                    if (strLeft3 != null || strLeft3 != "")
+                    if (strLeft3 != null && strLeft3 != "")
                     {
                         MsgMessage += new Message(strLeft3 + "\r\n--------------------");
                     }
                     //MsgMessage += new Message("\r\n--------------------" + strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
                     MsgMessage += new Message("\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀");
-                    if (strErr != null || strErr != "")
+                    if (strErr != null && strErr != "")
                     {
-                        MsgMessage += new Message("\r\n--------------------" + strErr + "\r\n异常刀数已计为3刀");
+                        MsgMessage += new Message("\r\n--------------------" + strErr);
                     }
                 }
                 else

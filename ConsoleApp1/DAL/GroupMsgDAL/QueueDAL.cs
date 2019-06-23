@@ -326,7 +326,6 @@ namespace Marchen.DAL
             }
         }
 
-
         /// <summary>
         /// 读取当前名单空余处的方法
         /// </summary>
@@ -349,9 +348,8 @@ namespace Marchen.DAL
             }
         }
 
-
         /// <summary>
-        /// 删除名单的方法
+        /// 删除名单的方法（按UID）
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">用户QQ号</param>
@@ -373,9 +371,8 @@ namespace Marchen.DAL
         }
 
 
-
         /// <summary>
-        /// 删除名单的方法
+        /// 删除名单的方法（按序号）
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="intSeqNO">指定删除的序号</param>
@@ -393,6 +390,32 @@ namespace Marchen.DAL
             {
                 Console.WriteLine("删除名单时跳出错误，SQL：" + sqlDeleteNameList + "。\r\n" + orex);
                 deletedCount = 0;
+                return false;
+            }
+        }
+
+
+        public static bool GetMemberName(string strGrpID, string strUserID,out string strResultMbrName)
+        {
+            string sqlQryMbrNameByUID = "select MBRNAME from TTL_MBRLIST where MBRID = '" + strUserID + "' and GRPID = '" + strGrpID + "'";
+            strResultMbrName = "";
+            try
+            {
+                DataTable dtResult = DBHelper.GetDataTable(sqlQryMbrNameByUID);
+                if (dtResult.Rows[0]["MBRNAME"].ToString().Length > 0)
+                {
+                    strResultMbrName = dtResult.Rows[0]["MBRNAME"].ToString();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+                
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("搜寻用户昵称时出现错误，SQL：" + sqlQryMbrNameByUID + "。\r\n" + orex);
                 return false;
             }
         }

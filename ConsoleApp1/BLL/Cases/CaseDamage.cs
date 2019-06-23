@@ -379,40 +379,48 @@ namespace Marchen.BLL
                     MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
                 }
             }
-            else if ((CommonVariables.DouUID != -1 && CommonVariables.IntBossCode == -1 && CommonVariables.IntRound == -1)|| (CommonVariables.DouUID == -1 && CommonVariables.IntBossCode != -1 && CommonVariables.IntRound != -1))
+            else if ((CommonVariables.DouUID != -1 && CommonVariables.IntBossCode == -1 && CommonVariables.IntRound == -1))
             {
-                Console.WriteLine("识别到UID或周目+BOSS");
-                if (RecordDAL.QueryDmgRecords(CommonVariables.IntBossCode, CommonVariables.IntRound, CommonVariables.DouUID, strGrpID, out DataTable dtDmgRecords))
+                //仅按UID查询
+                Console.WriteLine("识别为按UID");
+                string strRUID = CommonVariables.DouUID.ToString();
+                string strRName = "";
+                if (QueueDAL.GetMemberName(strGrpID, CommonVariables.DouUID.ToString(), out string strResult))
                 {
+                    strRName = strResult;
+                }
+                if (RecordDAL.QueryDmgRecords(CommonVariables.DouUID, strGrpID, false, out DataTable dtDmgRecords))
+                {
+                    MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)");
                     for (int i = 0; i < dtDmgRecords.Rows.Count; i++)
                     {
-                        string strRUID = dtDmgRecords.Rows[i]["userid"].ToString();
                         string strRDmg = dtDmgRecords.Rows[i]["dmg"].ToString();
                         string strRRound = dtDmgRecords.Rows[i]["round"].ToString();
                         string strRBC = dtDmgRecords.Rows[i]["bc"].ToString();
                         string strREXT = dtDmgRecords.Rows[i]["extime"].ToString();
                         string strREID = dtDmgRecords.Rows[i]["eventid"].ToString();
+                        string strRTime = dtDmgRecords.Rows[i]["time"].ToString();
                         string resultString = "";
                         if (dtDmgRecords.Rows[i]["dmg"].ToString() == "0")
                         {
                             if (strREXT == "1")
                             {
-                                resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线) （补时）";
+                                resultString = strRRound + "周目B" + strRBC + "；伤害= 0(掉线) （补时）；\r\n      记录时间：[" + strRTime + "]";
                             }
                             else
                             {
-                                resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害= 0(掉线)";
+                                resultString = strRRound + "周目B" + strRBC + "；伤害= 0(掉线)；\r\n      记录时间：[" + strRTime + "]";
                             }
                         }
                         else if (dtDmgRecords.Rows[i]["dmg"].ToString() != "0")
                         {
                             if (strREXT == "1")
                             {
-                                resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + " （补时）";
+                                resultString = strRRound + "周目B" + strRBC + "；伤害=" + strRDmg + " （补时）；\r\n      记录时间：[" + strRTime + "]";
                             }
                             else
                             {
-                                resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg;
+                                resultString = strRRound + "周目B" + strRBC + "；伤害=" + strRDmg + "；\r\n      记录时间：[" + strRTime + "]";
                             }
                         }
                         else
@@ -424,7 +432,7 @@ namespace Marchen.BLL
                             return;
                         }
                         Console.WriteLine("E" + strREID + "：" + resultString + "\r\n");
-                        MsgMessage += new Message("E" + strREID + "：" + resultString + "\r\n");
+                        MsgMessage += new Message("\r\nE" + strREID + "：" + resultString);
                     }
                 }
                 else
@@ -436,7 +444,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("目前支持单独按档案号查询、单独按QQ号查询以及同时按BOSS与周目查询。\r\n");
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
+            //MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             return;
         }

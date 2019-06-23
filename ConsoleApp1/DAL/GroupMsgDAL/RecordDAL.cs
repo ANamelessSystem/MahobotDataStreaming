@@ -307,6 +307,62 @@ namespace Marchen.DAL
         }
 
         /// <summary>
+        /// 根据UID查询的方法
+        /// </summary>
+        /// <param name="douUserID"></param>
+        /// <param name="strGrpID"></param>
+        /// <param name="isAll">false时查询当日，true时查询全月</param>
+        /// <param name="dtDmgRecords"></param>
+        /// <returns></returns>
+        public static bool QueryDmgRecords(double douUserID, string strGrpID, bool isAll, out DataTable dtDmgRecords)
+        {
+            Console.WriteLine("启动数据库查询语句");
+            string sqlTimeFilter = "";
+            if (!isAll)
+            {
+                if (QueryTimeNowOnDatabase(out DataTable dtResultTime))
+                {
+                    DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
+                    if (dtNow.Hour >= 0 && dtNow.Hour < 4)
+                    {
+                        //当目前时间在0点到4点间时，筛选开始时间为前一天的凌晨4点
+                        sqlTimeFilter = " and TIME >= trunc(sysdate)+(4/24)-1 ";
+                    }
+                    else
+                    {
+                        //当目前时间在4点到24点间时，筛选开始时间为当天的凌晨4点
+                        sqlTimeFilter = " and TIME >= trunc(sysdate)+(4/24) ";
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("数据库错误，未能取回数据库时间。");
+                }
+            }
+            else
+            {
+                //如明确指定要查询全期间，则将筛选时间开始设置为本月2日
+                sqlTimeFilter = " and TIME >= trunc(sysdate,'mm')+1 ";
+            }
+            string sqlQryDmgRecByUID = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,b.MBRNAME as name from TTL_DMGRECORDS a " +
+                "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
+                "where a.grpid = '" + strGrpID + "' and a.userid = '" + douUserID + "' " + sqlTimeFilter + " order by a.eventid asc";
+            try
+            {
+                dtDmgRecords = DBHelper.GetDataTable(sqlQryDmgRecByUID);
+                Console.WriteLine("SQL语句成功执行");
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("群：" + strGrpID + "查询伤害时失败，SQL：" + sqlQryDmgRecByUID + "。\r\n" + oex);
+                dtDmgRecords = null;
+                return false;
+            }
+        }
+
+
+        /// <summary>
         /// 读取所有限值设置的方法
         /// </summary>
         /// <param name="dtLimits"></param>
