@@ -177,6 +177,11 @@ namespace Marchen.BLL
                     cmdType = "sos";
                     Console.WriteLine("挂树等救");
                 }
+                else if (strCmdHead.ToLower() == "score")
+                {
+                    cmdType = "score";
+                    Console.WriteLine("算分");
+                }
                 else
                 {
                     cmdType = "unknown";
@@ -325,6 +330,11 @@ namespace Marchen.BLL
                                 return;
                             }
                             CaseQueue.QueueSos(strGrpID, strUserID, strCmdContext);
+                        }
+                        break;
+                    case "score":
+                        {
+                            CaseStatistics.ShowScoreNow(strGrpID,strCmdContext);
                         }
                         break;
                     case "unknown":
