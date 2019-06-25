@@ -11,7 +11,7 @@ namespace Marchen.BLL
     {
         public static void test()
         {
-            ApiProperties.HttpApi.SendPrivateMessageAsync(1402453924,"testmessage");
+            ApiProperties.HttpApi.SendPrivateMessageAsync(1402453924,"tetmessage");
         }
     }
 }
