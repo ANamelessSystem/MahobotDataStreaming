@@ -94,6 +94,7 @@ namespace Marchen.BLL
             CommonVariables.IntDMG = -1;
             CommonVariables.IntEXT = -1;
             CommonVariables.IntSubsType = -1;
+            CommonVariables.IntTimeOutFlag = 0;
             string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string e in sArray)
             {
@@ -107,9 +108,7 @@ namespace Marchen.BLL
                 }
                 else if (e == "掉线" || e.ToLower() == "timeout")
                 {
-                    CommonVariables.IntBossCode = 0;
-                    CommonVariables.IntRound = 0;
-                    CommonVariables.IntDMG = 0;
+                    CommonVariables.IntTimeOutFlag = 1;
                 }
                 else if (e == "尾刀" || e.ToLower() == "last")
                 {

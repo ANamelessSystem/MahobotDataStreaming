@@ -172,8 +172,9 @@ namespace Marchen.DAL
         public static bool QuerySosList(string strGrpID, int intBCNow, int intRoundNow, out DataTable dtSosList)
         {
             string sqlQuerySosList = "select ID as userid from TTL_QUEUE " +
-                "where GRPID = '" + strGrpID + "' and SOSFLAG = '1' and ROUND < " + intRoundNow + " " +
-                "or (ROUND = " + intRoundNow + " and BC < " + intBCNow + ")"; try
+                "where GRPID = '" + strGrpID + "' and SOSFLAG = '1' and (ROUND < " + intRoundNow + " " +
+                "or (ROUND = " + intRoundNow + " and BC < " + intBCNow + "))";
+            try
             {
                 dtSosList = DBHelper.GetDataTable(sqlQuerySosList);
                 return true;

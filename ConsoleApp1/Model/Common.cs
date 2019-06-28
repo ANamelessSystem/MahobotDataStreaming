@@ -31,5 +31,7 @@ namespace Marchen.Model
         public static int IntDMG { get; set; }
         public static int IntEXT { get; set; }
         public static int IntSubsType { get; set; }
+        public static int IntTimeOutFlag { get; set; }
+        public static int IntIsAllFlag { get; set; }
     }
 }
