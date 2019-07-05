@@ -58,9 +58,7 @@ namespace Marchen.BLL
         {
             if (GroupProperties.IsHpShow)
             {
-                //Console.WriteLine("查询HP前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                 HpShowAndSubsCheck(strGrpID, strUserID);
-                //Console.WriteLine("查询HP后的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
             }
             else
             {
@@ -71,13 +69,12 @@ namespace Marchen.BLL
                 if (dtQueue.Rows.Count > 0)
                 {
                     MsgMessage += new Message("目前队列：\r\n");
-                    //Console.WriteLine("队列查询循环开始的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                     for (int i = 0; i < dtQueue.Rows.Count; i++)
                     {
                         string strOutput = "";
                         if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
                         {
-                            strOutput = "【" + dtQueue.Rows[i]["SEQ"].ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】";
+                            strOutput = "【等救】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】";
                         }
                         else
                         {
@@ -86,7 +83,6 @@ namespace Marchen.BLL
                         MsgMessage += new Message(strOutput + "\r\n");
                         Console.WriteLine(strOutput);
                     }
-                    //Console.WriteLine("队列查询循环结束后的信息：\r\n" + MsgMessage.Raw.ToString()+"(信息结束)");
                 }
                 else
                 {
@@ -97,12 +93,10 @@ namespace Marchen.BLL
             else
             {
                 MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
             }
-            //Console.WriteLine("发送最终结果前的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
             MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-            //Console.WriteLine("发送最终结果后的信息：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
-            //throw new Exception("调试，强制中断程序");
         }
 
         /// <summary>
@@ -110,8 +104,8 @@ namespace Marchen.BLL
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
-        /// <param name="strUserGrpCard"></param>
-        public static void QueueQuit(string strGrpID, string strUserID)
+        /// <param name="intType">0：直接收到C3命令；1：来自其他方法的调用</param>
+        public static void QueueQuit(string strGrpID, string strUserID, int intType)
         {
             if (QueueDAL.QuitQueue(strGrpID, strUserID, out int deletedCount))
             {
@@ -123,9 +117,15 @@ namespace Marchen.BLL
                 else
                 {
                     Console.WriteLine("群：" + strGrpID + "，" + strUserID + "移出队列失败：未找到记录。");
-                    MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
+                    if (intType == 0)
+                    {
+                        MsgMessage += new Message("未找到队列记录。\r\n--------------------\r\n");
+                    }
+                    if (intType == 1)
+                    {
+                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
+                    }
                 }
-                //Console.WriteLine("展示队列前的信息输出：\r\n" + MsgMessage.Raw.ToString() + "(信息结束)");
                 QueueShow(strGrpID, strUserID);
             }
             else

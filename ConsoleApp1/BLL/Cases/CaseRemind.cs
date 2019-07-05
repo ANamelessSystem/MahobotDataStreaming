@@ -164,7 +164,7 @@ namespace Marchen.BLL
                         if (intCountMain > 3)
                         {
                             intCountUsed += 3;
-                            strErr = "\r\n刀数异常：" + strUName + "(" + strUID + ")，非补时刀数大于3刀，请检查";
+                            strErr += "\r\n异常：" + strUName + "(" + strUID + ")，非补时刀数超过3，请检查";
                         }
                         if (intCountMain == 3)
                         {
@@ -201,7 +201,6 @@ namespace Marchen.BLL
                     {
                         MsgMessage += new Message(strLeft3 + "\r\n--------------------");
                     }
-                    //MsgMessage += new Message("\r\n--------------------" + strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
                     MsgMessage += new Message("\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀");
                     if (strErr != null && strErr != "")
                     {

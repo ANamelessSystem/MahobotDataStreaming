@@ -177,11 +177,11 @@ namespace Marchen.BLL
                     cmdType = "sos";
                     Console.WriteLine("挂树等救");
                 }
-                else if (strCmdHead.ToLower() == "score")
-                {
-                    cmdType = "score";
-                    Console.WriteLine("算分");
-                }
+                //else if (strCmdHead.ToLower() == "score")
+                //{
+                //    cmdType = "score";
+                //    Console.WriteLine("算分");
+                //}
                 else
                 {
                     cmdType = "unknown";
@@ -201,7 +201,7 @@ namespace Marchen.BLL
                         break;
                     case "queuequit":
                         {
-                            CaseQueue.QueueQuit(strGrpID, strUserID);
+                            CaseQueue.QueueQuit(strGrpID, strUserID, 0);
                         }
                         break;
                     case "clear":
@@ -237,7 +237,8 @@ namespace Marchen.BLL
                         break;
                     case "timeout":
                         {
-                            CaseDamage.DmgTimeOut(strGrpID, strUserID, strCmdContext);
+                            //CaseDamage.DmgTimeOut(strGrpID, strUserID, strCmdContext);
+                            CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     case "dmgmod":
@@ -332,11 +333,11 @@ namespace Marchen.BLL
                             CaseQueue.QueueSos(strGrpID, strUserID, strCmdContext);
                         }
                         break;
-                    case "score":
-                        {
-                            CaseStatistics.ShowScoreNow(strGrpID,strCmdContext);
-                        }
-                        break;
+                    //case "score":
+                    //    {
+                    //        CaseStatistics.ShowScoreNow(strGrpID,strCmdContext);
+                    //    }
+                    //    break;
                     case "unknown":
                         {
                             message += new Message("无法识别内容,输入【@MahoBot help】以查询命令表。\r\n");

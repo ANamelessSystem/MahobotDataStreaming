@@ -13,7 +13,7 @@ namespace Marchen.BLL
     class CaseDamage : GroupMsgBLL
     {
         /// <summary>
-        /// 一般的上传伤害
+        /// 上传伤害，并试图退出队列
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
@@ -105,27 +105,56 @@ namespace Marchen.BLL
             {
                 //如果非掉线，检查是否跨周目跨BOSS
                 //第一刀不检查
-                if (intBC_Progress != 1 && intRound_Progress != 1)
+                if (!(intBC_Progress == 1 && intRound_Progress == 1))
                 {
-                    //检查是否跳周目（非B1但输了比目前高的周目）
-                    if (intRound_Progress < CommonVariables.IntRound && !(CommonVariables.IntBossCode == 1 && intBC_Progress == 5))
+                    //检查是否跳周目
+                    if (CommonVariables.IntRound > intRound_Progress)
                     {
-                        MsgMessage += new Message("周目数可能有误（可能跨周目），已拒绝本次提交，请重新检查。\r\n");
-                        MsgMessage += Message.At(long.Parse(strUserID));
-                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                        return;
+                        //唯一允许输入周目比目前大的情况：目前B5，输入B1，且输入的周目=目前周目+1
+                        if (!(intBC_Progress == 5 && CommonVariables.IntBossCode == 1 && intRound_Progress == (CommonVariables.IntRound + 1)))
+                        {
+                            MsgMessage += new Message("所提交的周目值有误(可能跨周目)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
+                            MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
                     }
-                    //检查是否跳了BOSS（输了比目前高的非连续的BOSS）
-                    if (CommonVariables.IntBossCode > (intBC_Progress + 1))//WIP
+                    if (CommonVariables.IntRound < intRound_Progress)
                     {
-                        MsgMessage += new Message("BOSS代码可能有误（可能跨BOSS），已拒绝本次提交，请重新检查。\r\n");
-                        MsgMessage += Message.At(long.Parse(strUserID));
-                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                        return;
+                        //唯一允许输入周目比目前小的情况：目前B1，输入B5，且输入的周目=目前周目-1
+                        if (!(intBC_Progress == 1 && CommonVariables.IntBossCode == 5 && intRound_Progress == (CommonVariables.IntRound - 1)))
+                        {
+                            MsgMessage += new Message("所提交的周目值有误(可能跨周目)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
+                            MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
+                    }
+                    //检查是否跳BOSS
+                    if (CommonVariables.IntBossCode > (intBC_Progress + 1))
+                    {
+                        //唯一允许的提交比目前高的非连续的BOSS例外情况：有人先输入了下周目的B1，需要往前补一个B5记录的情况
+                        if (!(intBC_Progress == 1 && CommonVariables.IntBossCode == 5 && intRound_Progress == CommonVariables.IntRound + 1))
+                        {
+                            MsgMessage += new Message("所提交的BOSS代码有误(可能跨BOSS)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
+                            MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
+                    }
+                    if ((CommonVariables.IntBossCode + 1) < intBC_Progress)
+                    {
+                        //唯一允许的提交比目前低的非连续的BOSS例外情况：现在B5，跨到下周目B1
+                        if (!(intBC_Progress == 5 && CommonVariables.IntBossCode == 1 && intRound_Progress == (CommonVariables.IntRound - 1)))
+                        {
+                            MsgMessage += new Message("所提交的BOSS代码有误(可能跨BOSS)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
+                            MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
                     }
                 }
             }
-
             //执行上传
             if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
             {
@@ -134,75 +163,11 @@ namespace Marchen.BLL
                 //执行退订
                 CaseSubscribe.SubsDelAuto(strGrpID, strUserID, CommonVariables.IntBossCode);
                 //执行退队
-                CaseQueue.QueueQuit(strGrpID, strUserID);
+                CaseQueue.QueueQuit(strGrpID, strUserID, 1);
             }
             else
             {
                 MsgMessage += new Message("与数据库失去连接，伤害保存失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-        }
-
-        /// <summary>
-        /// 记录掉线
-        /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="strCmdContext"></param>
-        public static void DmgTimeOut(string strGrpID, string strUserID, string strCmdContext)
-        {
-            int intMemberStatus = QueueDAL.MemberCheck(strGrpID, strUserID);
-            if (intMemberStatus == 0)
-            {
-                MsgMessage += new Message("尚未报名，无法上传伤害。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            else if (intMemberStatus == -1)
-            {
-                MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            if (!CmdHelper.CmdSpliter(strCmdContext))
-            {
-                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            if (CommonVariables.IntEXT == -1)
-            {
-                CommonVariables.IntEXT = 0;
-            }
-            if (CommonVariables.IntDMG == -1)
-            {
-                CommonVariables.IntDMG = 0;
-            }
-            if (RecordDAL.GetBossProgress(strGrpID,out DataTable dtBossProgress))
-            {
-                CommonVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
-                CommonVariables.IntBossCode = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
-            }
-            else
-            {
-                MsgMessage += new Message("与数据库失去连接，掉线记录失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
-            {
-                MsgMessage = new Message("掉线已记录，档案号为： " + intEID.ToString() + "\r\n--------------------\r\n");
-                CaseQueue.QueueQuit(strGrpID, strUserID);
-            }
-            else
-            {
-                MsgMessage += new Message("与数据库失去连接，掉线记录失败。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
@@ -226,7 +191,7 @@ namespace Marchen.BLL
             string strNewUID = "";
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
+                //MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;

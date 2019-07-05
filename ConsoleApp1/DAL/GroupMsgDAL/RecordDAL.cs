@@ -78,27 +78,6 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 创建伤害统计表的方法
-        /// </summary>
-        /// <param name="strGrpID">群号</param>
-        /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool CreateTablesForGuildDamage(string strGrpID)
-        {
-            Console.WriteLine("未查询到群：" + strGrpID + "存在伤害统计表，尝试创建\r\n");
-            try
-            {
-                DBHelper.ExecCreaGDT(DBProperties.DBCreaGDTProcName, strGrpID);
-                Console.WriteLine("群：" + strGrpID + "创建伤害统计表成功。\r\n");
-                return true;
-            }
-            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
-            {
-                Console.WriteLine("群：" + strGrpID + "创建伤害统计表失败。\r\n" + oex);
-                return false;
-            }
-        }
-
-        /// <summary>
         /// 查询EventID对应记录的方法
         /// </summary>
         /// <param name="intEID">EventID</param>

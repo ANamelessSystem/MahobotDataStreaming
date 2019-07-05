@@ -66,20 +66,6 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 创建伤害统计表用
-        /// </summary>
-        /// <param name="prod"></param>
-        /// <param name="grpid"></param>
-        public static void ExecCreaGDT(string prod, string grpid)
-        {
-            OracleCommand cmd = new OracleCommand(prod, Connection);
-            cmd.CommandType = CommandType.StoredProcedure;
-            OracleParameter opgid = cmd.Parameters.Add("grpID", OracleDbType.Varchar2, ParameterDirection.Input);
-            opgid.Value = grpid;
-            cmd.ExecuteNonQuery();
-        }
-
-        /// <summary>
         /// 无返回式SQL执行语句
         /// </summary>
         /// <param name="sql">sql语句</param>
