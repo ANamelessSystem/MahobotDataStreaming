@@ -110,11 +110,11 @@ namespace Marchen.BLL
                     cmdType = "help";
                     Console.WriteLine("识别为说明书呈报");
                 }
-                else if (strCmdHead.ToLower() == "timeout" || strCmdHead == "掉线")
-                {
-                    cmdType = "timeout";
-                    Console.WriteLine("识别为掉线");
-                }
+                //else if (strCmdHead.ToLower() == "timeout" || strCmdHead == "掉线")
+                //{
+                //    cmdType = "timeout";
+                //    Console.WriteLine("识别为掉线");
+                //}
                 else if (strCmdHead.ToLower() == "mod" || strCmdHead == "修改")
                 {
                     cmdType = "dmgmod";
@@ -235,12 +235,12 @@ namespace Marchen.BLL
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }
                         break;
-                    case "timeout":
-                        {
-                            //CaseDamage.DmgTimeOut(strGrpID, strUserID, strCmdContext);
-                            CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
-                        }
-                        break;
+                    //case "timeout":
+                    //    {
+                    //        //CaseDamage.DmgTimeOut(strGrpID, strUserID, strCmdContext);
+                    //        CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
+                    //    }
+                    //    break;
                     case "dmgmod":
                         {
                             if (!CmdHelper.LoadValueLimits())

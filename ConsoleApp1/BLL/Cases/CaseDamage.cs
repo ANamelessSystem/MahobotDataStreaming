@@ -111,7 +111,7 @@ namespace Marchen.BLL
                     if (CommonVariables.IntRound > intRound_Progress)
                     {
                         //唯一允许输入周目比目前大的情况：目前B5，输入B1，且输入的周目=目前周目+1
-                        if (!(intBC_Progress == 5 && CommonVariables.IntBossCode == 1 && intRound_Progress == (CommonVariables.IntRound + 1)))
+                        if (!(intBC_Progress == 5 && CommonVariables.IntBossCode == 1 && intRound_Progress + 1 == CommonVariables.IntRound))
                         {
                             MsgMessage += new Message("所提交的周目值有误(可能跨周目)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
                             MsgMessage += Message.At(long.Parse(strUserID));
@@ -122,7 +122,7 @@ namespace Marchen.BLL
                     if (CommonVariables.IntRound < intRound_Progress)
                     {
                         //唯一允许输入周目比目前小的情况：目前B1，输入B5，且输入的周目=目前周目-1
-                        if (!(intBC_Progress == 1 && CommonVariables.IntBossCode == 5 && intRound_Progress == (CommonVariables.IntRound - 1)))
+                        if (!(intBC_Progress == 1 && CommonVariables.IntBossCode == 5 && intRound_Progress - 1 == CommonVariables.IntRound))
                         {
                             MsgMessage += new Message("所提交的周目值有误(可能跨周目)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
                             MsgMessage += Message.At(long.Parse(strUserID));
@@ -154,6 +154,13 @@ namespace Marchen.BLL
                         }
                     }
                 }
+            }
+            else
+            {
+                //如果掉线了就按当前进度记录0伤害的数据
+                CommonVariables.IntDMG = 0;
+                CommonVariables.IntRound = intRound_Progress;
+                CommonVariables.IntBossCode = intBC_Progress;
             }
             //执行上传
             if (RecordDAL.DamageDebrief(strGrpID, strUserID, CommonVariables.IntDMG, CommonVariables.IntRound, CommonVariables.IntBossCode, CommonVariables.IntEXT, out int intEID))
@@ -357,50 +364,64 @@ namespace Marchen.BLL
                 {
                     strRName = strResult;
                 }
-                if (RecordDAL.QueryDmgRecords(CommonVariables.DouUID, strGrpID, false, out DataTable dtDmgRecords))
+                if (RecordDAL.QueryDmgRecords(CommonVariables.DouUID, strGrpID, CommonVariables.IntIsAllFlag, out DataTable dtDmgRecords))
                 {
-                    MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)");
-                    for (int i = 0; i < dtDmgRecords.Rows.Count; i++)
+                    if (CommonVariables.IntIsAllFlag == 0)
                     {
-                        string strRDmg = dtDmgRecords.Rows[i]["dmg"].ToString();
-                        string strRRound = dtDmgRecords.Rows[i]["round"].ToString();
-                        string strRBC = dtDmgRecords.Rows[i]["bc"].ToString();
-                        string strREXT = dtDmgRecords.Rows[i]["extime"].ToString();
-                        string strREID = dtDmgRecords.Rows[i]["eventid"].ToString();
-                        string strRTime = dtDmgRecords.Rows[i]["time"].ToString();
-                        string resultString = "";
-                        if (dtDmgRecords.Rows[i]["dmg"].ToString() == "0")
+                        MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)");
+                    }
+                    else
+                    {
+                        MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)");
+                    }
+                    if (dtDmgRecords.Rows.Count == 0 && CommonVariables.IntIsAllFlag == 0)
+                    {
+                        MsgMessage += new Message("\r\n尚无伤害记录。");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < dtDmgRecords.Rows.Count; i++)
                         {
-                            if (strREXT == "1")
+                            string strRDmg = dtDmgRecords.Rows[i]["dmg"].ToString();
+                            string strRRound = dtDmgRecords.Rows[i]["round"].ToString();
+                            string strRBC = dtDmgRecords.Rows[i]["bc"].ToString();
+                            string strREXT = dtDmgRecords.Rows[i]["extime"].ToString();
+                            string strREID = dtDmgRecords.Rows[i]["eventid"].ToString();
+                            string strRTime = dtDmgRecords.Rows[i]["time"].ToString();
+                            string resultString = "";
+                            if (dtDmgRecords.Rows[i]["dmg"].ToString() == "0")
                             {
-                                resultString = strRRound + "周目B" + strRBC + "；伤害= 0(掉线) （补时）；\r\n      记录时间：[" + strRTime + "]";
+                                if (strREXT == "1")
+                                {
+                                    resultString = strRRound + "周目B" + strRBC + "；伤害= 0(掉线) （补时）；\r\n      记录时间：[" + strRTime + "]";
+                                }
+                                else
+                                {
+                                    resultString = strRRound + "周目B" + strRBC + "；伤害= 0(掉线)；\r\n      记录时间：[" + strRTime + "]";
+                                }
+                            }
+                            else if (dtDmgRecords.Rows[i]["dmg"].ToString() != "0")
+                            {
+                                if (strREXT == "1")
+                                {
+                                    resultString = strRRound + "周目B" + strRBC + "；伤害=" + strRDmg + " （补时）；\r\n      记录时间：[" + strRTime + "]";
+                                }
+                                else
+                                {
+                                    resultString = strRRound + "周目B" + strRBC + "；伤害=" + strRDmg + "；\r\n      记录时间：[" + strRTime + "]";
+                                }
                             }
                             else
                             {
-                                resultString = strRRound + "周目B" + strRBC + "；伤害= 0(掉线)；\r\n      记录时间：[" + strRTime + "]";
+                                Console.WriteLine("写出伤害时出现意料外的错误，dtDmgRec.Rows[0][dmg].ToString()=" + dtDmgRecords.Rows[i]["dmg"].ToString());
+                                MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
                             }
+                            Console.WriteLine("E" + strREID + "：" + resultString + "\r\n");
+                            MsgMessage += new Message("\r\nE" + strREID + "：" + resultString);
                         }
-                        else if (dtDmgRecords.Rows[i]["dmg"].ToString() != "0")
-                        {
-                            if (strREXT == "1")
-                            {
-                                resultString = strRRound + "周目B" + strRBC + "；伤害=" + strRDmg + " （补时）；\r\n      记录时间：[" + strRTime + "]";
-                            }
-                            else
-                            {
-                                resultString = strRRound + "周目B" + strRBC + "；伤害=" + strRDmg + "；\r\n      记录时间：[" + strRTime + "]";
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("写出伤害时出现意料外的错误，dtDmgRec.Rows[0][dmg].ToString()=" + dtDmgRecords.Rows[i]["dmg"].ToString());
-                            MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                            MsgMessage += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                            return;
-                        }
-                        Console.WriteLine("E" + strREID + "：" + resultString + "\r\n");
-                        MsgMessage += new Message("\r\nE" + strREID + "：" + resultString);
                     }
                 }
                 else
@@ -412,7 +433,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("目前支持单独按档案号查询、单独按QQ号查询以及同时按BOSS与周目查询。\r\n");
             }
-            //MsgMessage += Message.At(long.Parse(strUserID));
+            MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             return;
         }

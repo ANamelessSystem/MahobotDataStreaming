@@ -293,11 +293,11 @@ namespace Marchen.DAL
         /// <param name="isAll">false时查询当日，true时查询全月</param>
         /// <param name="dtDmgRecords"></param>
         /// <returns></returns>
-        public static bool QueryDmgRecords(double douUserID, string strGrpID, bool isAll, out DataTable dtDmgRecords)
+        public static bool QueryDmgRecords(double douUserID, string strGrpID, int intAllFlag, out DataTable dtDmgRecords)
         {
             Console.WriteLine("启动数据库查询语句");
             string sqlTimeFilter = "";
-            if (!isAll)
+            if (intAllFlag == 0)
             {
                 if (QueryTimeNowOnDatabase(out DataTable dtResultTime))
                 {

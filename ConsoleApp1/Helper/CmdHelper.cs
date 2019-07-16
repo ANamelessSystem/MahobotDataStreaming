@@ -95,6 +95,7 @@ namespace Marchen.BLL
             CommonVariables.IntEXT = -1;
             CommonVariables.IntSubsType = -1;
             CommonVariables.IntTimeOutFlag = 0;
+            CommonVariables.IntIsAllFlag = 0;
             string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string e in sArray)
             {
@@ -113,6 +114,10 @@ namespace Marchen.BLL
                 else if (e == "尾刀" || e.ToLower() == "last")
                 {
                     CommonVariables.IntSubsType = 1;
+                }
+                else if (e == "全部" || e.ToLower() == "all")
+                {
+                    CommonVariables.IntIsAllFlag = 1;
                 }
                 else if (e.Contains("周目"))
                 {
