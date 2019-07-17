@@ -107,13 +107,17 @@ namespace Marchen.BLL
                 {
                     CommonVariables.IntEXT = 0;
                 }
+                else if (e == "尾刀" || e.ToLower() == "last")
+                {
+                    CommonVariables.IntEXT = 2;
+                }
+                else if (e == "非尾刀" || e.ToLower() == "nolast")
+                {
+                    CommonVariables.IntEXT = 0;
+                }
                 else if (e == "掉线" || e.ToLower() == "timeout")
                 {
                     CommonVariables.IntTimeOutFlag = 1;
-                }
-                else if (e == "尾刀" || e.ToLower() == "last")
-                {
-                    CommonVariables.IntSubsType = 1;
                 }
                 else if (e == "全部" || e.ToLower() == "all")
                 {
