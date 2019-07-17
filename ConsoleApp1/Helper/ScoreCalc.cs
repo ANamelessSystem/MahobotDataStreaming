@@ -17,7 +17,7 @@ namespace Marchen.Helper
             double douRoundNow = double.Parse(intRound.ToString());
             douScore = 0;
             double douHPNow = 0;
-            double douB1NRatio = 1.0;
+            //double douB1NRatio = 1.0;
             if (douRoundNow < 4)
             {
                 //血量：     600   ;800   ;1000  ;1200  ;2000

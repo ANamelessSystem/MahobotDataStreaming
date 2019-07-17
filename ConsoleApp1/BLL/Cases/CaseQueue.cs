@@ -19,7 +19,7 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void QueueAdd(string strGrpID, string strUserID, string strUserGrpCard)
         {
-            int intMemberStatus = QueueDAL.MemberCheck(strGrpID, strUserID);
+            int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
             {
                 MsgMessage += new Message("尚未报名，无法加入队列。\r\n");
@@ -275,7 +275,7 @@ namespace Marchen.BLL
                         if (intBCNow == ValueLimits.BossLimitMax)
                         {
                             //现在为B5，需要跳到下周目B1的情况
-                            if (QueueDAL.GetBossMaxHP(1, intRoundNow + 1, out DataTable dtBossMaxHP))
+                            if (StatisticsDAL.GetBossMaxHP(1, intRoundNow + 1, out DataTable dtBossMaxHP))
                             {
                                 Console.WriteLine("误差内跳到下个BOSS");
                                 intBCNow = 1;
@@ -290,7 +290,7 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            if (QueueDAL.GetBossMaxHP(intBCNow + 1, intRoundNow, out DataTable dtBossMaxHP))
+                            if (StatisticsDAL.GetBossMaxHP(intBCNow + 1, intRoundNow, out DataTable dtBossMaxHP))
                             {
                                 Console.WriteLine("误差内跳到下个BOSS");
                                 intBCNow += 1;

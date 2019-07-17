@@ -30,10 +30,9 @@ namespace Marchen.DAL
         /// <summary>
         /// 获取订阅状态的方法
         /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="intBossCode">BOSS代码，为0时查阅全部订阅</param>
-        /// <param name="dtSubsStatus"></param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="dtSubsStatus">返回dt格式的订阅状态</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool GetSubsStatus(string strGrpID, string strUserID, out DataTable dtSubsStatus)
         {
@@ -90,11 +89,11 @@ namespace Marchen.DAL
                 //已到达提醒
                 sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + (intRound+1) + " and SUBSTYPE = 0 and FINISHFLAG != 2";
             }
-            if (intProgType == 1)
-            {
-                //尾刀撞刀专用提醒
-                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and (ROUND = " + intRound + " and FINISHFLAG != 2) or ROUND < " + intRound + " and SUBSTYPE = 1";
-            }
+            //if (intProgType == 1)
+            //{
+            //    //补时刀专用提醒
+            //    sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and (ROUND = " + intRound + " and FINISHFLAG != 2) or ROUND < " + intRound + " and SUBSTYPE = 1";
+            //}
             if (intProgType == 2)
             {
                 //下一个BOSS的预提醒
@@ -119,6 +118,16 @@ namespace Marchen.DAL
             }
         }
 
+
+        /// <summary>
+        /// 更新已提醒过的标识位
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="intRound">已提醒周目</param>
+        /// <param name="intBossCode">已提醒BOSS</param>
+        /// <param name="intProgType">已提醒进度</param>
+        /// <returns></returns>
         public static bool UpdateRemindFlag(string strGrpID,string strUserID, int intRound, int intBossCode, int intProgType)
         {
 
@@ -153,6 +162,32 @@ namespace Marchen.DAL
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
                 Console.WriteLine("更新预约表已提醒状态时出现错误，SQL：" + sqlUpdateSubs + "\r\n" + oex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 修改订阅状态（仅限补刀相关功能使用）
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="intRound">周目</param>
+        /// <param name="intBossCode">BOSS代码</param>
+        /// <param name="intSubsType">订阅类型：0普通订阅，1补时刀注册</param>
+        /// <param name="intFinishFlag"></param>
+        /// <returns></returns>
+        public static bool UpdateSubsType(string strGrpID, string strUserID, int intRound, int intBossCode, int intSubsType, int intFinishFlag, int intUpdateType)
+        {
+            string sqlUpdateSubs = "";
+            sqlUpdateSubs = "update TTL_BOSSSUBS set FINISHFLAG = " + intFinishFlag + "，ROUND = " + intRound + ", SUBSTYPE = " + intSubsType + ", BC = " + intBossCode + " where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and USERID = '" + strUserID + "'";
+            try
+            {
+                DBHelper.ExecCmdNoCount(sqlUpdateSubs);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("更新预约表预约类型时出现错误，SQL：" + sqlUpdateSubs + "\r\n" + oex);
                 return false;
             }
         }

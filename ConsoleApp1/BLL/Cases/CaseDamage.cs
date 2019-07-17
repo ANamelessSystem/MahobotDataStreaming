@@ -21,7 +21,7 @@ namespace Marchen.BLL
         public static void DmgRecAdd(string strGrpID, string strUserID, string strCmdContext)
         {
             //检查是否成员
-            int intMemberStatus = QueueDAL.MemberCheck(strGrpID, strUserID);
+            int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
             {
                 MsgMessage += new Message("尚未报名，无法上传伤害。\r\n");
@@ -168,7 +168,7 @@ namespace Marchen.BLL
                 Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + CommonVariables.IntBossCode.ToString() + "，" + CommonVariables.IntRound.ToString() + "周目，数值：" + CommonVariables.IntDMG.ToString() + "，补时标识：" + CommonVariables.IntEXT);
                 MsgMessage = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
                 //执行退订
-                CaseSubscribe.SubsDelAuto(strGrpID, strUserID, CommonVariables.IntBossCode);
+                CaseSubscribe.SubsDel(strGrpID, strUserID, CommonVariables.IntBossCode);
                 //执行退队
                 CaseQueue.QueueQuit(strGrpID, strUserID, 1);
             }
@@ -360,7 +360,7 @@ namespace Marchen.BLL
                 Console.WriteLine("识别为按UID");
                 string strRUID = CommonVariables.DouUID.ToString();
                 string strRName = "";
-                if (QueueDAL.GetMemberName(strGrpID, CommonVariables.DouUID.ToString(), out string strResult))
+                if (NameListDAL.GetMemberName(strGrpID, CommonVariables.DouUID.ToString(), out string strResult))
                 {
                     strRName = strResult;
                 }

@@ -93,7 +93,7 @@ namespace Marchen.BLL
             CommonVariables.IntRound = -1;
             CommonVariables.IntDMG = -1;
             CommonVariables.IntEXT = -1;
-            CommonVariables.IntSubsType = -1;
+            //CommonVariables.IntSubsType = -1;
             CommonVariables.IntTimeOutFlag = 0;
             CommonVariables.IntIsAllFlag = 0;
             string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -103,17 +103,13 @@ namespace Marchen.BLL
                 {
                     CommonVariables.IntEXT = 1;
                 }
-                else if (e == "非补时" || e.ToLower() == "noext")
+                else if (e == "非补时" || e.ToLower() == "noext" || e == "非尾刀" || e.ToLower() == "nolast")
                 {
                     CommonVariables.IntEXT = 0;
                 }
                 else if (e == "尾刀" || e.ToLower() == "last")
                 {
                     CommonVariables.IntEXT = 2;
-                }
-                else if (e == "非尾刀" || e.ToLower() == "nolast")
-                {
-                    CommonVariables.IntEXT = 0;
                 }
                 else if (e == "掉线" || e.ToLower() == "timeout")
                 {

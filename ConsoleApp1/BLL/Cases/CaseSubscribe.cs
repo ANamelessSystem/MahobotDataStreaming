@@ -13,14 +13,14 @@ namespace Marchen.BLL
     class CaseSubscribe : GroupMsgBLL
     {
         /// <summary>
-        /// 订阅Boss提醒
+        /// 订阅Boss提醒（普通订阅）（用户调用）
         /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="intBossCode"></param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="strCmdContext">用户输入的命令内容</param>
         public static void SubsAdd(string strGrpID, string strUserID, string strCmdContext)
         {
-            int intMemberStatus = QueueDAL.MemberCheck(strGrpID, strUserID);
+            int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
             {
                 MsgMessage += new Message("尚未报名，订阅BOSS。\r\n");
@@ -49,29 +49,21 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (CommonVariables.IntSubsType == -1)
-            {
-                CommonVariables.IntSubsType = 0;
-            }
             if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
             {
                 DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + CommonVariables.IntBossCode + "'");
                 if (drExistsBoss.Length == 0)
                 {
-                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode, CommonVariables.IntSubsType))
+                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode, 0))
                     {
                         string strOutput = "B" + CommonVariables.IntBossCode.ToString();
-                        if (CommonVariables.IntSubsType == 1)
-                        {
-                            strOutput += "(尾)";
-                        }
                         strOutput += "(new)";
                         for (int i = 0; i < dtSubsStatus.Rows.Count; i++)
                         {
                             strOutput += "、B" + dtSubsStatus.Rows[i]["BC"];
                             if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
                             {
-                                strOutput += "(尾)";
+                                strOutput += "(补时)";
                             }
                         }
                         MsgMessage += new Message("已成功订阅。\r\n目前正在订阅的BOSS为：" + strOutput + "\r\n");
@@ -95,10 +87,46 @@ namespace Marchen.BLL
         }
 
         /// <summary>
+        /// 订阅Boss提醒（尾刀专用）（自动调用）
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="intBossCode">BOSS代码</param>
+        public static void SubsAdd(string strGrpID, string strUserID, int intBossCode)
+        {
+            if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
+            {
+                DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + intBossCode + "'");
+                if (drExistsBoss.Length == 0)
+                {
+                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, intBossCode, 1))
+                    {
+                        //show success
+                    }
+                    else
+                    {
+                        //database connect failed
+                    }
+                }
+                else
+                {
+                    //boss already subs
+                    //just change substype
+                }
+            }
+            else
+            {
+                //database connect failed
+            }
+            //at message
+            //message output
+        }
+
+        /// <summary>
         /// 查看已订阅的BOSS
         /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
         public static void SubsShow(string strGrpID, string strUserID)
         {
             if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
@@ -113,7 +141,7 @@ namespace Marchen.BLL
                     strOutput += "B" + dtSubsStatus.Rows[i]["BC"];
                     if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
                     {
-                        strOutput += "(尾)";
+                        strOutput += "(补时)";
                     }
                 }
                 MsgMessage += new Message("目前正在订阅的BOSS为：" + strOutput + "\r\n");
@@ -128,11 +156,11 @@ namespace Marchen.BLL
 
 
         /// <summary>
-        /// 取消boss订阅（主命令）
+        /// 取消boss订阅（用户调用）
         /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="strCmdContext"></param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="strCmdContext">用户输入的命令内容</param>
         public static void SubsDel(string strGrpID, string strUserID, string strCmdContext)
         {
             if (!CmdHelper.CmdSpliter(strCmdContext))
@@ -169,12 +197,12 @@ namespace Marchen.BLL
         }
 
         /// <summary>
-        /// 取消boss订阅（调用）
+        /// 取消boss订阅（自动调用）
         /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="strCmdContext"></param>
-        public static void SubsDelAuto(string strGrpID, string strUserID, int intBossCode)
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="intBossCode">BOSS代码</param>
+        public static void SubsDel(string strGrpID, string strUserID, int intBossCode)
         {
             if (SubscribeDAL.DelBossSubs(strGrpID, strUserID, intBossCode, out int intDelCount))
             {

@@ -17,7 +17,7 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void NameListAdd(string strGrpID, string strUserID, string strUserGrpCard)
         {
-            if (QueueDAL.UpdateNameList(strGrpID, strUserID, strUserGrpCard, out int intMemberCount))
+            if (NameListDAL.UpdateNameList(strGrpID, strUserID, strUserGrpCard, out int intMemberCount))
             {
                 MsgMessage += new Message("已成功更新成员名单信息(" + intMemberCount.ToString() + "/30)。\r\n");
             }
@@ -40,7 +40,7 @@ namespace Marchen.BLL
         /// <param name="strUserID"></param>
         public static void NameListShow(string strGrpID, string strUserID)
         {
-            if (QueueDAL.QryNameList(strGrpID, out DataTable dtNameList))
+            if (NameListDAL.QryNameList(strGrpID, out DataTable dtNameList))
             {
                 if (dtNameList.Rows.Count > 0)
                 {
@@ -89,12 +89,12 @@ namespace Marchen.BLL
             }
             if (strUserID == CommonVariables.DouUID.ToString() || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
             {
-                if (QueueDAL.QryNameList(strGrpID, out DataTable dtNameList))
+                if (NameListDAL.QryNameList(strGrpID, out DataTable dtNameList))
                 {
                     DataRow[] drExistsID = dtNameList.Select("MBRID='" + CommonVariables.DouUID.ToString() + "'");
                     if (drExistsID.Length == 1)
                     {
-                        if (QueueDAL.NameListDelete(strGrpID, CommonVariables.DouUID.ToString()))
+                        if (NameListDAL.NameListDelete(strGrpID, CommonVariables.DouUID.ToString()))
                         {
                             Console.WriteLine("已将群：" + strGrpID + "，" + CommonVariables.DouUID.ToString() + "移除名单。");
                             MsgMessage += new Message("已将" + CommonVariables.DouUID.ToString() + "移出名单。");
