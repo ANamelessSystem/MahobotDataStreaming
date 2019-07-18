@@ -12,9 +12,9 @@ namespace Marchen.DAL
         /// <param name="strUserID"></param>
         /// <param name="intBossCode"></param>
         /// <returns></returns>
-        public static bool AddBossSubs(string strGrpID, string strUserID,int intBossCode,int intSubsType)
+        public static bool AddBossSubs(string strGrpID, string strUserID, int intBossCode, int intSubsType, int intRound = 0)
         {
-            string sqlAddSubs = "insert into TTL_BOSSSUBS(userid,grpid,bc,round,substype,finishflag) values('" + strUserID + "','" + strGrpID + "'," + intBossCode + ",0,"+ intSubsType + ",0)";
+            string sqlAddSubs = "insert into TTL_BOSSSUBS(userid,grpid,bc,round,substype,finishflag) values('" + strUserID + "','" + strGrpID + "'," + intBossCode + "," + intRound + "," + intSubsType + ",0)";
             try
             {
                 DBHelper.ExecCmdNoCount(sqlAddSubs);
@@ -176,7 +176,7 @@ namespace Marchen.DAL
         /// <param name="intSubsType">订阅类型：0普通订阅，1补时刀注册</param>
         /// <param name="intFinishFlag"></param>
         /// <returns></returns>
-        public static bool UpdateSubsType(string strGrpID, string strUserID, int intRound, int intBossCode, int intSubsType, int intFinishFlag, int intUpdateType)
+        public static bool UpdateSubsType(string strGrpID, string strUserID, int intRound, int intBossCode, int intSubsType, int intFinishFlag)
         {
             string sqlUpdateSubs = "";
             sqlUpdateSubs = "update TTL_BOSSSUBS set FINISHFLAG = " + intFinishFlag + "，ROUND = " + intRound + ", SUBSTYPE = " + intSubsType + ", BC = " + intBossCode + " where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and USERID = '" + strUserID + "'";

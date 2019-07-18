@@ -92,31 +92,45 @@ namespace Marchen.BLL
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">QQ号</param>
         /// <param name="intBossCode">BOSS代码</param>
-        public static void SubsAdd(string strGrpID, string strUserID, int intBossCode)
+        public static void SubsAdd(string strGrpID, string strUserID, int intBossCode,int intRound)
         {
+            int intSubsType = 1;
             if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
             {
                 DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + intBossCode + "'");
                 if (drExistsBoss.Length == 0)
                 {
-                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, intBossCode, 1))
+                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, intBossCode, intSubsType, intRound))
                     {
-                        //show success
+                        MsgMessage += new Message("已自动订阅下周目B" + intBossCode + "。\r\n");
+                        Console.WriteLine("成功添加补时刀订阅");
                     }
                     else
                     {
-                        //database connect failed
+                        MsgMessage += new Message("补时刀自动订阅失败。\r\n");
+                        Console.WriteLine("补时刀订阅时数据库失败");
                     }
                 }
                 else
                 {
-                    //boss already subs
-                    //just change substype
+                    //boss already subs,just change substype
+                    int intFinishFlag = 0;
+                    if (SubscribeDAL.UpdateSubsType(strGrpID, strUserID, intRound, intBossCode, intSubsType, intFinishFlag))
+                    {
+                        MsgMessage += new Message("已自动订阅下周目B" + intBossCode + "。\r\n");
+                        Console.WriteLine("成功通过修改添加补时刀订阅");
+                    }
+                    else
+                    {
+                        MsgMessage += new Message("补时刀自动订阅失败。\r\n");
+                        Console.WriteLine("补时刀订阅时数据库失败");
+                    }
                 }
             }
             else
             {
-                //database connect failed
+                MsgMessage += new Message("补时刀自动订阅失败。\r\n");
+                Console.WriteLine("获取订阅时数据库失败");
             }
             //at message
             //message output
