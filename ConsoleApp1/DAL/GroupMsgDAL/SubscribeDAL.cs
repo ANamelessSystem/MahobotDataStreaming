@@ -87,13 +87,8 @@ namespace Marchen.DAL
             if (intProgType == 0)
             {
                 //已到达提醒
-                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + (intRound+1) + " and SUBSTYPE = 0 and FINISHFLAG != 2";
+                sqlQrySubs = "select USERID,SUBSTYPE from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + (intRound+1) + " and FINISHFLAG != 2";
             }
-            //if (intProgType == 1)
-            //{
-            //    //补时刀专用提醒
-            //    sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and (ROUND = " + intRound + " and FINISHFLAG != 2) or ROUND < " + intRound + " and SUBSTYPE = 1";
-            //}
             if (intProgType == 2)
             {
                 //下一个BOSS的预提醒
@@ -103,7 +98,7 @@ namespace Marchen.DAL
                     intBossCode = intBossCode - 5;
                     intRound += 1;
                 }
-                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and SUBSTYPE = 0 and FINISHFLAG != 1";
+                sqlQrySubs = "select USERID from TTL_BOSSSUBS where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and ROUND < " + intRound + " and FINISHFLAG != 1";
             }
             try
             {

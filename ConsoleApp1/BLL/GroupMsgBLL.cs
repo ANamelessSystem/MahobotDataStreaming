@@ -191,7 +191,7 @@ namespace Marchen.BLL
                 {
                     case "queueadd":
                         {
-                            CaseQueue.QueueAdd(strGrpID, strUserID, strUserGrpCard);
+                            CaseQueue.QueueAdd(strGrpID, strUserID);
                         }
                         break;
                     case "queueshow":

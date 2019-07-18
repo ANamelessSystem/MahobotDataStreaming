@@ -158,6 +158,11 @@ namespace Marchen.BLL
             else
             {
                 //如果掉线了就按当前进度记录0伤害的数据
+                //防止计入尾刀掉线
+                if (CommonVariables.IntEXT == 2)
+                {
+                    CommonVariables.IntEXT = 0;
+                }
                 CommonVariables.IntDMG = 0;
                 CommonVariables.IntRound = intRound_Progress;
                 CommonVariables.IntBossCode = intBC_Progress;
@@ -171,6 +176,11 @@ namespace Marchen.BLL
                 CaseSubscribe.SubsDel(strGrpID, strUserID, CommonVariables.IntBossCode);
                 //执行退队
                 CaseQueue.QueueQuit(strGrpID, strUserID, 1);
+                //如果是尾刀，自动订阅下个周目的相同BOSS
+                if (CommonVariables.IntEXT == 2)
+                {
+                    CaseSubscribe.SubsAdd(strGrpID,strUserID, CommonVariables.IntBossCode, (CommonVariables.IntBossCode + 1));
+                }
             }
             else
             {

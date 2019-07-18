@@ -39,7 +39,7 @@ namespace Marchen.DAL
         /// <returns>
         /// true：执行成功；false：执行失败。
         /// </returns>
-        public static bool AddQueue(string strGrpID, string strUserID)
+        public static bool AddQueue(string strGrpID, string strUserID,int intSosFlag = 0)
         {
             //查询队列表中的最大序列值，如果查询结果是非空，则序号为查询的最大序号+1，如果查询结果为空则使用1
             DataTable dtMaxSeq = new DataTable();
@@ -58,7 +58,7 @@ namespace Marchen.DAL
             {
                 intSequence = int.Parse(dtMaxSeq.Rows[0]["maxseq"].ToString()) + 1;
             }
-            string sqlAddSeq = "insert into TTL_Queue(seq,id,grpid,sosflag) values(" + intSequence + ",'" + strUserID + "','" + strGrpID + "','0')";
+            string sqlAddSeq = "insert into TTL_Queue(seq,id,grpid,sosflag) values(" + intSequence + ",'" + strUserID + "','" + strGrpID + "'," + intSosFlag + ")";
             try
             {
                 DBHelper.ExecuteCommand(sqlAddSeq);

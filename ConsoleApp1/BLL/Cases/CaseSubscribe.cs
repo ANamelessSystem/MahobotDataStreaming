@@ -21,6 +21,7 @@ namespace Marchen.BLL
         public static void SubsAdd(string strGrpID, string strUserID, string strCmdContext)
         {
             int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
+            int intSubsType = 0;
             if (intMemberStatus == 0)
             {
                 MsgMessage += new Message("尚未报名，订阅BOSS。\r\n");
@@ -54,7 +55,7 @@ namespace Marchen.BLL
                 DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + CommonVariables.IntBossCode + "'");
                 if (drExistsBoss.Length == 0)
                 {
-                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode, 0))
+                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode, intSubsType))
                     {
                         string strOutput = "B" + CommonVariables.IntBossCode.ToString();
                         strOutput += "(new)";

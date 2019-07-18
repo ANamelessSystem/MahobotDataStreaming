@@ -16,8 +16,7 @@ namespace Marchen.BLL
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
-        /// <param name="strUserGrpCard"></param>
-        public static void QueueAdd(string strGrpID, string strUserID, string strUserGrpCard)
+        public static void QueueAdd(string strGrpID, string strUserID)
         {
             int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
@@ -75,6 +74,10 @@ namespace Marchen.BLL
                         if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
                         {
                             strOutput = "【等救】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】";
+                        }
+                        else if (dtQueue.Rows[i]["sosflag"].ToString() == "2")
+                        {
+                            strOutput = "【补时刀】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】";
                         }
                         else
                         {
@@ -340,6 +343,13 @@ namespace Marchen.BLL
                                 Console.WriteLine("已私聊通知" + lUserID.ToString() + "(" + strGrpID + ")");
                                 SubscribeDAL.UpdateRemindFlag(strGrpID, lUserID.ToString(), intRoundNow, intBCNow, intProgType);
                                 Console.WriteLine("已更新通知状态" + lUserID.ToString() + "(" + strGrpID + ")");
+                                if (intProgType == 2 && int.Parse(dtSubsMembers.Rows[i]["SUBSTYPE"].ToString()) == 1)
+                                {
+                                    //QueueAdd(strGrpID, dtSubsMembers.Rows[i]["USERID"].ToString());
+                                    int intSosFlag = 2;
+                                    QueueDAL.AddQueue(strGrpID, dtSubsMembers.Rows[i]["USERID"].ToString(), intSosFlag);
+                                    Console.WriteLine("将用户"+ dtSubsMembers.Rows[i]["USERID"].ToString() + "自动加入队列成功");
+                                }
                             }
                         }
                     }
