@@ -77,7 +77,7 @@ namespace Marchen.BLL
                         }
                         else if (dtQueue.Rows[i]["sosflag"].ToString() == "2")
                         {
-                            strOutput = "【补时刀】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】";
+                            strOutput = "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【自动添加】";
                         }
                         else
                         {
@@ -203,29 +203,29 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (CommonVariables.IntBossCode == -1)
+            if (InputVariables.IntBossCode == -1)
             {
                 MsgMessage += new Message("未能找到BOSS编号。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (CommonVariables.IntRound == -1)
+            if (InputVariables.IntRound == -1)
             {
                 if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
                 {
-                    CommonVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
-                    if (CommonVariables.IntBossCode < int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) && int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) == 5)
+                    InputVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
+                    if (InputVariables.IntBossCode < int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) && int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) == 5)
                     {
-                        CommonVariables.IntRound += 1;//BOSS显示进度还在B5，挂树着已经到了下B1或B2的情况
+                        InputVariables.IntRound += 1;//BOSS显示进度还在B5，挂树着已经到了下B1或B2的情况
                     }
                 }
             }
-            if (QueueDAL.UpdateQueueToSos(strGrpID, strUserID, CommonVariables.IntBossCode, CommonVariables.IntRound, out int updCount))
+            if (QueueDAL.UpdateQueueToSos(strGrpID, strUserID, InputVariables.IntBossCode, InputVariables.IntRound, out int updCount))
             {
                 if (updCount > 0)
                 {
-                    Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀置为等待救援状态。（B" + CommonVariables.IntBossCode + "，" + CommonVariables.IntRound + "周目）");
+                    Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀置为等待救援状态。（B" + InputVariables.IntBossCode + "，" + InputVariables.IntRound + "周目）");
                     MsgMessage += new Message("已将较早一次队列记录置为等待救援状态。\r\n--------------------\r\n");
                 }
                 else
@@ -321,11 +321,6 @@ namespace Marchen.BLL
                         //提醒到订阅类型0
                         intProgType = 0;
                     }
-                    else if (intHPNow > 1000000)
-                    {
-                        //提醒到订阅类型1
-                        intProgType = 1;
-                    }
                     else
                     {
                         //提醒到下一个的订阅类型0
@@ -343,13 +338,14 @@ namespace Marchen.BLL
                                 Console.WriteLine("已私聊通知" + lUserID.ToString() + "(" + strGrpID + ")");
                                 SubscribeDAL.UpdateRemindFlag(strGrpID, lUserID.ToString(), intRoundNow, intBCNow, intProgType);
                                 Console.WriteLine("已更新通知状态" + lUserID.ToString() + "(" + strGrpID + ")");
-                                if (intProgType == 2 && int.Parse(dtSubsMembers.Rows[i]["SUBSTYPE"].ToString()) == 1)
-                                {
-                                    //QueueAdd(strGrpID, dtSubsMembers.Rows[i]["USERID"].ToString());
-                                    int intSosFlag = 2;
-                                    QueueDAL.AddQueue(strGrpID, dtSubsMembers.Rows[i]["USERID"].ToString(), intSosFlag);
-                                    Console.WriteLine("将用户"+ dtSubsMembers.Rows[i]["USERID"].ToString() + "自动加入队列成功");
-                                }
+                                ////自动将预约表里标记为补时刀的成员加入队伍
+                                //if (int.Parse(dtSubsMembers.Rows[i]["SUBSTYPE"].ToString()) == 1)
+                                //{
+                                //    //QueueAdd(strGrpID, dtSubsMembers.Rows[i]["USERID"].ToString());
+                                //    int intSosFlag = 2;
+                                //    QueueDAL.AddQueue(strGrpID, dtSubsMembers.Rows[i]["USERID"].ToString(), intSosFlag);
+                                //    Console.WriteLine("将用户"+ dtSubsMembers.Rows[i]["USERID"].ToString() + "自动加入队列成功");
+                                //}
                             }
                         }
                     }

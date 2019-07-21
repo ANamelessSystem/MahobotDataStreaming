@@ -152,43 +152,98 @@ namespace Marchen.BLL
                     MsgMessage += new Message("截至目前尚有余刀的成员：");
                     int intCountLeft = 0;
                     int intCountUsed = 0;
+                    int intCountExLeft = 0;
                     string strLeft1 = "";
                     string strLeft2 = "";
                     string strLeft3 = "";
+                    string strLeft0_EX = "";
+                    string strLeft1_EX = "";
+                    string strLeft2_EX = "";
                     string strErr = "";
                     for (int i = 0; i < dtInsuff.Rows.Count; i++)
                     {
                         string strUID = dtInsuff.Rows[i]["MBRID"].ToString();
                         string strUName = dtInsuff.Rows[i]["MBRNAME"].ToString();
                         int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
-                        if (intCountMain > 3)
+                        int intCountLastAtk = int.Parse(dtInsuff.Rows[i]["cla"].ToString());
+                        int intCountExTime = int.Parse(dtInsuff.Rows[i]["cex"].ToString());
+                        if ((intCountMain + intCountLastAtk) > 3)
                         {
+                            //一种异常，主+尾刀超出了3，记为3刀
                             intCountUsed += 3;
                             strErr += "\r\n异常：" + strUName + "(" + strUID + ")，非补时刀数超过3，请检查";
                         }
-                        if (intCountMain == 3)
+                        if (intCountLastAtk < intCountExTime)
                         {
-                            intCountUsed += 3;
+                            //一种异常，补时刀大于尾刀，记为主+补时刀
+                            intCountUsed += (intCountMain + intCountLastAtk);
+                            intCountLeft += 3 - (intCountMain + intCountLastAtk);
+                            strErr += "\r\n异常：" + strUName + "(" + strUID + ")，补时刀数(" + intCountExTime + ")与尾刀数(" + intCountLastAtk + ")不匹配，请检查（推测剩余" + (3 - (intCountMain + intCountLastAtk)).ToString() + "刀）";
                         }
-                        if (intCountMain == 2)
+                        if ((intCountMain + intCountLastAtk) == 3)
                         {
-                            intCountUsed += 2;
-                            intCountLeft += 1;
-                            strLeft1 += "\r\n剩余1刀：" + strUName + "(" + strUID + ")";
+                            if (intCountLastAtk > intCountExTime)
+                            {
+                                intCountUsed += 3;
+                                intCountExLeft += 1;
+                                strLeft0_EX += "\r\n仅剩补时刀：" + strUName + "(" + strUID + ")";
+                            }
+                            else
+                            {
+                                intCountUsed += 3;
+                            }
                         }
-                        if (intCountMain == 1)
+                        if ((intCountMain + intCountLastAtk) == 2)
                         {
-                            intCountUsed += 1;
-                            intCountLeft += 2;
-                            strLeft2 += "\r\n剩余2刀：" + strUName + "(" + strUID + ")";
+                            if (intCountLastAtk > intCountExTime)
+                            {
+                                intCountExLeft += 1;
+                                intCountUsed += 2;
+                                intCountLeft += 1;
+                                strLeft1_EX += "\r\n剩余1刀+补时刀：" + strUName + "(" + strUID + ")";
+                            }
+                            else
+                            {
+                                intCountUsed += 2;
+                                intCountLeft += 1;
+                                strLeft1 += "\r\n剩余1刀：" + strUName + "(" + strUID + ")";
+                            }
                         }
-                        if (intCountMain == 0)
+                        if ((intCountMain + intCountLastAtk) == 1)
+                        {
+                            if (intCountLastAtk > intCountExTime)
+                            {
+                                intCountExLeft += 1;
+                                intCountUsed += 1;
+                                intCountLeft += 2;
+                                strLeft2_EX += "\r\n剩余2刀+补时刀：" + strUName + "(" + strUID + ")";
+                            }
+                            else
+                            {
+                                intCountUsed += 1;
+                                intCountLeft += 2;
+                                strLeft2 += "\r\n剩余2刀：" + strUName + "(" + strUID + ")";
+                            }
+                        }
+                        if ((intCountMain + intCountLastAtk) == 0)
                         {
                             intCountLeft += 3;
                             strLeft3 += "\r\n剩余3刀：" + strUName + "(" + strUID + ")";
                         }
                     }
                     MsgMessage += new Message("\r\n--------------------");
+                    if (strLeft0_EX != null && strLeft0_EX != "")
+                    {
+                        MsgMessage += new Message(strLeft0_EX + "\r\n--------------------");
+                    }
+                    if (strLeft1_EX != null && strLeft1_EX != "")
+                    {
+                        MsgMessage += new Message(strLeft1_EX + "\r\n--------------------");
+                    }
+                    if (strLeft2_EX != null && strLeft2_EX != "")
+                    {
+                        MsgMessage += new Message(strLeft2_EX + "\r\n--------------------");
+                    }
                     if (strLeft1 != null && strLeft1 != "")
                     {
                         MsgMessage += new Message(strLeft1 + "\r\n--------------------");
@@ -201,7 +256,7 @@ namespace Marchen.BLL
                     {
                         MsgMessage += new Message(strLeft3 + "\r\n--------------------");
                     }
-                    MsgMessage += new Message("\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀");
+                    MsgMessage += new Message("\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀，" + intCountExLeft.ToString() + "补时刀");
                     if (strErr != null && strErr != "")
                     {
                         MsgMessage += new Message("\r\n--------------------" + strErr);

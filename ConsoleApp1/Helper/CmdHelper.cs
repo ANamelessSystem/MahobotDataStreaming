@@ -87,37 +87,37 @@ namespace Marchen.BLL
         {
             Console.WriteLine("开始拆分元素");
             bool isCorrect = true;
-            CommonVariables.IntEID = -1;
-            CommonVariables.DouUID = -1;
-            CommonVariables.IntBossCode = -1;
-            CommonVariables.IntRound = -1;
-            CommonVariables.IntDMG = -1;
-            CommonVariables.IntEXT = -1;
+            InputVariables.IntEID = -1;
+            InputVariables.DouUID = -1;
+            InputVariables.IntBossCode = -1;
+            InputVariables.IntRound = -1;
+            InputVariables.IntDMG = -1;
+            InputVariables.IntEXT = -1;
             //CommonVariables.IntSubsType = -1;
-            CommonVariables.IntTimeOutFlag = 0;
-            CommonVariables.IntIsAllFlag = 0;
+            InputVariables.IntTimeOutFlag = 0;
+            InputVariables.IntIsAllFlag = 0;
             string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string e in sArray)
             {
                 if (e == "补时" || e.ToLower() == "ext")
                 {
-                    CommonVariables.IntEXT = 1;
+                    InputVariables.IntEXT = 1;
                 }
-                else if (e == "非补时" || e.ToLower() == "noext" || e == "非尾刀" || e.ToLower() == "nolast")
+                else if (e == "非补时" || e.ToLower() == "noext" || e == "非尾刀" || e.ToLower() == "nolast" || e.ToLower() == "normal")
                 {
-                    CommonVariables.IntEXT = 0;
+                    InputVariables.IntEXT = 0;
                 }
                 else if (e == "尾刀" || e.ToLower() == "last")
                 {
-                    CommonVariables.IntEXT = 2;
+                    InputVariables.IntEXT = 2;
                 }
                 else if (e == "掉线" || e.ToLower() == "timeout")
                 {
-                    CommonVariables.IntTimeOutFlag = 1;
+                    InputVariables.IntTimeOutFlag = 1;
                 }
                 else if (e == "全部" || e.ToLower() == "all")
                 {
-                    CommonVariables.IntIsAllFlag = 1;
+                    InputVariables.IntIsAllFlag = 1;
                 }
                 else if (e.Contains("周目"))
                 {
@@ -143,7 +143,7 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            CommonVariables.IntRound = int.Parse(Regex.Replace(intOutRound.ToString(), @"[^\d.\d]", ""));
+                            InputVariables.IntRound = int.Parse(Regex.Replace(intOutRound.ToString(), @"[^\d.\d]", ""));
                         }
                     }
                 }
@@ -171,7 +171,7 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            CommonVariables.IntRound = int.Parse(Regex.Replace(intOutRound.ToString(), @"[^\d.\d]", ""));
+                            InputVariables.IntRound = int.Parse(Regex.Replace(intOutRound.ToString(), @"[^\d.\d]", ""));
                         }
                     }
                 }
@@ -193,7 +193,7 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            CommonVariables.IntEID = intOutEID;
+                            InputVariables.IntEID = intOutEID;
                         }
                     }
                 }
@@ -207,7 +207,20 @@ namespace Marchen.BLL
                     }
                     else
                     {
-                        CommonVariables.DouUID = double.Parse(Regex.Replace(douOutUID.ToString(), @"[^\d.\d]", ""));
+                        InputVariables.DouUID = double.Parse(Regex.Replace(douOutUID.ToString(), @"[^\d.\d]", ""));
+                    }
+                }
+                else if (e.Contains("[CQ:at,qq=") && e.Contains("]"))
+                {
+                    if (!double.TryParse(e.Substring(e.IndexOf("=") + 1, e.IndexOf("]") - (e.IndexOf("=") + 1)), out double douOutUID))
+                    {
+                        Console.WriteLine(DateTime.Now.ToString() + "无法识别QQ号，元素为：" + e.ToString());
+                        MsgMessage += new Message("无法识别QQ号，请确保填入的QQ号为数字。\r\n");
+                        isCorrect = false;
+                    }
+                    else
+                    {
+                        InputVariables.DouUID = double.Parse(Regex.Replace(douOutUID.ToString(), @"[^\d.\d]", ""));
                     }
                 }
                 else if (e.ToLower().Contains("b"))
@@ -234,7 +247,7 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            CommonVariables.IntBossCode = int.Parse(Regex.Replace(intOutBC.ToString(), @"[^\d.\d]", ""));
+                            InputVariables.IntBossCode = int.Parse(Regex.Replace(intOutBC.ToString(), @"[^\d.\d]", ""));
                         }
                     }
                 }
@@ -268,12 +281,12 @@ namespace Marchen.BLL
                 }
             }
             Console.WriteLine("完成元素拆分\r\n结果：isCorrect=" + isCorrect.ToString());
-            Console.WriteLine("IntEID=" + CommonVariables.IntEID);
-            Console.WriteLine("DouUID=" + CommonVariables.DouUID);
-            Console.WriteLine("IntBossCode=" + CommonVariables.IntBossCode);
-            Console.WriteLine("IntRound=" + CommonVariables.IntRound);
-            Console.WriteLine("IntDMG=" + CommonVariables.IntDMG);
-            Console.WriteLine("IntEXT=" + CommonVariables.IntEXT);
+            Console.WriteLine("IntEID=" + InputVariables.IntEID);
+            Console.WriteLine("DouUID=" + InputVariables.DouUID);
+            Console.WriteLine("IntBossCode=" + InputVariables.IntBossCode);
+            Console.WriteLine("IntRound=" + InputVariables.IntRound);
+            Console.WriteLine("IntDMG=" + InputVariables.IntDMG);
+            Console.WriteLine("IntEXT=" + InputVariables.IntEXT);
             return isCorrect;
         }
 
@@ -304,7 +317,7 @@ namespace Marchen.BLL
             else
             {
                 Console.WriteLine("处理伤害值时收到了非指定的倍率类型，值为：" + intUnitType.ToString());
-                CommonVariables.IntDMG = -1;
+                InputVariables.IntDMG = -1;
                 return false;
             }
             Regex rgxPattern = new Regex(@"^\d+(\.\d+)?$");//检查取到的伤害值是否为正浮点数
@@ -312,14 +325,14 @@ namespace Marchen.BLL
             {
                 Console.WriteLine("无法识别伤害，输入值为：" + e);
                 MsgMessage += new Message("无法识别伤害，请检查输入的伤害值(" + e + ")。\r\n");
-                CommonVariables.IntDMG = -1;
+                InputVariables.IntDMG = -1;
                 return false;
             }
             else if (!decimal.TryParse(Regex.Replace(e, @"[^\d.\d]", ""), out decimal dclOutDamage))
             {
                 Console.WriteLine("无法识别伤害，输入值为：" + e);
                 MsgMessage += new Message("无法识别伤害，请检查输入的伤害值(" + e + ")。\r\n");
-                CommonVariables.IntDMG = -1;
+                InputVariables.IntDMG = -1;
                 return false;
             }
             else
@@ -328,7 +341,7 @@ namespace Marchen.BLL
                 {
                     Console.WriteLine("无法识别伤害，输入值为：" + e);
                     MsgMessage += new Message("无法识别伤害，请检查输入的伤害值(" + dclOutDamage.ToString() + ")。\r\n");
-                    CommonVariables.IntDMG = -1;
+                    InputVariables.IntDMG = -1;
                     return false;
                 }
                 else
@@ -337,20 +350,20 @@ namespace Marchen.BLL
                     {
                         Console.WriteLine("伤害值超出可信范围，输入字串为：" + e + "，上限值为：" + ValueLimits.DamageLimitMax.ToString());
                         MsgMessage += new Message("所填入的伤害值(" + intOutDamage.ToString() + ")高于目前设定的上限值（" + ValueLimits.DamageLimitMax.ToString() + "）。\r\n");
-                        CommonVariables.IntDMG = -1;
+                        InputVariables.IntDMG = -1;
                         return false;
                     }
                     else if (intOutDamage < 1)
                     {
                         Console.WriteLine("伤害值过低，输入字串为：" + e);
                         MsgMessage += new Message("所填入的伤害值（" + intOutDamage.ToString() + "）低于有效值（1），如为掉线请使用掉线指令记录。\r\n");
-                        CommonVariables.IntDMG = -1;
+                        InputVariables.IntDMG = -1;
                         return false;
                     }
                     else
                     {
-                        CommonVariables.IntDMG = intOutDamage;
-                        Console.WriteLine("伤害识别与转换完成，输出为：" + CommonVariables.IntDMG);
+                        InputVariables.IntDMG = intOutDamage;
+                        Console.WriteLine("伤害识别与转换完成，输出为：" + InputVariables.IntDMG);
                         return true;
                     }
                 }

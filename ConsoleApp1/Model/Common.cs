@@ -22,7 +22,7 @@ namespace Marchen.Model
         public static int BossLimitMax { get; set; }
     }
 
-    class CommonVariables
+    class InputVariables
     {
         public static double DouUID { get; set; }
         public static int IntBossCode { get; set; }

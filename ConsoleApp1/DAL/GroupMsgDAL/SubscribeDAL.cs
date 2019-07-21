@@ -171,7 +171,7 @@ namespace Marchen.DAL
         /// <param name="intSubsType">订阅类型：0普通订阅，1补时刀注册</param>
         /// <param name="intFinishFlag"></param>
         /// <returns></returns>
-        public static bool UpdateSubsType(string strGrpID, string strUserID, int intRound, int intBossCode, int intSubsType, int intFinishFlag)
+        public static bool UpdateSubsType(string strGrpID, string strUserID, int intRound, int intBossCode, int intSubsType, int intFinishFlag = 0)
         {
             string sqlUpdateSubs = "";
             sqlUpdateSubs = "update TTL_BOSSSUBS set FINISHFLAG = " + intFinishFlag + "，ROUND = " + intRound + ", SUBSTYPE = " + intSubsType + ", BC = " + intBossCode + " where GRPID = '" + strGrpID + "' and BC = " + intBossCode + " and USERID = '" + strUserID + "'";
@@ -183,6 +183,53 @@ namespace Marchen.DAL
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
                 Console.WriteLine("更新预约表预约类型时出现错误，SQL：" + sqlUpdateSubs + "\r\n" + oex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 更改补时预定
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="intNewBC">欲更改为的BOSS</param>
+        /// <returns></returns>
+        public static bool UpdateChangeExtSubs(string strGrpID, string strUserID, int intNewBC)
+        {
+            string sqlUpdateSubs = "";
+            sqlUpdateSubs = "update TTL_BOSSSUBS set FINISHFLAG = 0，ROUND = 0, BC = " + intNewBC + " where GRPID = '" + strGrpID + "' and SUBSTYPE = 1 and USERID = '" + strUserID + "'";
+            try
+            {
+                DBHelper.ExecCmdNoCount(sqlUpdateSubs);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("更新预约表预约类型时出现错误，SQL：" + sqlUpdateSubs + "\r\n" + oex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 删除补时刀订阅的方法
+        /// </summary>
+        /// <param name="strGrpID"></param>
+        /// <param name="strUserID"></param>
+        /// <param name="intBossCode"></param>
+        /// <param name="intDelCount"></param>
+        /// <returns></returns>
+        public static bool DelExtSubs(string strGrpID, string strUserID, out int intDelCount)
+        {
+            string sqlDelSubs = "delete from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "' and SUBSTYPE = 1";
+            try
+            {
+                intDelCount = DBHelper.ExecuteCommand(sqlDelSubs);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("删除BOSS订阅状态时发生错误，SQL：" + sqlDelSubs + "。\r\n" + oex);
+                intDelCount = 0;
                 return false;
             }
         }

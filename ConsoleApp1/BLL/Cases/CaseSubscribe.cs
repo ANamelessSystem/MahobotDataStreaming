@@ -43,40 +43,67 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (CommonVariables.IntBossCode == -1)
+            if (InputVariables.IntBossCode == -1)
             {
                 MsgMessage += new Message("未能找到BOSS编号。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
+            if (InputVariables.IntEXT == -1)
+            {
+                InputVariables.IntEXT = 0;
+            }
             if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
             {
-                DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + CommonVariables.IntBossCode + "'");
+                DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + InputVariables.IntBossCode + "'");
+                int isLastAtk = 0;
                 if (drExistsBoss.Length == 0)
                 {
-                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode, intSubsType))
+                    if (InputVariables.IntEXT != 0)
                     {
-                        string strOutput = "B" + CommonVariables.IntBossCode.ToString();
-                        strOutput += "(new)";
-                        for (int i = 0; i < dtSubsStatus.Rows.Count; i++)
+                        DataRow[] drExistsExtSubs = dtSubsStatus.Select("SUBSTYPE='1'");
+                        RecordDAL.CheckLastAttack(strGrpID, strUserID, out isLastAtk);
+                        if (isLastAtk == 1 && drExistsExtSubs.Length == 0)
                         {
-                            strOutput += "、B" + dtSubsStatus.Rows[i]["BC"];
-                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                            //满足唯一补时刀持有条件
+                            intSubsType = 1;
+                        }
+                        else if (isLastAtk == 1 && drExistsExtSubs.Length != 0)
+                        {
+                            //改定为其他BOSS为尾刀订阅
+                            intSubsType = 1;
+                            if (SubscribeDAL.UpdateChangeExtSubs(strGrpID, strUserID,InputVariables.IntBossCode))
                             {
-                                strOutput += "(补时)";
+                                //订阅成功
+                                MsgMessage += new Message("成功将补时刀订阅改为B" + InputVariables.IntBossCode + "。\r\n");
+                            }
+                            else
+                            {
+                                //数据库失败
+                                MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
                             }
                         }
-                        MsgMessage += new Message("已成功订阅。\r\n目前正在订阅的BOSS为：" + strOutput + "\r\n");
+                        else
+                        {
+                            MsgMessage += new Message("上一刀不是尾刀，无法添加补时刀订阅。\r\n");
+                        }
                     }
                     else
                     {
-                        MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
+                        if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, InputVariables.IntBossCode, intSubsType))
+                        {
+                            MsgMessage += new Message("已成功订阅B" + InputVariables.IntBossCode + "。\r\n");
+                        }
+                        else
+                        {
+                            MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
+                        }
                     }
                 }
                 else
                 {
-                    MsgMessage += new Message("已订阅过本BOSS，无法重复订阅。\r\n");
+                    MsgMessage += new Message("已订阅过本BOSS，无法重复订阅，如需改为补刀订阅请先取消后再重新订阅。\r\n");
                 }
             }
             else
@@ -87,55 +114,53 @@ namespace Marchen.BLL
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
 
-        /// <summary>
-        /// 订阅Boss提醒（尾刀专用）（自动调用）
-        /// </summary>
-        /// <param name="strGrpID">群号</param>
-        /// <param name="strUserID">QQ号</param>
-        /// <param name="intBossCode">BOSS代码</param>
-        public static void SubsAdd(string strGrpID, string strUserID, int intBossCode,int intRound)
-        {
-            int intSubsType = 1;
-            if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
-            {
-                DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + intBossCode + "'");
-                if (drExistsBoss.Length == 0)
-                {
-                    if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, intBossCode, intSubsType, intRound))
-                    {
-                        MsgMessage += new Message("已自动订阅下周目B" + intBossCode + "。\r\n");
-                        Console.WriteLine("成功添加补时刀订阅");
-                    }
-                    else
-                    {
-                        MsgMessage += new Message("补时刀自动订阅失败。\r\n");
-                        Console.WriteLine("补时刀订阅时数据库失败");
-                    }
-                }
-                else
-                {
-                    //boss already subs,just change substype
-                    int intFinishFlag = 0;
-                    if (SubscribeDAL.UpdateSubsType(strGrpID, strUserID, intRound, intBossCode, intSubsType, intFinishFlag))
-                    {
-                        MsgMessage += new Message("已自动订阅下周目B" + intBossCode + "。\r\n");
-                        Console.WriteLine("成功通过修改添加补时刀订阅");
-                    }
-                    else
-                    {
-                        MsgMessage += new Message("补时刀自动订阅失败。\r\n");
-                        Console.WriteLine("补时刀订阅时数据库失败");
-                    }
-                }
-            }
-            else
-            {
-                MsgMessage += new Message("补时刀自动订阅失败。\r\n");
-                Console.WriteLine("获取订阅时数据库失败");
-            }
-            //at message
-            //message output
-        }
+        ///// <summary>
+        ///// 订阅Boss提醒（尾刀专用）（自动调用）
+        ///// </summary>
+        ///// <param name="strGrpID">群号</param>
+        ///// <param name="strUserID">QQ号</param>
+        ///// <param name="intBossCode">BOSS代码</param>
+        //public static void SubsAdd(string strGrpID, string strUserID, int intBossCode, int intRound)
+        //{
+        //    int intSubsType = 1;
+        //    if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
+        //    {
+        //        DataRow[] drExistsBoss = dtSubsStatus.Select("BC='" + intBossCode + "'");
+        //        if (drExistsBoss.Length == 0)
+        //        {
+        //            if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, intBossCode, intSubsType, intRound))
+        //            {
+        //                MsgMessage += new Message("【已自动将补时刀订阅至下周目B" + intBossCode + "。】\r\n");
+
+        //                Console.WriteLine("成功添加补时刀订阅");
+        //            }
+        //            else
+        //            {
+        //                MsgMessage += new Message("【补时刀自动订阅失败。】\r\n");
+        //                Console.WriteLine("补时刀订阅时数据库失败");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            //boss already subs,just change substype
+        //            if (SubscribeDAL.UpdateSubsType(strGrpID, strUserID, intRound, intBossCode, intSubsType))
+        //            {
+        //                MsgMessage += new Message("【已自动将补时刀订阅至下周目B" + intBossCode + "。】\r\n");
+        //                Console.WriteLine("成功通过修改添加补时刀订阅");
+        //            }
+        //            else
+        //            {
+        //                MsgMessage += new Message("【补时刀自动订阅失败。】\r\n");
+        //                Console.WriteLine("补时刀订阅时数据库失败");
+        //            }
+        //        }
+        //    }
+        //    else
+        //    {
+        //        MsgMessage += new Message("补时刀自动订阅失败。\r\n");
+        //        Console.WriteLine("获取订阅时数据库失败");
+        //    }
+        //}
 
         /// <summary>
         /// 查看已订阅的BOSS
@@ -185,18 +210,18 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (CommonVariables.IntBossCode == -1)
+            if (InputVariables.IntBossCode == -1)
             {
                 MsgMessage += new Message("未能找到BOSS编号。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (SubscribeDAL.DelBossSubs(strGrpID, strUserID, CommonVariables.IntBossCode, out int intDelCount))
+            if (SubscribeDAL.DelBossSubs(strGrpID, strUserID, InputVariables.IntBossCode, out int intDelCount))
             {
                 if (intDelCount > 0)
                 {
-                    MsgMessage += new Message("退订B"+ CommonVariables.IntBossCode + "成功。\r\n");
+                    MsgMessage += new Message("退订B"+ InputVariables.IntBossCode + "成功。\r\n");
                 }
                 else
                 {

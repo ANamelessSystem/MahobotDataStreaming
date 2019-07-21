@@ -110,11 +110,6 @@ namespace Marchen.BLL
                     cmdType = "help";
                     Console.WriteLine("识别为说明书呈报");
                 }
-                //else if (strCmdHead.ToLower() == "timeout" || strCmdHead == "掉线")
-                //{
-                //    cmdType = "timeout";
-                //    Console.WriteLine("识别为掉线");
-                //}
                 else if (strCmdHead.ToLower() == "mod" || strCmdHead == "修改")
                 {
                     cmdType = "dmgmod";

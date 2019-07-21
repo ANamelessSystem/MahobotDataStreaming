@@ -80,24 +80,24 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (CommonVariables.DouUID == -1)
+            if (InputVariables.DouUID == -1)
             {
                 MsgMessage += new Message("未识别出需要删除的QQ号。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (strUserID == CommonVariables.DouUID.ToString() || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
+            if (strUserID == InputVariables.DouUID.ToString() || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
             {
                 if (NameListDAL.QryNameList(strGrpID, out DataTable dtNameList))
                 {
-                    DataRow[] drExistsID = dtNameList.Select("MBRID='" + CommonVariables.DouUID.ToString() + "'");
+                    DataRow[] drExistsID = dtNameList.Select("MBRID='" + InputVariables.DouUID.ToString() + "'");
                     if (drExistsID.Length == 1)
                     {
-                        if (NameListDAL.NameListDelete(strGrpID, CommonVariables.DouUID.ToString()))
+                        if (NameListDAL.NameListDelete(strGrpID, InputVariables.DouUID.ToString()))
                         {
-                            Console.WriteLine("已将群：" + strGrpID + "，" + CommonVariables.DouUID.ToString() + "移除名单。");
-                            MsgMessage += new Message("已将" + CommonVariables.DouUID.ToString() + "移出名单。");
+                            Console.WriteLine("已将群：" + strGrpID + "，" + InputVariables.DouUID.ToString() + "移除名单。");
+                            MsgMessage += new Message("已将" + InputVariables.DouUID.ToString() + "移出名单。");
                         }
                         else
                         {
@@ -112,7 +112,7 @@ namespace Marchen.BLL
             }
             else
             {
-                Console.WriteLine("只有本人或管理员以上可删除对应名单。修改者：" + strUserID + " 原记录：" + CommonVariables.DouUID.ToString());
+                Console.WriteLine("只有本人或管理员以上可删除对应名单。修改者：" + strUserID + " 原记录：" + InputVariables.DouUID.ToString());
                 MsgMessage += new Message("只有本人或管理员以上可删除对应的名单。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();

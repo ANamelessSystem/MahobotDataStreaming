@@ -157,14 +157,14 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtStart">开始时间（日期，时间）</param>
         /// <param name="dtEnd">结束时间（日期，时间）</param>
-        /// <param name="dtInsuff">返回dt格式的出刀情况(userid,cmain=首刀次数，cex=补时刀数)</param>
+        /// <param name="dtInsuff">返回dt格式的出刀情况(userid,cmain=通常刀次数，cex=补时刀数，cla=尾刀次数)</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryStrikeStatus(string strGrpID, DateTime dtStart, DateTime dtEnd, out DataTable dtInsuff)
         {
-            string sqlQueryStrikeStatus = "select distinct(a.MBRID),a.MBRNAME,nvl(cm,0) as cmain,nvl(ce,0) as cex from " +
+            string sqlQueryStrikeStatus = "select distinct(a.MBRID),a.MBRNAME,nvl(cm,0) as cmain,nvl(ce,0) as cex,nvl(cl,0) as cla from " +
                 "(select MBRID,MBRNAME from TTL_MBRLIST where grpid ='" + strGrpID + "' and MBRID is not null) a " +
                 "left join (select userid,count(CASE WHEN EXTIME = 0 THEN 1 ELSE NULL END) as cm," +
-                "count(CASE WHEN EXTIME = 1 THEN 1 ELSE NULL END) as ce from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and " +
+                "count(CASE WHEN EXTIME = 1 THEN 1 ELSE NULL END) as ce,count(CASE WHEN EXTIME = 2 THEN 1 ELSE NULL END) as cl from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and " +
                 "time between to_date('" + dtStart + "', 'yyyy/mm/dd hh24:mi:ss') and to_date('" + dtEnd + "','yyyy/mm/dd hh24:mi:ss') group by userid) b " +
                 "on a.MBRID=b.userid";
             try
@@ -361,5 +361,65 @@ namespace Marchen.DAL
                 return false;
             }
         }
+
+        /// <summary>
+        /// 检查指定用户最后一刀是否为尾刀
+        /// </summary>
+        /// <param name="intIsLastAtk">0：否；1：是。</param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <returns></returns>
+        public static bool CheckLastAttack(string strGrpID, string strUserID, out int intIsLastAtk)
+        {
+            //Console.WriteLine("启动数据库查询语句");
+            string sqlTimeFilter = "";
+            if (QueryTimeNowOnDatabase(out DataTable dtResultTime))
+            {
+                DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
+                if (dtNow.Hour >= 0 && dtNow.Hour < 4)
+                {
+                    //当目前时间在0点到4点间时，筛选开始时间为前一天的凌晨4点
+                    sqlTimeFilter = " and TIME >= trunc(sysdate)+(4/24)-1 ";
+                }
+                else
+                {
+                    //当目前时间在4点到24点间时，筛选开始时间为当天的凌晨4点
+                    sqlTimeFilter = " and TIME >= trunc(sysdate)+(4/24) ";
+                }
+            }
+            else
+            {
+                Console.WriteLine("数据库错误，未能取回数据库时间。");
+            }
+            string sqlCheckLA = "select EXTIME from TTL_DMGRECORDS where GRPID = '" + strGrpID + "' and USERID = '" + strUserID + "' " + sqlTimeFilter + " order by round desc, bc desc,extime desc";
+            try
+            {
+                DataTable dt = DBHelper.GetDataTable(sqlCheckLA);
+                Console.WriteLine("SQL语句成功执行");
+                if (dt.Rows.Count > 0)
+                {
+                    if (int.Parse(dt.Rows[0]["EXTIME"].ToString()) == 2)
+                    {
+                        intIsLastAtk = 1;
+                    }
+                    else
+                    {
+                        intIsLastAtk = 0;
+                    }
+                }
+                else
+                {
+                    intIsLastAtk = 0;
+                }
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("群：" + strGrpID + "验证补时刀失败，SQL：" + sqlCheckLA + "。\r\n" + oex);
+                intIsLastAtk = 0;
+                return false;
+            }
+        }
+
     }
 }
