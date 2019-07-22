@@ -83,7 +83,7 @@ namespace Marchen.DAL
         /// <param name="strUserID"></param>
         /// <param name="intBossCode"></param>
         /// <param name="intDelCount"></param>
-        /// <returns></returns>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool DelBossSubs(string strGrpID, string strUserID, int intBossCode,out int intDelCount)
         {
             string sqlDelSubs = "delete from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "' and BC=" + intBossCode;
@@ -148,7 +148,7 @@ namespace Marchen.DAL
         /// <param name="intRound">已提醒周目</param>
         /// <param name="intBossCode">已提醒BOSS</param>
         /// <param name="intProgType">已提醒进度</param>
-        /// <returns></returns>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool UpdateRemindFlag(string strGrpID,string strUserID, int intRound, int intBossCode, int intProgType)
         {
 
@@ -196,7 +196,7 @@ namespace Marchen.DAL
         /// <param name="intBossCode">BOSS代码</param>
         /// <param name="intSubsType">订阅类型：0普通订阅，1补时刀注册</param>
         /// <param name="intFinishFlag"></param>
-        /// <returns></returns>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool UpdateSubsType(string strGrpID, string strUserID, int intRound, int intBossCode, int intSubsType, int intFinishFlag = 0)
         {
             string sqlUpdateSubs = "";
@@ -219,7 +219,7 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">QQ号</param>
         /// <param name="intNewBC">欲更改为的BOSS</param>
-        /// <returns></returns>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool UpdateChangeExtSubs(string strGrpID, string strUserID, int intNewBC)
         {
             string sqlUpdateSubs = "";
@@ -237,16 +237,15 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 删除补时刀订阅的方法
+        /// 删除全部订阅的方法（退名单后用）
         /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="intBossCode"></param>
-        /// <param name="intDelCount"></param>
-        /// <returns></returns>
-        public static bool DelExtSubs(string strGrpID, string strUserID, out int intDelCount)
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">QQ号</param>
+        /// <param name="intDelCount">返回的被删除行数</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool DelSubsAll(string strGrpID, string strUserID, out int intDelCount)
         {
-            string sqlDelSubs = "delete from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "' and SUBSTYPE = 1";
+            string sqlDelSubs = "delete from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "'";
             try
             {
                 intDelCount = DBHelper.ExecuteCommand(sqlDelSubs);
@@ -254,7 +253,7 @@ namespace Marchen.DAL
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException oex)
             {
-                Console.WriteLine("删除BOSS订阅状态时发生错误，SQL：" + sqlDelSubs + "。\r\n" + oex);
+                Console.WriteLine("删除BOSS订阅时发生错误，SQL：" + sqlDelSubs + "。\r\n" + oex);
                 intDelCount = 0;
                 return false;
             }

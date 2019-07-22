@@ -98,6 +98,10 @@ namespace Marchen.BLL
                         {
                             Console.WriteLine("已将群：" + strGrpID + "，" + InputVariables.DouUID.ToString() + "移除名单。");
                             MsgMessage += new Message("已将" + InputVariables.DouUID.ToString() + "移出名单。");
+                            if (SubscribeDAL.DelSubsAll(strGrpID, InputVariables.DouUID.ToString(), out int intDelCounts))
+                            {
+                                Console.WriteLine("移除名单后清除订阅表成功。");
+                            }
                         }
                         else
                         {
