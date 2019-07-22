@@ -43,10 +43,19 @@ namespace Marchen.BLL
                     for (int i = 0; i < dtInsuff.Rows.Count; i++)
                     {
                         string strUID = dtInsuff.Rows[i]["MBRID"].ToString();
-                        string strCountMain = dtInsuff.Rows[i]["cmain"].ToString();
-                        if (int.Parse(strCountMain) < 3)
+                        int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
+                        int intCountLastAtk = int.Parse(dtInsuff.Rows[i]["cla"].ToString());
+                        int intCountExTime = int.Parse(dtInsuff.Rows[i]["cex"].ToString());
+                        if ((intCountMain + intCountLastAtk) < 3)
                         {
-                            MsgMessage += new Message("\r\nID：" + strUID + "，剩余" + (3 - int.Parse(strCountMain)).ToString() + "刀 ") + Message.At(long.Parse(strUID));
+                            if (intCountLastAtk > intCountExTime)
+                            {
+                                MsgMessage += new Message("\r\nID：" + strUID + "，剩余" + (3 - (intCountMain + intCountLastAtk)).ToString() + "刀与补时刀 ") + Message.At(long.Parse(strUID));
+                            }
+                            else
+                            {
+                                MsgMessage += new Message("\r\nID：" + strUID + "，剩余" + (3 - (intCountMain + intCountLastAtk)).ToString() + "刀 ") + Message.At(long.Parse(strUID));
+                            }
                         }
                     }
                 }

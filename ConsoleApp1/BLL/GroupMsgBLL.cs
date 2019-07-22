@@ -294,7 +294,7 @@ namespace Marchen.BLL
                         break;
                     case "bosssubsshow":
                         {
-                            CaseSubscribe.SubsShow(strGrpID, strUserID);
+                            CaseSubscribe.SubsShow(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     case "bosssubscancel":

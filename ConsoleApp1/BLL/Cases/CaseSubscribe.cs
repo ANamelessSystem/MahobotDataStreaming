@@ -38,7 +38,7 @@ namespace Marchen.BLL
             }
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
+                //MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
@@ -167,28 +167,142 @@ namespace Marchen.BLL
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">QQ号</param>
-        public static void SubsShow(string strGrpID, string strUserID)
+        public static void SubsShow(string strGrpID, string strUserID, string strCmdContext)
         {
-            if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
+            if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                string strOutput = "";
-                for (int i = 0; i < dtSubsStatus.Rows.Count; i++)
+                //MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (InputVariables.IntIsAllFlag == 0)
+            {
+                if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
                 {
-                    if (i != 0)
+                    string strOutput = "";
+                    for (int i = 0; i < dtSubsStatus.Rows.Count; i++)
                     {
-                        strOutput += "、";
+                        if (i != 0)
+                        {
+                            strOutput += "、";
+                        }
+                        strOutput += "B" + dtSubsStatus.Rows[i]["BC"];
+                        if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                        {
+                            strOutput += "(补时)";
+                        }
                     }
-                    strOutput += "B" + dtSubsStatus.Rows[i]["BC"];
-                    if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
-                    {
-                        strOutput += "(补时)";
-                    }
+                    MsgMessage += new Message("目前正在订阅的BOSS为：" + strOutput + "\r\n");
                 }
-                MsgMessage += new Message("目前正在订阅的BOSS为：" + strOutput + "\r\n");
+                else
+                {
+                    MsgMessage += new Message("与数据库失去连接，查看已订阅BOSS失败。\r\n");
+                }
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，查看已订阅BOSS失败。\r\n");
+                if (SubscribeDAL.GetSubsStatus(strGrpID, out DataTable dtSubsStatus))
+                {
+                    string strOutputB1 = "";
+                    string strOutputB2 = "";
+                    string strOutputB3 = "";
+                    string strOutputB4 = "";
+                    string strOutputB5 = "";
+                    int intCountB1 = 0;
+                    int intCountB2 = 0;
+                    int intCountB3 = 0;
+                    int intCountB4 = 0;
+                    int intCountB5 = 0;
+                    for (int i = 0; i < dtSubsStatus.Rows.Count; i++)
+                    {
+                        if (dtSubsStatus.Rows[i]["BC"].ToString() == "1")
+                        {
+                            intCountB1 += 1;
+                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                            {
+                                strOutputB1 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
+                            }
+                            else
+                            {
+                                strOutputB1 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
+                            }
+                        }
+                        if (dtSubsStatus.Rows[i]["BC"].ToString() == "2")
+                        {
+                            intCountB2 += 1;
+                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                            {
+                                strOutputB2 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
+                            }
+                            else
+                            {
+                                strOutputB2 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
+                            }
+                        }
+                        if (dtSubsStatus.Rows[i]["BC"].ToString() == "3")
+                        {
+                            intCountB3 += 1;
+                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                            {
+                                strOutputB3 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
+                            }
+                            else
+                            {
+                                strOutputB3 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
+                            }
+                        }
+                        if (dtSubsStatus.Rows[i]["BC"].ToString() == "4")
+                        {
+                            intCountB4 += 1;
+                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                            {
+                                strOutputB4 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
+                            }
+                            else
+                            {
+                                strOutputB4 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
+                            }
+                        }
+                        if (dtSubsStatus.Rows[i]["BC"].ToString() == "5")
+                        {
+                            intCountB5 += 1;
+                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                            {
+                                strOutputB5 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
+                            }
+                            else
+                            {
+                                strOutputB5 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
+                            }
+                        }
+                    }
+                    if (strOutputB1 == "" || strOutputB1 == null)
+                    {
+                        strOutputB1 = "\r\n无";
+                    }
+                    if (strOutputB2 == "" || strOutputB2 == null)
+                    {
+                        strOutputB2 = "\r\n无";
+                    }
+                    if (strOutputB3 == "" || strOutputB3 == null)
+                    {
+                        strOutputB3 = "\r\n无";
+                    }
+                    if (strOutputB4 == "" || strOutputB4 == null)
+                    {
+                        strOutputB4 = "\r\n无";
+                    }
+                    if (strOutputB5 == "" || strOutputB5 == null)
+                    {
+                        strOutputB5 = "\r\n无";
+                    }
+                    MsgMessage += new Message("正在订阅B1(" + intCountB1 + "人)：" + strOutputB1 + "\r\n正在订阅B2(" + intCountB2 + "人)：" + strOutputB2 + "\r\n正在订阅B3(" + intCountB3 + "人)：" + strOutputB3 + "\r\n正在订阅B4(" + intCountB4 + "人)：" + strOutputB4 + "\r\n正在订阅B5(" + intCountB5 + "人)：" + strOutputB5 + "\r\n");
+                }
+                else
+                {
+                    MsgMessage += new Message("与数据库失去连接，查看已订阅BOSS失败。\r\n");
+                }
             }
             MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();

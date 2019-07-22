@@ -28,7 +28,7 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 获取订阅状态的方法
+        /// 获取订阅状态的方法（个人）
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">QQ号</param>
@@ -37,6 +37,32 @@ namespace Marchen.DAL
         public static bool GetSubsStatus(string strGrpID, string strUserID, out DataTable dtSubsStatus)
         {
             string sqlQrySubs = "select * from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "'";
+            try
+            {
+                dtSubsStatus = DBHelper.GetDataTable(sqlQrySubs);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("查询BOSS订阅状态时发生错误，SQL：" + sqlQrySubs + "。\r\n" + oex);
+                dtSubsStatus = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 获取订阅状态的方法（全群）
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtSubsStatus">返回dt格式的订阅状态</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool GetSubsStatus(string strGrpID, out DataTable dtSubsStatus)
+        {
+            string sqlQrySubs = "select * from " +
+                "(select * from TTL_BOSSSUBS where GRPID='" + strGrpID + "') a " +
+                "left join " +
+                "(select MBRID,MBRNAME from TTL_MBRLIST where GRPID='" + strGrpID + "') b " +
+                "on a.USERID = b.MBRID";
             try
             {
                 dtSubsStatus = DBHelper.GetDataTable(sqlQrySubs);
