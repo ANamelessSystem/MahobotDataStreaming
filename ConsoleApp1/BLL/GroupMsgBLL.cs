@@ -223,9 +223,9 @@ namespace Marchen.BLL
                             message += new Message("查询队列：【@MahoBot c2】可查询当前在队列中的人\r\n");
                             message += new Message("退出队列：【@MahoBot c3】可离开队列\r\n");
                             message += new Message("伤害记录：【@MahoBot 伤害 B(n) (n)周目 （伤害值）】（如@MahoBot 伤害 B2 6周目 1374200）\r\n 伤害值可如137w等模糊格式\r\n");
-                            message += new Message("额外时间的伤害记录：【@MahoBot 伤害 补时 B(n) (n)周目 （伤害值）】\r\n");
-                            message += new Message("掉线记录：【@MahoBot 掉线 (是否补时)】可记录一次掉线或额外时间掉线\r\n");
-                            message += new Message("其他功能及用例请参考群文件的命令表\r\n");
+                            message += new Message("尾刀的伤害记录：【@MahoBot 伤害 尾刀 B(n) (n)周目 （伤害值）】\r\n");
+                            message += new Message("掉线记录：【@MahoBot 伤害 掉线】可记录一次掉线\r\n");
+                            message += new Message("其他功能及用例请参考命令表\r\n https://docs.qq.com/sheet/DRGthS3JpS1ZibHlL?opendocxfrom=admin&preview_token=&coord=F27A0C0&tab=BB08J2 \r\n");
                             message += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }

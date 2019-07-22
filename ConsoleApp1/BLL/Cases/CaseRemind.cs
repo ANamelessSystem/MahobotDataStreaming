@@ -26,12 +26,26 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
+            if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
+            {
+                MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (intHourSet < 0)
+            {
+                MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
             if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
             {
                 DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(4);//每天凌晨4点开始
-                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(4);//第二天凌晨4点结束
-                if (dtNow.Hour >= 0 && dtNow.Hour < 4)
+                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点开始
+                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点结束
+                if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
                 {
                     //0点后日期变换，开始日期需查到昨天
                     dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
@@ -83,12 +97,26 @@ namespace Marchen.BLL
 
         public static void RemainStrikes(string strGrpID, string strUserID,GroupMemberInfo memberInfo,int intType)
         {
+            if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
+            {
+                MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (intHourSet < 0)
+            {
+                MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
             if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
             {
                 DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(4);//每天凌晨4点开始
-                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(4);//第二天凌晨4点结束
-                if (dtNow.Hour >= 0 && dtNow.Hour < 4)
+                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点开始
+                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点结束
+                if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
                 {
                     dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
                     dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束
@@ -146,12 +174,26 @@ namespace Marchen.BLL
         /// <param name="strUserID">消息发起人QQ号</param>
         public static void ShowRemainStrikes(string strGrpID, string strUserID)
         {
+            if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
+            {
+                MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (intHourSet < 0)
+            {
+                MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
             if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
             {
                 DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(4);//每天凌晨4点开始
-                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(4);//第二天凌晨4点结束
-                if (dtNow.Hour >= 0 && dtNow.Hour < 4)
+                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点开始
+                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点结束
+                if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
                 {
                     dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
                     dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束

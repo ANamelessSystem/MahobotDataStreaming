@@ -214,29 +214,6 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 更改补时预定
-        /// </summary>
-        /// <param name="strGrpID">群号</param>
-        /// <param name="strUserID">QQ号</param>
-        /// <param name="intNewBC">欲更改为的BOSS</param>
-        /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool UpdateChangeExtSubs(string strGrpID, string strUserID, int intNewBC)
-        {
-            string sqlUpdateSubs = "";
-            sqlUpdateSubs = "update TTL_BOSSSUBS set FINISHFLAG = 0，ROUND = 0, BC = " + intNewBC + " where GRPID = '" + strGrpID + "' and SUBSTYPE = 1 and USERID = '" + strUserID + "'";
-            try
-            {
-                DBHelper.ExecCmdNoCount(sqlUpdateSubs);
-                return true;
-            }
-            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
-            {
-                Console.WriteLine("更新预约表预约类型时出现错误，SQL：" + sqlUpdateSubs + "\r\n" + oex);
-                return false;
-            }
-        }
-
-        /// <summary>
         /// 删除全部订阅的方法（退名单后用）
         /// </summary>
         /// <param name="strGrpID">群号</param>
