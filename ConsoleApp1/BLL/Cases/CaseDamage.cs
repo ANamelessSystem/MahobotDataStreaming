@@ -393,6 +393,10 @@ namespace Marchen.BLL
                             {
                                 resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + " （补时）";
                             }
+                            else if (strREXT == "2")
+                            {
+                                resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + " （尾刀）";
+                            }
                             else
                             {
                                 resultString = "UID=" + strRUID + "；" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg;
