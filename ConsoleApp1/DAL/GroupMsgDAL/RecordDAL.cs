@@ -195,7 +195,10 @@ namespace Marchen.DAL
                 "TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate)) a " +
                 "left join (select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME >= trunc(sysdate, 'mm') + 1 and TIME <= sysdate) b " +
                 "on a.MAXBC = b.bc and a.maxround = b.round) c " +
-                "left join (select roundmin, roundmax, bc, hp from ttl_hpset) d on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
+                "left join ((select regioncode,roundmin, roundmax, bc, hp from ttl_hpset " +
+                "right join (select org_region from ttl_orglist where org_id = '" + strGrpID + "') " +
+                "on REGIONCODE = ORG_REGION)) d " +
+                "on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
             try
             {
                 dtProgress = DBHelper.GetDataTable(sqlQueryProgress);

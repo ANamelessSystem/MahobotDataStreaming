@@ -230,12 +230,6 @@ namespace Marchen.BLL
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }
                         break;
-                    //case "timeout":
-                    //    {
-                    //        //CaseDamage.DmgTimeOut(strGrpID, strUserID, strCmdContext);
-                    //        CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
-                    //    }
-                    //    break;
                     case "dmgmod":
                         {
                             if (!CmdHelper.LoadValueLimits())

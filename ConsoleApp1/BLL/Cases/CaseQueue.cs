@@ -55,14 +55,7 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void QueueShow(string strGrpID, string strUserID)
         {
-            if (GroupProperties.IsHpShow)
-            {
-                HpShowAndSubsCheck(strGrpID, strUserID);
-            }
-            else
-            {
-                Console.WriteLine("未打开HP计算功能。");
-            }
+            HpShowAndSubsCheck(strGrpID, strUserID);
             if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
             {
                 if (dtQueue.Rows.Count > 0)
@@ -254,12 +247,14 @@ namespace Marchen.BLL
             {
                 if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
                 {
-                    if (dtBossProgress.Rows[0][0] is DBNull)//判断数据库中字段是否为Null
+                    if (dtBossProgress.Rows[0][0] is DBNull || dtBossProgress.Rows[0]["hpremain"] is DBNull || dtBossProgress.Rows[0]["maxround"] is DBNull || dtBossProgress.Rows[0]["maxbc"] is DBNull)
                     {
+                        //判断数据库中字段是否为Null
+                        Console.WriteLine(strGrpID + "在查询进度时返回一定量的空值，为了防止程序崩溃已关闭血量显示。");
+                        MsgMessage += new Message("获取进度时发生预想外的错误，已关闭血量显示。\r\n");
                         return;
                     }
                 }
-                //string strHpRemain = dtBossProgress.Rows[0]["hpremain"].ToString();
                 int intHPNow = int.Parse(dtBossProgress.Rows[0]["hpremain"].ToString());
                 int intRoundNow = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
                 int intBCNow = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
@@ -278,7 +273,7 @@ namespace Marchen.BLL
                         if (intBCNow == ValueLimits.BossLimitMax)
                         {
                             //现在为B5，需要跳到下周目B1的情况
-                            if (StatisticsDAL.GetBossMaxHP(1, intRoundNow + 1, out DataTable dtBossMaxHP))
+                            if (StatisticsDAL.GetBossMaxHP(strGrpID, 1, intRoundNow + 1, out DataTable dtBossMaxHP))
                             {
                                 Console.WriteLine("误差内跳到下个BOSS");
                                 intBCNow = 1;
@@ -293,7 +288,7 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            if (StatisticsDAL.GetBossMaxHP(intBCNow + 1, intRoundNow, out DataTable dtBossMaxHP))
+                            if (StatisticsDAL.GetBossMaxHP(strGrpID, intBCNow + 1, intRoundNow, out DataTable dtBossMaxHP))
                             {
                                 Console.WriteLine("误差内跳到下个BOSS");
                                 intBCNow += 1;

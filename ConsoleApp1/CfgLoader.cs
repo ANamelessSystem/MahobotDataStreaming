@@ -45,7 +45,6 @@ namespace Marchen
                 WritePrivateProfileString(strCfgFileName, "DBUserID", "(数据库用户名)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "DbPassword", "(数据库用户密码)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "DBPort", "(数据库监听端口)", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "DBCreaGDTProcName", "(创建表格所用存储过程的名字)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "ApiAddress", "(酷Q HTTP API的监听地址)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "(酷Q HTTP API的端口地址)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "ApiForwardToAddress", "(本程序接收酷Q HTTP API传来的信息后转发的地址)", strFilePath);
@@ -80,7 +79,6 @@ namespace Marchen
                     DBProperties.DBServiceName = ContentValue(strCfgFileName, "DBServiceName").ToString();
                     DBProperties.DBUserID = ContentValue(strCfgFileName, "DBUserID").ToString();
                     DBProperties.DBPort = ContentValue(strCfgFileName, "DBPort").ToString();
-                    DBProperties.DBCreaGDTProcName = ContentValue(strCfgFileName, "DBCreaGDTProcName").ToString();
                     ApiProperties.ApiAddr = ContentValue(strCfgFileName, "ApiAddress").ToString();
                     ApiProperties.ApiPostAddr = ContentValue(strCfgFileName, "ApiPostAddress").ToString();
                     ApiProperties.ApiForwardToAddr = ContentValue(strCfgFileName, "ApiForwardToAddress").ToString();
