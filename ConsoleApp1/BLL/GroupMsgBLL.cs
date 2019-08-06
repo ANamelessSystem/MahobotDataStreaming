@@ -11,8 +11,9 @@ namespace Marchen.BLL
 {
     class GroupMsgBLL
     {
-        private static void GroupVerification(string strGrpID)
+        private static bool GroupVerification(string strGrpID)
         {
+            bool bResullt = true;
             if (QueueDAL.GroupRegVerify(strGrpID, out DataTable dtVfyResult))
             {
                 if (dtVfyResult.Rows.Count == 1)
@@ -21,31 +22,32 @@ namespace Marchen.BLL
                     int intGrpType = int.Parse(dtVfyResult.Rows[0]["ORG_TYPE"].ToString());
                     if (intGrpStat != 1)
                     {
-                        MsgMessage += new Message("本群已关闭bot功能，请联系bot维护团队。\r\n");
+                        MsgMessage += new Message("本群已关闭bot功能，请联系bot维护团队。");
                         Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                        return;
+                        bResullt = false;
                     }
                     if (intGrpType != 0)
                     {
                         //非公主连接，等待下一个程序响应
-                        return;
+                        bResullt = false;
                     }
                 }
                 else
                 {
-                    MsgMessage += new Message("本群激活状态有误，请联系bot维护团队。\r\n");
+                    MsgMessage += new Message("本群激活状态有误，请联系bot维护团队。");
                     Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    return;
+                    bResullt = false;
                 }
             }
             else
             {
-                MsgMessage += new Message("验证时连接数据库失败，请联系bot维护团队。\r\n");
+                MsgMessage += new Message("验证时连接数据库失败，请联系bot维护团队。");
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
+                bResullt = false;
             }
+            return bResullt;
         }
         /// <summary>
         /// 消息
@@ -66,7 +68,10 @@ namespace Marchen.BLL
             if (strRawcontext.Contains(cmdAtMeAlone))
             {
                 var message = new Message("");
-                GroupVerification(strGrpID);
+                if (!GroupVerification(strGrpID))
+                {
+                    return;
+                }
                 Console.WriteLine("接收到一条来自群：" + strGrpID + "的Notice，开始解析内容");
                 //分离命令头和命令体，命令头(strCmdHead)：功能识别区，命令体(strCmdContext)：数据包含区。
                 string strCmdHead = strRawcontext.Replace(cmdAtMeAlone, "").Trim().Split(' ')[0];
