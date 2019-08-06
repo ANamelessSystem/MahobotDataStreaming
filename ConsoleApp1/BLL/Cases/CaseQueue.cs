@@ -16,7 +16,7 @@ namespace Marchen.BLL
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
-        public static void QueueAdd(string strGrpID, string strUserID)
+        public static void QueueAdd(string strGrpID, string strUserID, string strCmdContext)
         {
             int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
@@ -33,9 +33,31 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (QueueDAL.AddQueue(strGrpID, strUserID))
+            if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += new Message("已加入队列\r\n--------------------\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            int intSosFlag = 0;
+            if (InputVariables.IntEXT == 1)
+            {
+                intSosFlag = 2;
+            }
+            else
+            {
+                intSosFlag = 0;
+            }
+            if (QueueDAL.AddQueue(strGrpID, strUserID, intSosFlag))
+            {
+                if (intSosFlag == 0)
+                {
+                    MsgMessage += new Message("已加入队列，类型：通常\r\n--------------------\r\n");
+                }
+                else
+                {
+                    MsgMessage += new Message("已加入队列，类型：补时\r\n--------------------\r\n");
+                }
                 QueueShow(strGrpID, strUserID);
             }
             else
@@ -60,25 +82,36 @@ namespace Marchen.BLL
             {
                 if (dtQueue.Rows.Count > 0)
                 {
-                    MsgMessage += new Message("目前队列：\r\n");
+                    string strList_normal = "";
+                    string strList_sos = "";
+                    string strList_ext = "";
+                    string strOutput = "";
                     for (int i = 0; i < dtQueue.Rows.Count; i++)
                     {
-                        string strOutput = "";
                         if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
                         {
-                            strOutput = "【等救】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】";
+                            strList_sos += "【等救】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】\r\n";
                         }
                         else if (dtQueue.Rows[i]["sosflag"].ToString() == "2")
                         {
-                            strOutput = "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【自动添加】";
+                            strList_ext += "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
                         }
                         else
                         {
-                            strOutput = "【" + dtQueue.Rows[i]["SEQ"].ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")";
+                            strList_normal += "【" + dtQueue.Rows[i]["SEQ"].ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
                         }
-                        MsgMessage += new Message(strOutput + "\r\n");
-                        Console.WriteLine(strOutput);
                     }
+                    if (strList_sos.Length != 0)
+                    {
+                        strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
+                    }
+                    else
+                    {
+                        strOutput = "目前队列：\r\n" + strList_ext + strList_normal;
+                    }
+                    MsgMessage += new Message();
+                    MsgMessage += new Message(strOutput);
+                    Console.WriteLine(strOutput);
                 }
                 else
                 {
