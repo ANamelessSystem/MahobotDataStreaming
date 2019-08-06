@@ -23,14 +23,14 @@ namespace Marchen.BLL
             int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
             {
-                MsgMessage += new Message("尚未报名，订阅BOSS。\r\n");
+                MsgMessage += new Message("尚未报名，订阅BOSS失败。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             else if (intMemberStatus == -1)
             {
-                MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
+                MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
@@ -43,7 +43,7 @@ namespace Marchen.BLL
             }
             if (InputVariables.IntBossCode == -1)
             {
-                MsgMessage += new Message("未能找到BOSS编号。\r\n");
+                MsgMessage += new Message("未能找到BOSS编号，订阅BOSS失败。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
