@@ -157,6 +157,24 @@ namespace Marchen.DAL
             }
         }
 
+        /// <summary>
+        /// 初始化名单的方法
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
+        public static bool NameListInit(string strGrpID)
+        {
+            try
+            {
+                DBHelper.ExecProd("InitMbrList", "varGrpID", strGrpID);
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            {
+                Console.WriteLine("初始化名单时跳出错误。\r\n" + orex);
+                return false;
+            }
+        }
 
         /// <summary>
         /// 删除名单的方法（按序号）

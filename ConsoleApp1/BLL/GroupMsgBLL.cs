@@ -76,6 +76,7 @@ namespace Marchen.BLL
                 //分离命令头和命令体，命令头(strCmdHead)：功能识别区，命令体(strCmdContext)：数据包含区。
                 string strCmdHead = strRawcontext.Replace(cmdAtMeAlone, "").Trim().Split(' ')[0];
                 string strCmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Replace(strCmdHead, "").Trim();
+                string strSpecCmdText = strRawcontext.Replace(cmdAtMeAlone, "").Trim();
                 string strUserID = receivedMessage.UserId.ToString();
                 string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
                 string strUserNickName = memberInfo.Nickname.ToString().Trim();
@@ -101,7 +102,6 @@ namespace Marchen.BLL
                 }
                 else if (strCmdHead.ToLower() == "clear" || strCmdHead == "清空队列")
                 {
-                    //管理功能，不设快捷键
                     cmdType = "clear";
                     Console.WriteLine("识别为清空指令");
                 }
@@ -152,7 +152,6 @@ namespace Marchen.BLL
                 }
                 else if (strCmdHead.ToLower() == "s1" || strCmdHead == "订阅")
                 {
-                    //需要另外参数
                     cmdType = "bosssubsadd";
                     Console.WriteLine("识别为新增BOSS订阅");
                 }
@@ -182,6 +181,11 @@ namespace Marchen.BLL
                 //    cmdType = "score";
                 //    Console.WriteLine("算分");
                 //}
+                else if (strSpecCmdText.ToLower() == "initialize member list")
+                {
+                    cmdType = "namelistinit";
+                    Console.WriteLine("初始化(清空)名单");
+                }
                 else
                 {
                     cmdType = "unknown";
@@ -332,6 +336,11 @@ namespace Marchen.BLL
                     //        CaseStatistics.ShowScoreNow(strGrpID,strCmdContext);
                     //    }
                     //    break;
+                    case "namelistinit":
+                        {
+                            CaseNameList.InitNameList(strGrpID, memberInfo);
+                        }
+                        break;
                     case "unknown":
                         {
                             message += new Message("无法识别内容,输入【@MahoBot help】以查询命令表。\r\n");

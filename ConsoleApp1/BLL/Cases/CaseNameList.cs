@@ -98,10 +98,11 @@ namespace Marchen.BLL
                         {
                             Console.WriteLine("已将群：" + strGrpID + "，" + InputVariables.DouUID.ToString() + "移除名单。");
                             MsgMessage += new Message("已将" + InputVariables.DouUID.ToString() + "移出名单。");
-                            if (SubscribeDAL.DelSubsAll(strGrpID, InputVariables.DouUID.ToString(), out int intDelCounts))
-                            {
-                                Console.WriteLine("移除名单后清除订阅表成功。");
-                            }
+                            //该功能已由触发器行级触发器完成
+                            //if (SubscribeDAL.DelSubsAll(strGrpID, InputVariables.DouUID.ToString(), out int intDelCounts))
+                            //{
+                            //    Console.WriteLine("移除名单后清除订阅表成功。");
+                            //}
                         }
                         else
                         {
@@ -123,6 +124,32 @@ namespace Marchen.BLL
                 return;
             }
             MsgMessage += Message.At(long.Parse(strUserID));
+            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+        }
+
+        /// <summary>
+        /// 初始化(清空)成员名单并删除所有订阅
+        /// </summary>
+        /// <param name="strGrpID"></param>
+        /// <param name="strUserID"></param>
+        public static void InitNameList(string strGrpID, GroupMemberInfo memberInfo)
+        {
+            if (memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
+            {
+                if (NameListDAL.NameListInit(strGrpID))
+                {
+                    MsgMessage += new Message("已初始化名单。\r\n");
+                }
+                else
+                {
+                    MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
+                }
+            }
+            else
+            {
+                Console.WriteLine("执行名单清空指令失败，由权限不足的人发起");
+                MsgMessage += new Message("拒绝：仅有管理员或群主可执行名单清空指令。\r\n");
+            }
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
     }

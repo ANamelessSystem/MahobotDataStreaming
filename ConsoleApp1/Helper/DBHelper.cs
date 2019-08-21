@@ -75,5 +75,19 @@ namespace Marchen.DAL
             cmd.CommandType = CommandType.Text;
             cmd.ExecuteNonQuery();
         }
+
+        /// <summary>
+        /// 执行存储过程(单参数,TYPE:VARCHAR2)
+        /// </summary>
+        /// <param name="strProdName"></param>
+        /// <param name="strParaValue"></param>
+        public static void ExecProd(string strProdName,string strParaName, string strParaValue)
+        {
+            OracleCommand cmd = new OracleCommand(strProdName, Connection);
+            cmd.CommandType = CommandType.StoredProcedure;
+            OracleParameter opgid = cmd.Parameters.Add(strParaName, OracleDbType.Varchar2, ParameterDirection.Input);
+            opgid.Value = strParaValue;
+            cmd.ExecuteNonQuery();
+        }
     }
 }
