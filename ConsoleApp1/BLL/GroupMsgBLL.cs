@@ -254,6 +254,14 @@ namespace Marchen.BLL
                         break;
                     case "dmgshow":
                         {
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
                             CaseDamage.RecordQuery(strGrpID, strUserID, strCmdContext);
                         }
                         break;

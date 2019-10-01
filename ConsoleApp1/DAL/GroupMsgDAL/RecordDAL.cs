@@ -220,23 +220,22 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtDmgRecords">dt格式的伤害数据</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool QueryDmgRecords(int intBossCode, int intRound, double douUserID, string strGrpID, out DataTable dtDmgRecords)
+        public static bool QueryDmgRecords(int intBossCode, int intRound, string strGrpID, out DataTable dtDmgRecords)
         {
             //string strUserID = "";
             Console.WriteLine("启动数据库查询语句");
-            string sqlQryDmgRecByBCnRound = "";
             string sqlPaddingPattern = "";
             int elementCounter = 0;
             if (intBossCode > -1)
             {
                 if (elementCounter == 0)
                 {
-                    sqlPaddingPattern += "bc = " + intBossCode;
+                    sqlPaddingPattern += "a.bc = " + intBossCode;
                     elementCounter += 1;
                 }
                 else
                 {
-                    sqlPaddingPattern += "and bc = " + intBossCode;
+                    sqlPaddingPattern += "and a.bc = " + intBossCode;
                     elementCounter += 1;
                 }
             }
@@ -244,25 +243,12 @@ namespace Marchen.DAL
             {
                 if (elementCounter == 0)
                 {
-                    sqlPaddingPattern += "round = " + intRound;
+                    sqlPaddingPattern += "a.round = " + intRound;
                     elementCounter += 1;
                 }
                 else
                 {
-                    sqlPaddingPattern += "and round = " + intRound;
-                    elementCounter += 1;
-                }
-            }
-            if (douUserID > -1)
-            {
-                if (elementCounter == 0)
-                {
-                    sqlPaddingPattern += "userid = " + douUserID;
-                    elementCounter += 1;
-                }
-                else
-                {
-                    sqlPaddingPattern += "and userid = " + douUserID;
+                    sqlPaddingPattern += "and a.round = " + intRound;
                     elementCounter += 1;
                 }
             }
@@ -272,7 +258,9 @@ namespace Marchen.DAL
                 dtDmgRecords = null;
                 return false;
             }
-            sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and " + sqlPaddingPattern + " order by eventid asc";
+            string sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,b.MBRNAME as name from TTL_DMGRECORDS a " +
+                "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
+                "where a.grpid = '" + strGrpID + "' and " + sqlPaddingPattern + " and a.TIME >= trunc(sysdate,'mm')+1 order by a.eventid asc";
             Console.WriteLine("将要查询的SQL语句为：" + sqlQryDmgRecByBCnRound);
             try
             {

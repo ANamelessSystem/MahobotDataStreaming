@@ -495,6 +495,74 @@ namespace Marchen.BLL
                     MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
                 }
             }
+            else if ((InputVariables.DouUID == -1 && InputVariables.IntBossCode != -1 && InputVariables.IntRound != -1))
+            {
+                //按周目+BOSS查询
+                Console.WriteLine("识别为按周目+BOSS");
+                if (RecordDAL.QueryDmgRecords(InputVariables.IntBossCode, InputVariables.IntRound, strGrpID, out DataTable dtDmgRecords))
+                {
+                    MsgMessage += new Message(InputVariables.IntRound + "周目B" + InputVariables.IntBossCode + "伤害记录：");
+                    if (dtDmgRecords.Rows.Count == 0)
+                    {
+                        MsgMessage += new Message("\r\n尚无伤害记录。\r\n");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < dtDmgRecords.Rows.Count; i++)
+                        {
+                            string strRDmg = dtDmgRecords.Rows[i]["dmg"].ToString();
+                            string strRRound = dtDmgRecords.Rows[i]["round"].ToString();
+                            string strRBC = dtDmgRecords.Rows[i]["bc"].ToString();
+                            string strREXT = dtDmgRecords.Rows[i]["extime"].ToString();
+                            string strREID = dtDmgRecords.Rows[i]["eventid"].ToString();
+                            string strRTime = dtDmgRecords.Rows[i]["time"].ToString();
+                            string strRUID = dtDmgRecords.Rows[i]["userid"].ToString();
+                            string strRName = dtDmgRecords.Rows[i]["name"].ToString();
+                            string resultString = "";
+                            if (dtDmgRecords.Rows[i]["dmg"].ToString() == "0")
+                            {
+                                if (strREXT == "1")
+                                {
+                                    resultString = strRName + "(" + strRUID + ")： 伤害= 0(掉线) （补时）；\r\n      记录时间：[" + strRTime + "]";
+                                }
+                                else
+                                {
+                                    resultString = strRName + "(" + strRUID + ")： 伤害= 0(掉线)；\r\n      记录时间：[" + strRTime + "]";
+                                }
+                            }
+                            else if (dtDmgRecords.Rows[i]["dmg"].ToString() != "0")
+                            {
+                                if (strREXT == "1")
+                                {
+                                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （补时）；\r\n      记录时间：[" + strRTime + "]";
+                                }
+                                else if (strREXT == "2")
+                                {
+                                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （尾刀）；\r\n      记录时间：[" + strRTime + "]";
+                                }
+                                else
+                                {
+                                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + "；\r\n      记录时间：[" + strRTime + "]";
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("写出伤害时出现意料外的错误，dtDmgRec.Rows[0][dmg].ToString()=" + dtDmgRecords.Rows[i]["dmg"].ToString());
+                                MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            Console.WriteLine("E" + strREID + "：" + resultString + "\r\n");
+                            MsgMessage += new Message("\r\nE" + strREID + "：" + resultString);
+                        }
+                    }
+                }
+                else
+                {
+                    MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
+                }
+            }
             else
             {
                 MsgMessage += new Message("目前支持单独按档案号查询、单独按QQ号查询以及同时按BOSS与周目查询。\r\n");
