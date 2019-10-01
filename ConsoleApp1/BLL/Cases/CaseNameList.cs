@@ -138,17 +138,17 @@ namespace Marchen.BLL
             {
                 if (NameListDAL.NameListInit(strGrpID))
                 {
-                    MsgMessage += new Message("已初始化名单。\r\n");
+                    MsgMessage += new Message("已初始化名单。");
                 }
                 else
                 {
-                    MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
+                    MsgMessage += new Message("与数据库失去连接，初始化名单失败。\r\n");
                 }
             }
             else
             {
-                Console.WriteLine("执行名单清空指令失败，由权限不足的人发起");
-                MsgMessage += new Message("拒绝：仅有管理员或群主可执行名单清空指令。\r\n");
+                Console.WriteLine("执行初始化名单指令失败，由权限不足的人发起");
+                MsgMessage += new Message("拒绝：仅有管理员或群主可执行初始化名单指令。\r\n");
             }
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
