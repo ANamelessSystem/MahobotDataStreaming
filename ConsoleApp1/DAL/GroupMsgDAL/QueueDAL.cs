@@ -25,7 +25,7 @@ namespace Marchen.DAL
             catch (Oracle.ManagedDataAccess.Client.OracleException orex1)
             {
                 Console.WriteLine(orex1);
-                Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，数据库连接失败");
+                Console.WriteLine(DateTime.Now.ToString() + "群：" + strGrpID + "进行群有效性查询时，数据库连接失败");
                 dtVfyResult = null;
                 return false;
             }

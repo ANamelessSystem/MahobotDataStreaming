@@ -44,6 +44,7 @@ namespace Marchen.DAL
             OracleDataAdapter oda = new OracleDataAdapter(sql, Connection);
             DataTable dt = new DataTable();
             oda.Fill(dt);
+            connection.Close();
             return dt;
         }
 
@@ -62,6 +63,7 @@ namespace Marchen.DAL
             cmd.CommandText = sql;
             count = cmd.ExecuteNonQuery();
             trans.Commit();
+            connection.Close();
             return count;
         }
 
@@ -74,6 +76,7 @@ namespace Marchen.DAL
             OracleCommand cmd = new OracleCommand(sql, Connection);
             cmd.CommandType = CommandType.Text;
             cmd.ExecuteNonQuery();
+            connection.Close();
         }
 
         /// <summary>
@@ -88,6 +91,7 @@ namespace Marchen.DAL
             OracleParameter opgid = cmd.Parameters.Add(strParaName, OracleDbType.Varchar2, ParameterDirection.Input);
             opgid.Value = strParaValue;
             cmd.ExecuteNonQuery();
+            connection.Close();
         }
     }
 }
