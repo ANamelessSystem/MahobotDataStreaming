@@ -436,7 +436,7 @@ namespace Marchen.BLL
                     {
                         MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)");
                     }
-                    if (dtDmgRecords.Rows.Count == 0 && InputVariables.IntIsAllFlag == 0)
+                    if (dtDmgRecords.Rows.Count == 0)
                     {
                         MsgMessage += new Message("\r\n尚无伤害记录。");
                     }
@@ -567,7 +567,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("目前支持单独按档案号查询、单独按QQ号查询以及同时按BOSS与周目查询。\r\n");
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
+            MsgMessage += new Message("\r\n") + Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             return;
         }
