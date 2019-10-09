@@ -344,6 +344,12 @@ namespace Marchen.BLL
             }
         }
 
+        /// <summary>
+        /// 查询伤害记录
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">查询人QQ号</param>
+        /// <param name="strCmdContext">命令内容</param>
         public static void RecordQuery(string strGrpID, string strUserID, string strCmdContext)
         {
             if (!CmdHelper.CmdSpliter(strCmdContext))

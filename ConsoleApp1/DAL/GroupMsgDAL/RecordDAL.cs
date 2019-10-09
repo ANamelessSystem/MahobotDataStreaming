@@ -86,9 +86,13 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDmgRecByEID(int intEID, string strGrpID, out DataTable dtDmgRec)
         {
-            string sqlQryDmgRec = "select userid,dmg,round,bc,extime from TTL_DMGRECORDS " +
-                "where grpid = '" + strGrpID + "' and eventid =" + intEID + " and " +
-                "time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1";
+            //string sqlQryDmgRec = "select userid,dmg,round,bc,extime from TTL_DMGRECORDS " +
+            //    "where grpid = '" + strGrpID + "' and eventid =" + intEID + " and " +
+            //    "time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1";
+
+            string sqlQryDmgRec = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,b.MBRNAME as name from TTL_DMGRECORDS a " +
+                "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
+                "where a.grpid = '" + strGrpID + "' and eventid = '" + intEID + "' and a.TIME >= trunc(sysdate,'mm')+1 order by a.eventid asc";
             try
             {
                 dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRec);
@@ -103,7 +107,7 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 根据eventID修改对应数据的方法
+        /// 根据EventID修改对应数据的方法
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">QQ号</param>
