@@ -2,31 +2,52 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Data;
+using System.Threading;
 
 namespace Marchen.DAL
 {
     class QueueDAL
     {
         /// <summary>
-        /// 查询本群是否激活bot功能与属于哪一个游戏的群
-        /// </summary>
+        /// 查询本群是否激活对应类型的bot功能
         /// <param name="strGrpID">群号</param>
-        /// <param name="intStat">状态：0：未激活；1：激活；-2：无资料；-1：数据库问题；-100：非指定游戏，不执行</param>
-        /// <param name="intType">游戏类型：0：公主连接</param>
-        /// <returns></returns>
+        /// <param name="dtVfyResult">返回dt格式的结果</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool GroupRegVerify(string strGrpID,out DataTable dtVfyResult)
         {
             string sqlGrpVfy = "select ORG_STAT,ORG_TYPE from TTL_ORGLIST where ORG_ID='" + strGrpID + "'";
-            try
+            bool bResult = false;
+            dtVfyResult = null;
+            for (int i = 0; i < 3;)
             {
-                dtVfyResult = DBHelper.GetDataTable(sqlGrpVfy);
+                try
+                {
+                    dtVfyResult = DBHelper.GetDataTable(sqlGrpVfy);
+                    bResult = true;
+                    break;
+                }
+                catch (Oracle.ManagedDataAccess.Client.OracleException orex1)
+                {
+                    if (orex1.Number == 3135 || orex1.Number == 12570 || orex1.Number == 12571)
+                    {
+                        //两次连接数据库相隔时间太长时，有可能会出现“远程主机强迫关闭一个现有连接”这个错误，现在特定捕获这一错误进行一定量的重试
+                        Console.WriteLine(DateTime.Now.ToString() + "\r\nGroupRegVerify(QueueDAL.cs)：" + orex1.Message + "重试次数" + i.ToString());
+                        i += 1;
+                    }
+                    else
+                    {
+                        Console.WriteLine(DateTime.Now.ToString() + "\r\nGroupRegVerify(QueueDAL.cs)：" + orex1.Message);
+                        break;
+                    }
+                }
+                Thread.Sleep(100);
+            }
+            if (bResult)
+            {
                 return true;
             }
-            catch (Oracle.ManagedDataAccess.Client.OracleException orex1)
+            else
             {
-                Console.WriteLine(orex1);
-                Console.WriteLine(DateTime.Now.ToString() + "群：" + strGrpID + "进行群有效性查询时，数据库连接失败");
-                dtVfyResult = null;
                 return false;
             }
         }
@@ -36,9 +57,7 @@ namespace Marchen.DAL
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">用户QQ号</param>
-        /// <returns>
-        /// true：执行成功；false：执行失败。
-        /// </returns>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool AddQueue(string strGrpID, string strUserID,int intSosFlag = 0)
         {
             //查询队列表中的最大序列值，如果查询结果是非空，则序号为查询的最大序号+1，如果查询结果为空则使用1
