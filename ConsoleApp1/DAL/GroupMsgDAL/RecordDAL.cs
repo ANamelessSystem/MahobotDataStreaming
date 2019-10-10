@@ -90,7 +90,7 @@ namespace Marchen.DAL
             //    "where grpid = '" + strGrpID + "' and eventid =" + intEID + " and " +
             //    "time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1";
 
-            string sqlQryDmgRec = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,b.MBRNAME as name from TTL_DMGRECORDS a " +
+            string sqlQryDmgRec = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
                 "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
                 "where a.grpid = '" + strGrpID + "' and eventid = '" + intEID + "' and a.TIME >= trunc(sysdate,'mm')+1 order by a.eventid asc";
             try
@@ -262,7 +262,7 @@ namespace Marchen.DAL
                 dtDmgRecords = null;
                 return false;
             }
-            string sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,b.MBRNAME as name from TTL_DMGRECORDS a " +
+            string sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
                 "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
                 "where a.grpid = '" + strGrpID + "' and " + sqlPaddingPattern + " and a.TIME >= trunc(sysdate,'mm')+1 order by a.eventid asc";
             Console.WriteLine("将要查询的SQL语句为：" + sqlQryDmgRecByBCnRound);
@@ -318,7 +318,7 @@ namespace Marchen.DAL
                 //如明确指定要查询全期间，则将筛选时间开始设置为本月2日
                 sqlTimeFilter = " and TIME >= trunc(sysdate,'mm')+1 ";
             }
-            string sqlQryDmgRecByUID = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,b.MBRNAME as name from TTL_DMGRECORDS a " +
+            string sqlQryDmgRecByUID = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
                 "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
                 "where a.grpid = '" + strGrpID + "' and a.userid = '" + douUserID + "' " + sqlTimeFilter + " order by a.eventid asc";
             try
