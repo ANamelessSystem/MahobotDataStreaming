@@ -323,7 +323,7 @@ namespace Marchen.BLL
                 if (RecordDAL.DamageUpdate(strGrpID, strNewUID, intDMG, intRound, intBossCode, intExTime, InputVariables.IntEID))
                 {
                     MsgMessage += new Message("修改成功。");
-                    if (DmgOutputUniform(dtDmgRecOriginal, out string strOriOutput))
+                    if (DmgOutputUniform(dtDmgRecOriginal,0, out string strOriOutput))
                     {
                         MsgMessage += new Message("\r\n原记录（修改前）：" + strOriOutput);
                     }
@@ -381,9 +381,9 @@ namespace Marchen.BLL
                     }
                     else
                     {
-                        if (DmgOutputUniform(dtDmgRecords, out string strOutput))
+                        if (DmgOutputUniform(dtDmgRecords,0, out string strOutput))
                         {
-                            MsgMessage += new Message("档案号E" + InputVariables.IntEID + "的记录：");
+                            MsgMessage += new Message("档案号E" + InputVariables.IntEID + "的记录：\r\n");
                             MsgMessage += new Message(strOutput);
                         }
                         else
@@ -414,11 +414,11 @@ namespace Marchen.BLL
                 {
                     if (InputVariables.IntIsAllFlag == 0)
                     {
-                        MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)");
+                        MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
                     }
                     else
                     {
-                        MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)");
+                        MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
                     }
                     if (dtDmgRecords.Rows.Count == 0)
                     {
@@ -426,7 +426,7 @@ namespace Marchen.BLL
                     }
                     else
                     {
-                        if (DmgOutputUniform(dtDmgRecords, out string strOutput))
+                        if (DmgOutputUniform(dtDmgRecords,1, out string strOutput))
                         {
                             MsgMessage += new Message(strOutput);
                         }
@@ -457,17 +457,36 @@ namespace Marchen.BLL
                     }
                     else
                     {
-                        if (DmgOutputUniform(dtDmgRecords,out string strOutput))
+                        string strOutput = "";
+                        if (InputVariables.IntBossCode != -1)
                         {
-                            MsgMessage += new Message(strOutput);
+                            if (DmgOutputUniform(dtDmgRecords, 3, out strOutput))
+                            {
+                                MsgMessage += new Message(InputVariables.IntRound + "周目B" + InputVariables.IntBossCode + "的记录：\r\n");
+                            }
+                            else
+                            {
+                                MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
                         }
                         else
                         {
-                            MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                            MsgMessage += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                            return;
+                            if (DmgOutputUniform(dtDmgRecords, 2, out strOutput))
+                            {
+                                MsgMessage += new Message(InputVariables.IntRound + "周目的记录：\r\n");
+                            }
+                            else
+                            {
+                                MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                MsgMessage += Message.At(long.Parse(strUserID));
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
                         }
+                        MsgMessage += new Message(strOutput);
                     }
                 }
                 else
@@ -479,41 +498,70 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("目前支持单独按档案号查询、单独按QQ号查询以及同时按BOSS与周目查询。\r\n");
             }
-            MsgMessage += new Message("\r\n") + Message.At(long.Parse(strUserID));
+            MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             return;
         }
 
+        /// <summary>
+        /// 统一管理查询结果回复消息格式的地方
+        /// </summary>
+        /// <param name="dtInput">dt查询结果表</param>
+        /// <param name="intLayoutType">0：查询EID；1：查询UID；2：查询周目；3：查询BOSS+周目</param>
+        /// <param name="strOutput">输出回复消息内容</param>
+        /// <returns></returns>
         private static bool DmgOutputUniform(DataTable dtInput,int intLayoutType,out string strOutput)
         {
             strOutput = "";
-            for (int i = 0; i < dtInput.Rows.Count; i++)
+            try
             {
-                string strRDmg = dtInput.Rows[i]["dmg"].ToString();
-                string strRRound = dtInput.Rows[i]["round"].ToString();
-                string strRBC = dtInput.Rows[i]["bc"].ToString();
-                string strREXT = dtInput.Rows[i]["extime"].ToString();
-                string strREID = dtInput.Rows[i]["eventid"].ToString();
-                string strRTime = dtInput.Rows[i]["time"].ToString();
-                string strRUID = dtInput.Rows[i]["userid"].ToString();
-                string strRName = dtInput.Rows[i]["name"].ToString();
-                string resultString = "";
-
-                if (strREXT == "1")
+                for (int i = 0; i < dtInput.Rows.Count; i++)
                 {
-                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （补时）；\r\n      记录时间：[" + strRTime + "]";
+                    string strRDmg = dtInput.Rows[i]["dmg"].ToString();
+                    string strRRound = dtInput.Rows[i]["round"].ToString();
+                    string strRBC = dtInput.Rows[i]["bc"].ToString();
+                    string strREID = dtInput.Rows[i]["eventid"].ToString();
+                    string strRTime = dtInput.Rows[i]["time"].ToString();
+                    string strRUID = dtInput.Rows[i]["userid"].ToString();
+                    string strRName = dtInput.Rows[i]["name"].ToString();
+                    if (dtInput.Rows[i]["extime"].ToString() == "2")
+                    {
+                        strRDmg += " （尾刀）";
+                    }
+                    else if (dtInput.Rows[i]["extime"].ToString() == "1")
+                    {
+                        strRDmg += " （补时）";
+                    }
+                    else
+                    {
+                        strRDmg += " （通常）";
+                    }
+                    string resultString = "";
+                    if (intLayoutType == 0)//查询EID（抬头显示EID）
+                    {
+                        resultString = strRName + "(" + strRUID + ")：" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + "；\r\n          记录时间：[" + strRTime + "]";
+                    }
+                    else if (intLayoutType == 1)//查询UID（抬头显示UID+昵称）
+                    {
+                        resultString = "E" + strREID + "：" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + "；\r\n          记录时间：[" + strRTime + "]";
+                    }
+                    else if (intLayoutType == 2)//查询周目（抬头显示周目）
+                    {
+                        resultString = "B" + strRBC + "；" + strRName + "(" + strRUID + ")：伤害=" + strRDmg + "；\r\n       记录时间：[" + strRTime + "]" + " 【E" + strREID + "】";
+                    }
+                    else //3 查询周目+BOSS（抬头显示周目+BOSS）
+                    {
+                        resultString = "E" + strREID + "：" + strRName + "(" + strRUID + ")：伤害=" + strRDmg + "；\r\n          记录时间：[" + strRTime + "]";
+                    }
+                    strOutput += resultString + "\r\n";
                 }
-                else if (strREXT == "2")
-                {
-                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （尾刀）；\r\n      记录时间：[" + strRTime + "]";
-                }
-                else
-                {
-                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （通常）；\r\n      记录时间：[" + strRTime + "]";
-                }
-                
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                Console.WriteLine(DateTime.Now.ToString() + "将查询结果dt转换为消息时弹出错误" + ex);
+                return false;
+            }
         }
     }
 }
