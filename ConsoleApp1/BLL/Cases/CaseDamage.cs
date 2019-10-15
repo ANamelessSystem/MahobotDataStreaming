@@ -484,7 +484,7 @@ namespace Marchen.BLL
             return;
         }
 
-        private static bool DmgOutputUniform(DataTable dtInput,out string strOutput)
+        private static bool DmgOutputUniform(DataTable dtInput,int intLayoutType,out string strOutput)
         {
             strOutput = "";
             for (int i = 0; i < dtInput.Rows.Count; i++)
@@ -498,39 +498,20 @@ namespace Marchen.BLL
                 string strRUID = dtInput.Rows[i]["userid"].ToString();
                 string strRName = dtInput.Rows[i]["name"].ToString();
                 string resultString = "";
-                if (dtInput.Rows[i]["dmg"].ToString() == "0")
+
+                if (strREXT == "1")
                 {
-                    if (strREXT == "1")
-                    {
-                        resultString = strRName + "(" + strRUID + ")： 伤害= 0(掉线) （补时）；\r\n      记录时间：[" + strRTime + "]";
-                    }
-                    else
-                    {
-                        resultString = strRName + "(" + strRUID + ")： 伤害= 0(掉线) （通常）；\r\n      记录时间：[" + strRTime + "]";
-                    }
+                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （补时）；\r\n      记录时间：[" + strRTime + "]";
                 }
-                else if (dtInput.Rows[i]["dmg"].ToString() != "0")
+                else if (strREXT == "2")
                 {
-                    if (strREXT == "1")
-                    {
-                        resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （补时）；\r\n      记录时间：[" + strRTime + "]";
-                    }
-                    else if (strREXT == "2")
-                    {
-                        resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （尾刀）；\r\n      记录时间：[" + strRTime + "]";
-                    }
-                    else
-                    {
-                        resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （通常）；\r\n      记录时间：[" + strRTime + "]";
-                    }
+                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （尾刀）；\r\n      记录时间：[" + strRTime + "]";
                 }
                 else
                 {
-                    Console.WriteLine("写出伤害时出现意料外的错误，dtDmgRec.Rows[0][dmg].ToString()=" + dtInput.Rows[i]["dmg"].ToString());
-                    strOutput = null;
-                    return false;
+                    resultString = strRName + "(" + strRUID + ")： 伤害=" + strRDmg + " （通常）；\r\n      记录时间：[" + strRTime + "]";
                 }
-                strOutput += "\r\nE" + strREID + "：" + resultString;
+                
             }
             return true;
         }
