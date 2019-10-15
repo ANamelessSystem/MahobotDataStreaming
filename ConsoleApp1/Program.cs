@@ -83,7 +83,7 @@ namespace Marchen.Garden
             Console.WriteLine("监听启动成功");
             
             #region 控制台锁定
-            Console.Title = ApiProperties.HttpApi.GetLoginInfoAsync().Result.Nickname.ToString(); 
+            //Console.Title = ApiProperties.HttpApi.GetLoginInfoAsync().Result.Nickname.ToString(); 
             DisbleQuickEditMode();
             //DisbleClosebtn();
             //Console.CancelKeyPress += new ConsoleCancelEventHandler(CloseConsole);
