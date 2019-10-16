@@ -159,65 +159,35 @@ namespace Marchen.BLL
                     int intCountB5 = 0;
                     for (int i = 0; i < dtSubsStatus.Rows.Count; i++)
                     {
+                        string strExt = "";
+                        if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
+                        {
+                            strExt = " 【补时】";
+                        }
                         if (dtSubsStatus.Rows[i]["BC"].ToString() == "1")
                         {
                             intCountB1 += 1;
-                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
-                            {
-                                strOutputB1 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
-                            }
-                            else
-                            {
-                                strOutputB1 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
-                            }
+                            strOutputB1 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")" + strExt;
                         }
                         if (dtSubsStatus.Rows[i]["BC"].ToString() == "2")
                         {
                             intCountB2 += 1;
-                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
-                            {
-                                strOutputB2 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
-                            }
-                            else
-                            {
-                                strOutputB2 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
-                            }
+                            strOutputB2 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")" + strExt;
                         }
                         if (dtSubsStatus.Rows[i]["BC"].ToString() == "3")
                         {
                             intCountB3 += 1;
-                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
-                            {
-                                strOutputB3 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
-                            }
-                            else
-                            {
-                                strOutputB3 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
-                            }
+                            strOutputB3 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")" + strExt;
                         }
                         if (dtSubsStatus.Rows[i]["BC"].ToString() == "4")
                         {
                             intCountB4 += 1;
-                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
-                            {
-                                strOutputB4 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
-                            }
-                            else
-                            {
-                                strOutputB4 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
-                            }
+                            strOutputB4 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")" + strExt;
                         }
                         if (dtSubsStatus.Rows[i]["BC"].ToString() == "5")
                         {
                             intCountB5 += 1;
-                            if (dtSubsStatus.Rows[i]["SUBSTYPE"].ToString() == "1")
-                            {
-                                strOutputB5 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ") (补时刀)";
-                            }
-                            else
-                            {
-                                strOutputB5 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")";
-                            }
+                            strOutputB5 += "\r\n" + dtSubsStatus.Rows[i]["MBRNAME"].ToString() + "(" + dtSubsStatus.Rows[i]["USERID"].ToString() + ")" + strExt;
                         }
                     }
                     if (strOutputB1 == "" || strOutputB1 == null)
@@ -240,7 +210,16 @@ namespace Marchen.BLL
                     {
                         strOutputB5 = "\r\n无";
                     }
-                    MsgMessage += new Message("正在订阅B1(" + intCountB1 + "人)：" + strOutputB1 + "\r\n正在订阅B2(" + intCountB2 + "人)：" + strOutputB2 + "\r\n正在订阅B3(" + intCountB3 + "人)：" + strOutputB3 + "\r\n正在订阅B4(" + intCountB4 + "人)：" + strOutputB4 + "\r\n正在订阅B5(" + intCountB5 + "人)：" + strOutputB5 + "\r\n");
+                    //MsgMessage += new Message("B1订阅人数(" + intCountB1 + "人)：" + strOutputB1 + "\r\n---------------------\r\nB2订阅人数(" + intCountB2 + "人)：" + strOutputB2 + "\r\n---------------------\r\nB3订阅人数(" + intCountB3 + "人)：" + strOutputB3 + "\r\n---------------------\r\nB4订阅人数(" + intCountB4 + "人)：" + strOutputB4 + "\r\n---------------------\r\nB5订阅人数(" + intCountB5 + "人)：" + strOutputB5 + "\r\n");
+                    MsgMessage = new Message("B1订阅人数(" + intCountB1 + "人)：" + strOutputB1 + "\r\n---------------------");
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    MsgMessage = new Message("B2订阅人数(" + intCountB2 + "人)：" + strOutputB2 + "\r\n---------------------");
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    MsgMessage = new Message("B3订阅人数(" + intCountB3 + "人)：" + strOutputB3 + "\r\n---------------------");
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    MsgMessage = new Message("B4订阅人数(" + intCountB4 + "人)：" + strOutputB4 + "\r\n---------------------");
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    MsgMessage = new Message("B5订阅人数(" + intCountB5 + "人)：" + strOutputB5 + "\r\n---------------------\r\n");
                 }
                 else
                 {

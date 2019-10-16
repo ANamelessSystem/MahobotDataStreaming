@@ -34,9 +34,17 @@ namespace Marchen.DAL
         /// <param name="strUserID">QQ号</param>
         /// <param name="dtSubsStatus">返回dt格式的订阅状态</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool GetSubsStatus(string strGrpID, string strUserID, out DataTable dtSubsStatus)
+        public static bool GetSubsStatus(string strGrpID, string strUserID, out DataTable dtSubsStatus, int intBC = 0)
         {
-            string sqlQrySubs = "select * from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "'";
+            string sqlQrySubs = "";
+            if (intBC != 0)
+            {
+                sqlQrySubs = "select * from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "' and BC='" + intBC;
+            }
+            else
+            {
+                sqlQrySubs = "select * from TTL_BOSSSUBS where GRPID='" + strGrpID + "' and USERID='" + strUserID + "'";
+            }
             try
             {
                 dtSubsStatus = DBHelper.GetDataTable(sqlQrySubs);
