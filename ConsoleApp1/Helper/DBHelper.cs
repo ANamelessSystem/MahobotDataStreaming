@@ -45,6 +45,7 @@ namespace Marchen.DAL
             DataTable dt = new DataTable();
             oda.Fill(dt);
             connection.Close();
+            Console.WriteLine(DateTime.Now.ToString() + ":" + sql);
             return dt;
         }
 
@@ -64,6 +65,7 @@ namespace Marchen.DAL
             count = cmd.ExecuteNonQuery();
             trans.Commit();
             connection.Close();
+            Console.WriteLine(DateTime.Now.ToString() + ":" + sql);
             return count;
         }
 
@@ -76,6 +78,7 @@ namespace Marchen.DAL
             OracleCommand cmd = new OracleCommand(sql, Connection);
             cmd.CommandType = CommandType.Text;
             cmd.ExecuteNonQuery();
+            Console.WriteLine(DateTime.Now.ToString()+ ":" + sql);
             connection.Close();
         }
 

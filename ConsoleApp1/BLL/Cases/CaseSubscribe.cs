@@ -59,18 +59,18 @@ namespace Marchen.BLL
             }
             if (SubscribeDAL.GetSubsStatus(strGrpID, strUserID, out DataTable dtSubsStatus))
             {
-                DataRow[] drExistsSubs = dtSubsStatus.Select("BC='" + InputVariables.IntBossCode + "' and SUBSTYPE= '" + intSubsType + "'");
+                DataRow[] drExistsSubs = dtSubsStatus.Select("BC='" + InputVariables.IntBossCode + "'");
                 if (drExistsSubs.Length == 0)
                 {
                     if (SubscribeDAL.AddBossSubs(strGrpID, strUserID, InputVariables.IntBossCode, intSubsType))
                     {
                         if (intSubsType == 1)
                         {
-                            MsgMessage += new Message("已订阅B" + InputVariables.IntBossCode + "，类型：补时。\r\n");
+                            MsgMessage += new Message("已新增B" + InputVariables.IntBossCode + "的订阅，类型：补时。\r\n");
                         }
                         else
                         {
-                            MsgMessage += new Message("已订阅B" + InputVariables.IntBossCode + "，类型：通常。\r\n");
+                            MsgMessage += new Message("已新增B" + InputVariables.IntBossCode + "的订阅，类型：通常。\r\n");
                         }
                     }
                     else
@@ -84,11 +84,11 @@ namespace Marchen.BLL
                     {
                         if (intSubsType == 1)
                         {
-                            MsgMessage += new Message("已订阅B" + InputVariables.IntBossCode + "，类型：补时。\r\n");
+                            MsgMessage += new Message("已将B" + InputVariables.IntBossCode + "的订阅类型修改为：补时。\r\n");
                         }
                         else
                         {
-                            MsgMessage += new Message("已订阅B" + InputVariables.IntBossCode + "，类型：通常。\r\n");
+                            MsgMessage += new Message("已将B" + InputVariables.IntBossCode + "的订阅类型修改为：通常。\r\n");
                         }
                     }
                     else
@@ -136,7 +136,14 @@ namespace Marchen.BLL
                             strOutput += "(补时)";
                         }
                     }
-                    MsgMessage += new Message("目前正在订阅的BOSS为：" + strOutput + "\r\n");
+                    if (strOutput != "")
+                    {
+                        MsgMessage += new Message("目前正在订阅的BOSS为：" + strOutput + "\r\n");
+                    }
+                    else
+                    {
+                        MsgMessage += new Message("尚无订阅记录\r\n");
+                    }
                 }
                 else
                 {
