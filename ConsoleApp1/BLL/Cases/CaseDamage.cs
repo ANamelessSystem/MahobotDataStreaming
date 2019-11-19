@@ -49,8 +49,9 @@ namespace Marchen.BLL
             else
             {
                 //识别出来的数据处理
-                if (InputVariables.IntEXT == -1)
+                if (InputVariables.IntEXT != 2)
                 {
+                    //禁用伤害上报时使用补时字段，类型只有尾刀与通常刀，补时在查询上一刀是否尾刀后进行判断处理
                     InputVariables.IntEXT = 0;
                 }
                 if (InputVariables.DouUID != -1)
