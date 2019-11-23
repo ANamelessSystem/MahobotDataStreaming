@@ -41,7 +41,6 @@ namespace Marchen.BLL
             //分拆命令
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                //MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
@@ -49,11 +48,17 @@ namespace Marchen.BLL
             else
             {
                 //识别出来的数据处理
-                if (InputVariables.IntEXT != 2)
+                if (InputVariables.IntEXT == 1)
                 {
-                    //禁用伤害上报时使用补时字段，类型只有尾刀与通常刀，补时在查询上一刀是否尾刀后进行判断处理
+                    MsgMessage += new Message("【补时】选项已在伤害上报功能中停用。\r\n如果上一刀是尾刀，本次请用通常刀的方式进行上报，后台将自动转换为补时。\r\n");
+                    isCorrect = false;
+                }
+                if (InputVariables.IntEXT == -1)
+                {
                     InputVariables.IntEXT = 0;
                 }
+
+
                 if (InputVariables.DouUID != -1)
                 {
                     //代刀规则
@@ -73,6 +78,8 @@ namespace Marchen.BLL
                         isProxyRecord = true;
                     }
                 }
+
+
                 if (InputVariables.IntTimeOutFlag != 1)
                 {
                     //如果没掉线就要检查数据的正确性
@@ -93,19 +100,19 @@ namespace Marchen.BLL
                     }
                 }
             }
-            //判断数据正误标记位
             if (!isCorrect)
             {
+                //判断数据正误标记位
                 MsgMessage += new Message("伤害记录退回。\r\n");
                 MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            //请求目前进度
             int intBC_Progress = 0;
             int intRound_Progress = 0;
             if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
             {
+                //请求目前进度
                 if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
                 {
                     if (!(dtBossProgress.Rows[0][0] is DBNull))
@@ -201,8 +208,21 @@ namespace Marchen.BLL
             //执行上传
             if (RecordDAL.DamageDebrief(strGrpID, strRecUID, InputVariables.IntDMG, InputVariables.IntRound, InputVariables.IntBossCode, InputVariables.IntEXT, out int intEID))
             {
+                string strDmgType = "";
+                if (InputVariables.IntEXT == 0)
+                {
+                    strDmgType = "通常";
+                }
+                else if (InputVariables.IntEXT == 1)
+                {
+                    strDmgType = "补时";
+                }
+                else
+                {
+                    strDmgType = "尾刀";
+                }
                 Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + InputVariables.IntBossCode.ToString() + "，" + InputVariables.IntRound.ToString() + "周目，数值：" + InputVariables.IntDMG.ToString() + "，补时标识：" + InputVariables.IntEXT);
-                MsgMessage = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
+                MsgMessage = new Message("伤害已保存，类型：" + strDmgType + "，档案号=" + intEID.ToString() + "\r\n");
                 //如果是尾刀，自动订阅下个周目的相同BOSS
                 //if (InputVariables.IntEXT == 2 && !isProxyRecord)
                 //{

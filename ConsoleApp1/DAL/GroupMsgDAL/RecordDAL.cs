@@ -386,7 +386,7 @@ namespace Marchen.DAL
             {
                 Console.WriteLine("数据库错误，未能取回数据库时间。");
             }
-            string sqlCheckLA = "select EXTIME from TTL_DMGRECORDS where GRPID = '" + strGrpID + "' and USERID = '" + strUserID + "' " + sqlTimeFilter + " order by round desc, bc desc,extime desc";
+            string sqlCheckLA = "select EXTIME from TTL_DMGRECORDS where GRPID = '" + strGrpID + "' and USERID = '" + strUserID + "' " + sqlTimeFilter + " order by round desc, bc desc,time desc";
             try
             {
                 DataTable dt = DBHelper.GetDataTable(sqlCheckLA);
