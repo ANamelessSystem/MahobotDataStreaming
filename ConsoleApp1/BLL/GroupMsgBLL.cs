@@ -181,7 +181,7 @@ namespace Marchen.BLL
                 //    cmdType = "score";
                 //    Console.WriteLine("算分");
                 //}
-                else if (strSpecCmdText.ToLower() == "initialize member list")
+                else if (strSpecCmdText == "initialize member list")
                 {
                     cmdType = "namelistinit";
                     Console.WriteLine("初始化(清空)名单");
@@ -352,7 +352,6 @@ namespace Marchen.BLL
                     case "unknown":
                         {
                             message += new Message("无法识别内容,输入【@MahoBot help】以查询命令表。\r\n");
-                            message += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                             //RecordDAL.RecordUnknownContext(strGrpID, strUserID, cmdContext);
                         }

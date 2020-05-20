@@ -271,156 +271,193 @@ namespace Marchen.BLL
 
 
         /// <summary>
-        /// 显示血量并检查是否有预定列表
+        /// 经过优化的进度（剩余HP简略至万位）
         /// </summary>
-        /// <param name="strGrpID">群号</param>
-        public static void HpShowAndSubsCheck(string strGrpID,string strInputUserID = "0")
+        /// <param name="strGrpID"></param>
+        /// <param name="_round"></param>
+        /// <param name="_bc"></param>
+        /// <param name="_hp"></param>
+        /// <param name="_ratio"></param>
+        /// <returns></returns>
+        public static bool Format_Progress(string strGrpID,out int _round,out int _bc,out int _hp,out int _ratio)
         {
+            //bool isCorrect = false;
+            _round = 0;
+            _bc = 0;
+            _hp = 0;
+            _ratio = 0;
             if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
             {
                 if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
                 {
                     if (dtBossProgress.Rows[0][0] is DBNull || dtBossProgress.Rows[0]["hpremain"] is DBNull || dtBossProgress.Rows[0]["maxround"] is DBNull || dtBossProgress.Rows[0]["maxbc"] is DBNull)
                     {
-                        //判断数据库中字段是否为Null
-                        Console.WriteLine(strGrpID + "在查询进度时返回一定量的空值，为了防止程序崩溃已关闭血量显示。");
-                        MsgMessage += new Message("获取进度时发生预想外的错误，已关闭血量显示。\r\n");
-                        return;
+                        return false;
                     }
                 }
-                int intHPNow = int.Parse(dtBossProgress.Rows[0]["hpremain"].ToString());
-                int intRoundNow = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
-                int intBCNow = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
-                string strFormatedHP = "";
+                _hp = int.Parse(dtBossProgress.Rows[0]["hpremain"].ToString());
+                _round = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
+                _bc = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
                 try
                 {
-                    string strOutput2 = "";
-                    if (intHPNow > 9999)
+                    if (_hp > 9999)
                     {
                         //5位正数以上自动转换为以万为单位优化显示
-                        strFormatedHP = intHPNow.ToString().Substring(0, intHPNow.ToString().Length - 4) + "万";
+                        _hp = int.Parse(_hp.ToString().Substring(0, _hp.ToString().Length - 4));
+                        _ratio = 10000;
+                        return true;
                     }
-                    else if (intHPNow <= 9999 && intHPNow >= -9999)
+                    else if (_hp <= 9999 && _hp >= -9999)
                     {
                         //正负4位数（小误差），自动跳到下个BOSS
-                        if (intBCNow == ValueLimits.BossLimitMax)
+                        if (_bc == ValueLimits.BossLimitMax)
                         {
                             //现在为B5，需要跳到下周目B1的情况
-                            if (StatisticsDAL.GetBossMaxHP(strGrpID, 1, intRoundNow + 1, out DataTable dtBossMaxHP))
+                            if (StatisticsDAL.GetBossMaxHP(strGrpID, 1, _round + 1, out DataTable dtBossMaxHP))
                             {
-                                Console.WriteLine("误差内跳到下个BOSS");
-                                intBCNow = 1;
-                                intRoundNow += 1;
-                                intHPNow = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString());
-                                strFormatedHP = intHPNow.ToString().Substring(0, intHPNow.ToString().Length - 4) + "万";
+                                //Console.WriteLine("误差内跳到下个BOSS");
+                                _bc = 1;
+                                _round += 1;
+                                _hp = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString().Substring(0, dtBossMaxHP.Rows[0]["HP"].ToString().Length - 4));
+                                _ratio = 10000;
+                                return true;
                             }
                             else
                             {
-                                strFormatedHP = intHPNow.ToString();
+                                //执行失败
+                                return false;
                             }
                         }
                         else
                         {
-                            if (StatisticsDAL.GetBossMaxHP(strGrpID, intBCNow + 1, intRoundNow, out DataTable dtBossMaxHP))
+                            if (StatisticsDAL.GetBossMaxHP(strGrpID, _bc + 1, _round, out DataTable dtBossMaxHP))
                             {
-                                Console.WriteLine("误差内跳到下个BOSS");
-                                intBCNow += 1;
-                                intHPNow = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString());
-                                strFormatedHP = intHPNow.ToString().Substring(0, intHPNow.ToString().Length - 4) + "万";
+                                //Console.WriteLine("误差内跳到下个BOSS");
+                                _bc += 1;
+                                _hp = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString().Substring(0, dtBossMaxHP.Rows[0]["HP"].ToString().Length - 4));
+                                _ratio = 10000;
+                                return true;
                             }
                             else
                             {
-                                strFormatedHP = intHPNow.ToString();
+                                //执行失败
+                                return false;
                             }
                         }
                     }
                     else
                     {
                         //剩余情况应为长度超过4位的负数，偏差比较大，不简化会比较显眼
-                        strFormatedHP = intHPNow.ToString();
-                    }
-                    strOutput2 = "目前进度：" + intRoundNow.ToString() + "周目，B" + intBCNow.ToString() + "，剩余血量(推测)=" + strFormatedHP;
-                    MsgMessage += new Message(strOutput2 + "\r\n--------------------\r\n");
-                    Console.WriteLine(strOutput2);
-                    //订阅提醒
-                    int intProgType;
-                    if (intHPNow > 3000000)
-                    {
-                        //提醒到订阅类型0
-                        intProgType = 0;
-                    }
-                    else
-                    {
-                        //提醒到下一个的订阅类型0
-                        intProgType = 2;
-                    }
-                    if (SubscribeDAL.BossReminder(strGrpID, intRoundNow, intBCNow, intProgType, out DataTable dtSubsMembers))
-                    {
-                        if (dtSubsMembers.Rows.Count > 0)
-                        {
-                            string strRemindContext = "[公会战进度提醒]\r\n您所在群：" + strGrpID + "，BOSS进度已到B" + intBCNow + "，目前血量：" + strFormatedHP + "\r\n如时间方便，请做好本战准备。";
-                            for (int i = 0; i < dtSubsMembers.Rows.Count; i++)
-                            {
-                                long lUserID = long.Parse(dtSubsMembers.Rows[i]["USERID"].ToString());
-                                ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, strRemindContext);
-                                Console.WriteLine("已私聊通知" + lUserID.ToString() + "(" + strGrpID + ")");
-                                SubscribeDAL.UpdateRemindFlag(strGrpID, lUserID.ToString(), intRoundNow, intBCNow, intProgType);
-                                Console.WriteLine("已更新通知状态" + lUserID.ToString() + "(" + strGrpID + ")");
-                                ////自动将预约表里标记为补时刀的成员加入队伍
-                                //if (int.Parse(dtSubsMembers.Rows[i]["SUBSTYPE"].ToString()) == 1)
-                                //{
-                                //    //QueueAdd(strGrpID, dtSubsMembers.Rows[i]["USERID"].ToString());
-                                //    int intSosFlag = 2;
-                                //    QueueDAL.AddQueue(strGrpID, dtSubsMembers.Rows[i]["USERID"].ToString(), intSosFlag);
-                                //    Console.WriteLine("将用户"+ dtSubsMembers.Rows[i]["USERID"].ToString() + "自动加入队列成功");
-                                //}
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("提醒查询失败（数据库错误）");
-                    }
-                    //下树提醒
-                    if (QueueDAL.QuerySosList(strGrpID, intBCNow, intRoundNow, out DataTable dtSosList))
-                    {
-                        if (dtSosList != null && dtSosList.Rows.Count > 0)
-                        {
-                            if (!(dtSosList.Rows[0][0] is DBNull))
-                            {
-                                MsgMessage += new Message("下树提醒：");
-                                for (int i = 0; i < dtSosList.Rows.Count; i++)
-                                {
-                                    //现在引用的类库（WUDILIB）在同一条信息at了多次同一个人时，显示效果会劣化，故在具备输入UID时避开第二次以上at该UID的情况发生
-                                    if (dtSosList.Rows[i]["userid"].ToString() != strInputUserID)
-                                    {
-                                        if (i > 0 && i < dtSosList.Rows.Count)
-                                        {
-                                            MsgMessage += new Message("、");
-                                        }
-                                        string strUID = dtSosList.Rows[i]["userid"].ToString();
-                                        MsgMessage += Message.At(long.Parse(strUID));
-                                    }
-                                }
-                                MsgMessage += new Message("\r\n--------------------\r\n");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("下树查询失败（数据库错误）");
+                        _ratio = 1;
+                        return true;
                     }
                 }
                 catch (Exception ex)
                 {
-                    MsgMessage += new Message("遇到未知错误，查询剩余HP失败。\r\n");
                     Console.WriteLine(ex);
+                    return false;
                 }
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，查询剩余HP失败。\r\n");
-                Console.WriteLine("与数据库失去连接，查询剩余HP失败。\r\n");
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// 显示血量并检查是否有预定列表
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
+        public static void HpShowAndSubsCheck(string strGrpID,string strInputUserID = "0")
+        {
+            if (Format_Progress(strGrpID, out int _round, out int _bc, out int _hp, out int _ratio))
+            {
+                string strOutput;
+                if (_ratio == 10000)
+                {
+                    strOutput = "目前进度：" + _round.ToString() + "周目，B" + _bc.ToString() + "，剩余血量=" + _hp + "万";
+                }
+                else if (_ratio == 1)
+                {
+                    strOutput = "目前进度：" + _round.ToString() + "周目，B" + _bc.ToString() + "，剩余血量=" + _hp;
+                }
+                else
+                {
+                    MsgMessage += new Message("获取进度时发生预想外的错误，已关闭血量显示。\r\n");
+                    return;
+                }
+                MsgMessage += new Message(strOutput + "\r\n--------------------\r\n");
+            }
+            else
+            {
+                //Message += new Message("获取进度时发生预想外的错误，已关闭血量显示。\r\n");
+                return;
+            }
+            //订阅提醒
+            int intProgType;
+            if ((_hp * _ratio) > 3000000)
+            {
+                //提醒到订阅类型0
+                intProgType = 0;
+            }
+            else
+            {
+                //提醒到下一个的订阅类型0
+                intProgType = 2;
+            }
+            if (SubscribeDAL.BossReminder(strGrpID, _round, _bc, intProgType, out DataTable dtSubsMembers))
+            {
+                if (dtSubsMembers.Rows.Count > 0)
+                {
+                    string strUnit = "";
+                    if (_ratio == 10000)
+                    {
+                        strUnit = "万";
+                    }
+                    string strRemindContext = "[公会战进度提醒]\r\n您所在群：" + strGrpID + "，BOSS进度已到B" + _bc + "，目前血量：" + _hp + strUnit + "\r\n如时间方便，请做好本战准备。";
+                    for (int i = 0; i < dtSubsMembers.Rows.Count; i++)
+                    {
+                        long lUserID = long.Parse(dtSubsMembers.Rows[i]["USERID"].ToString());
+                        ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, strRemindContext);
+                        Console.WriteLine("已私聊通知" + lUserID.ToString() + "(" + strGrpID + ")");
+                        SubscribeDAL.UpdateRemindFlag(strGrpID, lUserID.ToString(), _round, _bc, intProgType);
+                        Console.WriteLine("已更新通知状态" + lUserID.ToString() + "(" + strGrpID + ")");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("提醒查询失败（数据库错误）");
+            }
+            //下树提醒
+            if (QueueDAL.QuerySosList(strGrpID, _bc, _round, out DataTable dtSosList))
+            {
+                if (dtSosList != null && dtSosList.Rows.Count > 0)
+                {
+                    if (!(dtSosList.Rows[0][0] is DBNull))
+                    {
+                        MsgMessage += new Message("下树提醒：");
+                        for (int i = 0; i < dtSosList.Rows.Count; i++)
+                        {
+                            //现在引用的类库（WUDILIB）在同一条信息at了多次同一个人时，显示效果会劣化，故在具备输入UID时避开第二次以上at该UID的情况发生
+                            if (dtSosList.Rows[i]["userid"].ToString() != strInputUserID)
+                            {
+                                if (i > 0 && i < dtSosList.Rows.Count)
+                                {
+                                    MsgMessage += new Message("、");
+                                }
+                                string strUID = dtSosList.Rows[i]["userid"].ToString();
+                                MsgMessage += Message.At(long.Parse(strUID));
+                            }
+                        }
+                        MsgMessage += new Message("\r\n--------------------\r\n");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("下树查询失败（数据库错误）");
             }
         }
     }

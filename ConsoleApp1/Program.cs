@@ -90,6 +90,10 @@ namespace Marchen.Garden
             #endregion
             ValueLimits.DamageLimitMax = 0;
             ValueLimits.RoundLimitMax = 0;
+            if (!CmdHelper.LoadValueLimits())
+            {
+                Console.WriteLine("警告：无法读取上限值设置！");
+            }
             //Timer timer = new Timer();
             //timer.Enabled = true;
             //timer.Interval = 1800000;

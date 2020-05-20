@@ -48,17 +48,10 @@ namespace Marchen.BLL
             else
             {
                 //识别出来的数据处理
-                if (InputVariables.IntEXT == 1)
-                {
-                    MsgMessage += new Message("【补时】选项已在伤害上报功能中停用。\r\n如果上一刀是尾刀，本次请用通常刀的方式进行上报，后台将自动转换为补时。\r\n");
-                    isCorrect = false;
-                }
-                if (InputVariables.IntEXT == -1)
+                if (InputVariables.IntEXT != 2)
                 {
                     InputVariables.IntEXT = 0;
                 }
-
-
                 if (InputVariables.DouUID != -1)
                 {
                     //代刀规则
@@ -88,11 +81,6 @@ namespace Marchen.BLL
                         MsgMessage += new Message("未能找到伤害值。\r\n");
                         isCorrect = false;
                     }
-                    if (InputVariables.IntRound == -1)
-                    {
-                        MsgMessage += new Message("未能找到周目值。\r\n");
-                        isCorrect = false;
-                    }
                     if (InputVariables.IntBossCode == -1)
                     {
                         MsgMessage += new Message("未能找到BOSS编号。\r\n");
@@ -108,19 +96,11 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            int intBC_Progress = 0;
-            int intRound_Progress = 0;
-            if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
+            int intRound_Calculate = 0;
+            //请求目前进度
+            if (CaseQueue.Format_Progress(strGrpID, out int _round, out int _bc, out int _hp, out int _ratio))
             {
-                //请求目前进度
-                if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
-                {
-                    if (!(dtBossProgress.Rows[0][0] is DBNull))
-                    {
-                        intBC_Progress = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
-                        intRound_Progress = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
-                    }
-                }
+                intRound_Calculate = _round;
             }
             else
             {
@@ -131,55 +111,39 @@ namespace Marchen.BLL
             }
             if (InputVariables.IntTimeOutFlag != 1)
             {
-                //如果非掉线，检查是否跨周目跨BOSS
-                //第一刀不检查
-                if (!(intBC_Progress == 1 && intRound_Progress == 1))
+                if (InputVariables.IntBossCode > (_bc + 1) || (InputVariables.IntBossCode + 1) < _bc)
                 {
-                    //检查是否跳周目
-                    if (InputVariables.IntRound > intRound_Progress)
+                    //输入了和现在进度非相邻关系的BOSS
+                    if (_bc == 5 && InputVariables.IntBossCode == 1)
                     {
-                        //唯一允许输入周目比目前大的情况：目前B5，输入B1，且输入的周目=目前周目+1
-                        if (!(intBC_Progress == 5 && InputVariables.IntBossCode == 1 && intRound_Progress + 1 == InputVariables.IntRound))
-                        {
-                            MsgMessage += new Message("所提交的周目值有误(可能跨周目)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
-                            MsgMessage += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                            return;
-                        }
+                        //进入下一周目
+                        intRound_Calculate += 1;
                     }
-                    if (InputVariables.IntRound < intRound_Progress)
+                    else if (_bc == 1 && InputVariables.IntBossCode == 5 && _round > 1)
                     {
-                        //唯一允许输入周目比目前小的情况：目前B1，输入B5，且输入的周目=目前周目-1
-                        if (!(intBC_Progress == 1 && InputVariables.IntBossCode == 5 && intRound_Progress - 1 == InputVariables.IntRound))
-                        {
-                            MsgMessage += new Message("所提交的周目值有误(可能跨周目)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
-                            MsgMessage += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                            return;
-                        }
+                        //填回上周目
+                        intRound_Calculate += -1;
                     }
-                    //检查是否跳BOSS
-                    if (InputVariables.IntBossCode > (intBC_Progress + 1))
+                    else
                     {
-                        //唯一允许的提交比目前高的非连续的BOSS例外情况：有人先输入了下周目的B1，需要往前补一个B5记录的情况
-                        if (!(intBC_Progress == 1 && InputVariables.IntBossCode == 5 && intRound_Progress == InputVariables.IntRound + 1))
+                        //如非以上两种情况则认为输错
+                        int intBC_Last = _bc - 1;
+                        int intBC_Next = _bc + 1;
+                        if (_bc == 1)
                         {
-                            MsgMessage += new Message("所提交的BOSS代码有误(可能跨BOSS)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
-                            MsgMessage += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                            return;
+                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B1，可报B1、B2或上周目的B5。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
                         }
-                    }
-                    if ((InputVariables.IntBossCode + 1) < intBC_Progress)
-                    {
-                        //唯一允许的提交比目前低的非连续的BOSS例外情况：现在B5，跨到下周目B1
-                        if (!(intBC_Progress == 5 && InputVariables.IntBossCode == 1 && intRound_Progress == (InputVariables.IntRound - 1)))
+                        else if (_bc == 5)
                         {
-                            MsgMessage += new Message("所提交的BOSS代码有误(可能跨BOSS)，已拒绝本次提交，请重新检查。\r\n（如需补记较早的记录请先提交为目前进度，再使用记录修改功能进行修正。）\r\n");
-                            MsgMessage += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                            return;
+                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B5，可报B4、B5或下周目的B1。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
                         }
+                        else
+                        {
+                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B" + _bc + "，可报B" + (_bc - 1) + "、B" + _bc + "或B" + (_bc + 1) + "。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
+                        }
+                        MsgMessage += Message.At(long.Parse(strUserID));
+                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                        return;
                     }
                 }
             }
@@ -192,8 +156,8 @@ namespace Marchen.BLL
                     InputVariables.IntEXT = 0;
                 }
                 InputVariables.IntDMG = 0;
-                InputVariables.IntRound = intRound_Progress;
-                InputVariables.IntBossCode = intBC_Progress;
+                InputVariables.IntRound = _round;
+                InputVariables.IntBossCode = _bc;
             }
             if (isProxyRecord)
             {
@@ -206,38 +170,25 @@ namespace Marchen.BLL
                 InputVariables.IntEXT = 1;
             }
             //执行上传
-            if (RecordDAL.DamageDebrief(strGrpID, strRecUID, InputVariables.IntDMG, InputVariables.IntRound, InputVariables.IntBossCode, InputVariables.IntEXT, out int intEID))
+            if (RecordDAL.DamageDebrief(strGrpID, strRecUID, InputVariables.IntDMG, intRound_Calculate, InputVariables.IntBossCode, InputVariables.IntEXT, out int intEID))
             {
-                string strDmgType = "";
+                string strDmg_Type = "";
                 if (InputVariables.IntEXT == 0)
                 {
-                    strDmgType = "通常";
+                    strDmg_Type = "通常";
                 }
                 else if (InputVariables.IntEXT == 1)
                 {
-                    strDmgType = "补时";
+                    strDmg_Type = "补时";
                 }
                 else
                 {
-                    strDmgType = "尾刀";
+                    strDmg_Type = "尾刀";
                 }
-                Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + InputVariables.IntBossCode.ToString() + "，" + InputVariables.IntRound.ToString() + "周目，数值：" + InputVariables.IntDMG.ToString() + "，补时标识：" + InputVariables.IntEXT);
-                MsgMessage = new Message("伤害已保存，类型：" + strDmgType + "，档案号=" + intEID.ToString() + "\r\n");
+                Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + InputVariables.IntBossCode.ToString() + "，" + intRound_Calculate.ToString() + "周目，数值：" + InputVariables.IntDMG.ToString() + "，补时标识：" + InputVariables.IntEXT);
+                //MsgMessage = new Message("伤害已成功保存至档案号E" + intEID.ToString() + "：\r\n" + intRound_Calculate.ToString() + "周目；B" + InputVariables.IntBossCode.ToString() + "；伤害=" + InputVariables.IntDMG.ToString() + "(" + strDmgType + ")；\r\n");
+                MsgMessage = new Message("伤害已保存，类型：" + strDmg_Type + "，周目：" + intRound_Calculate + "，档案号=" + intEID.ToString() + "\r\n");
                 //如果是尾刀，自动订阅下个周目的相同BOSS
-                //if (InputVariables.IntEXT == 2 && !isProxyRecord)
-                //{
-                //    //只有非代打的情况会给予补时刀预约
-                //    CaseSubscribe.SubsAdd(strGrpID, strUserID, InputVariables.IntBossCode, (InputVariables.IntRound + 1));
-                //}
-                //else if (InputVariables.IntEXT == 1 && !isProxyRecord)
-                //{
-                //    SubscribeDAL.DelExtSubs(strGrpID, strUserID, out int intDelCount);
-                //    if (intDelCount > 0)
-                //    {
-                //        MsgMessage += new Message("检测到已出补时刀，已自动删除补时刀预约。\r\n");
-                //    }
-                //}
-                //else 
                 if (isProxyRecord)
                 {
                     //如果代打了，删除被代打人的预约
@@ -346,10 +297,10 @@ namespace Marchen.BLL
                     MsgMessage += new Message("修改成功。");
                     if (DmgOutputUniform(dtDmgRecOriginal,0, out string strOriOutput))
                     {
-                        MsgMessage += new Message("\r\n原记录（修改前）：" + strOriOutput);
+                        MsgMessage += new Message("\r\n原记录：\r\n" + strOriOutput);
                     }
                     string strQryEID = "E" + InputVariables.IntEID.ToString();
-                    MsgMessage += new Message("\r\n新记录（修改后）：");
+                    MsgMessage += new Message("\r\n修改后：");
                     RecordQuery(strGrpID, strUserID, strQryEID);
                 }
                 else
