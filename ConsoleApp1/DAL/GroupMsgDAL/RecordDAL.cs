@@ -22,7 +22,7 @@ namespace Marchen.DAL
         {
             DataTable dtMaxEID = new DataTable();
             int intEventID = 1;
-            string sqlQryMaxEID = "select max(eventid) as maxeid from TTL_DMGRECORDS where GRPID = '" + strGrpID + "' and TIME >= trunc(sysdate,'mm')+1 and TIME < trunc(add_months(sysdate,1),'mm')+1";
+            string sqlQryMaxEID = "select max(eventid) as maxeid from TTL_DMGRECORDS where GRPID = '" + strGrpID + "'";
             try
             {
                 dtMaxEID = DBHelper.GetDataTable(sqlQryMaxEID);
@@ -192,12 +192,33 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool GetBossProgress(string strGrpID, out DataTable dtProgress)
         {
+            //string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from " +
+            //    "(select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, nvl(sum(b.DMG), 0) as totaldmg from " +
+            //    "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where " +
+            //    "grpid = '" + strGrpID + "' and TIME between " +
+            //    "nvl((select period_start from set_cbperiod where active_status = '1' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))" +
+            //    ",(select max(period_start) from set_cbperiod where active_status = '0' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))) " +
+            //    "and sysdate and round = (select max(round) from " +
+            //    "TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME between " +
+            //    "nvl((select period_start from set_cbperiod where active_status = '1' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))" +
+            //    ",(select max(period_start) from set_cbperiod where active_status = '0' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "')))" +
+            //    " and sysdate)) a " +
+            //    "left join (select dmg, bc, round from TTL_DMGRECORDS where " +
+            //    "grpid = '" + strGrpID + "' and TIME between " +
+            //    "nvl((select period_start from set_cbperiod where active_status = '1' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))" +
+            //    ",(select max(period_start) from set_cbperiod where active_status = '0' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))) " +
+            //    "and sysdate ) b " +
+            //    "on a.MAXBC = b.bc and a.maxround = b.round) c " +
+            //    "left join ((select regioncode,roundmin, roundmax, bc, hp from ttl_hpset " +
+            //    "right join (select org_region from ttl_orglist where org_id = '" + strGrpID + "') " +
+            //    "on REGIONCODE = ORG_REGION)) d " +
+            //    "on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
             string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from " +
                 "(select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, nvl(sum(b.DMG), 0) as totaldmg from " +
                 "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where " +
-                "grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate and round = (select max(round) from " +
-                "TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME between trunc(sysdate, 'mm') + 1 and sysdate)) a " +
-                "left join (select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME >= trunc(sysdate, 'mm') + 1 and TIME <= sysdate) b " +
+                "grpid = '" + strGrpID + "' and round = (select max(round) from " +
+                "TTL_DMGRECORDS where grpid = '" + strGrpID + "')) a " +
+                "left join (select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "' b " +
                 "on a.MAXBC = b.bc and a.maxround = b.round) c " +
                 "left join ((select regioncode,roundmin, roundmax, bc, hp from ttl_hpset " +
                 "right join (select org_region from ttl_orglist where org_id = '" + strGrpID + "') " +
