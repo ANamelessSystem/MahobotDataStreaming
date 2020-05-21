@@ -218,7 +218,7 @@ namespace Marchen.DAL
                 "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where " +
                 "grpid = '" + strGrpID + "' and round = (select max(round) from " +
                 "TTL_DMGRECORDS where grpid = '" + strGrpID + "')) a " +
-                "left join (select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "' b " +
+                "left join (select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "') b " +
                 "on a.MAXBC = b.bc and a.maxround = b.round) c " +
                 "left join ((select regioncode,roundmin, roundmax, bc, hp from ttl_hpset " +
                 "right join (select org_region from ttl_orglist where org_id = '" + strGrpID + "') " +
