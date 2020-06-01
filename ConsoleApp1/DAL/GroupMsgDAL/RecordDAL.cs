@@ -92,7 +92,7 @@ namespace Marchen.DAL
 
             string sqlQryDmgRec = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
                 "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
-                "where a.grpid = '" + strGrpID + "' and eventid = '" + intEID + "' and a.TIME >= trunc(sysdate,'mm')+1 order by a.eventid asc";
+                "where a.grpid = '" + strGrpID + "' and eventid = '" + intEID + "' and a.TIME >= trunc(sysdate,'mm') order by a.eventid asc";
             try
             {
                 dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRec);
@@ -121,7 +121,7 @@ namespace Marchen.DAL
         {
             string sqlDmgUpd = " update TTL_DMGRECORDS " +
                 "set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " " +
-                "where time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1 and grpid = '" + strGrpID + "' and eventid = " + intEID + "";
+                "where time >= trunc(sysdate,'mm') and time < trunc(add_months(sysdate,1),'mm') and grpid = '" + strGrpID + "' and eventid = " + intEID + "";
             try
             {
                 DBHelper.ExecuteCommand(sqlDmgUpd);
@@ -192,27 +192,6 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool GetBossProgress(string strGrpID, out DataTable dtProgress)
         {
-            //string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from " +
-            //    "(select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, nvl(sum(b.DMG), 0) as totaldmg from " +
-            //    "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where " +
-            //    "grpid = '" + strGrpID + "' and TIME between " +
-            //    "nvl((select period_start from set_cbperiod where active_status = '1' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))" +
-            //    ",(select max(period_start) from set_cbperiod where active_status = '0' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))) " +
-            //    "and sysdate and round = (select max(round) from " +
-            //    "TTL_DMGRECORDS where grpid = '" + strGrpID + "' and TIME between " +
-            //    "nvl((select period_start from set_cbperiod where active_status = '1' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))" +
-            //    ",(select max(period_start) from set_cbperiod where active_status = '0' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "')))" +
-            //    " and sysdate)) a " +
-            //    "left join (select dmg, bc, round from TTL_DMGRECORDS where " +
-            //    "grpid = '" + strGrpID + "' and TIME between " +
-            //    "nvl((select period_start from set_cbperiod where active_status = '1' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))" +
-            //    ",(select max(period_start) from set_cbperiod where active_status = '0' and region_code = (select org_region from ttl_orglist where org_id = '" + strGrpID + "'))) " +
-            //    "and sysdate ) b " +
-            //    "on a.MAXBC = b.bc and a.maxround = b.round) c " +
-            //    "left join ((select regioncode,roundmin, roundmax, bc, hp from ttl_hpset " +
-            //    "right join (select org_region from ttl_orglist where org_id = '" + strGrpID + "') " +
-            //    "on REGIONCODE = ORG_REGION)) d " +
-            //    "on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
             string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from " +
                 "(select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, nvl(sum(b.DMG), 0) as totaldmg from " +
                 "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where " +
@@ -285,7 +264,7 @@ namespace Marchen.DAL
             }
             string sqlQryDmgRecByBCnRound = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
                 "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
-                "where a.grpid = '" + strGrpID + "' and " + sqlPaddingPattern + " and a.TIME >= trunc(sysdate,'mm')+1 order by a.eventid asc";
+                "where a.grpid = '" + strGrpID + "' and " + sqlPaddingPattern + " and a.TIME >= trunc(sysdate,'mm') order by a.eventid asc";
             Console.WriteLine("将要查询的SQL语句为：" + sqlQryDmgRecByBCnRound);
             try
             {
@@ -309,39 +288,12 @@ namespace Marchen.DAL
         /// <param name="isAll">false时查询当日，true时查询全月</param>
         /// <param name="dtDmgRecords"></param>
         /// <returns></returns>
-        public static bool QueryDmgRecords(double douUserID, string strGrpID, int intAllFlag, out DataTable dtDmgRecords)
+        public static bool QueryDmgRecords(double douUserID, string strGrpID, DateTime dtStart, DateTime dtEnd, out DataTable dtDmgRecords)
         {
-            Console.WriteLine("启动数据库查询语句");
-            string sqlTimeFilter = "";
-            if (intAllFlag == 0)
-            {
-                if (QueryTimeNowOnDatabase(out DataTable dtResultTime))
-                {
-                    DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                    if (dtNow.Hour >= 0 && dtNow.Hour < 4)
-                    {
-                        //当目前时间在0点到4点间时，筛选开始时间为前一天的凌晨4点
-                        sqlTimeFilter = " and TIME >= trunc(sysdate)+(4/24)-1 ";
-                    }
-                    else
-                    {
-                        //当目前时间在4点到24点间时，筛选开始时间为当天的凌晨4点
-                        sqlTimeFilter = " and TIME >= trunc(sysdate)+(4/24) ";
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("数据库错误，未能取回数据库时间。");
-                }
-            }
-            else
-            {
-                //如明确指定要查询全期间，则将筛选时间开始设置为本月2日
-                sqlTimeFilter = " and TIME >= trunc(sysdate,'mm')+1 ";
-            }
             string sqlQryDmgRecByUID = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
                 "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
-                "where a.grpid = '" + strGrpID + "' and a.userid = '" + douUserID + "' " + sqlTimeFilter + " order by a.eventid asc";
+                "where a.grpid = '" + strGrpID + "' and a.userid = '" + douUserID + "' and time between to_date('" + dtStart + "', 'yyyy/mm/dd hh24:mi:ss') and to_date('" + dtEnd + "','yyyy/mm/dd hh24:mi:ss')" +
+                " order by a.eventid asc";
             try
             {
                 dtDmgRecords = DBHelper.GetDataTable(sqlQryDmgRecByUID);

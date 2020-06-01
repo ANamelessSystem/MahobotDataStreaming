@@ -207,10 +207,17 @@ namespace Marchen.DAL
             try
             {
                 DataTable dtResult = DBHelper.GetDataTable(sqlQryMbrNameByUID);
-                if (dtResult.Rows[0]["MBRNAME"].ToString().Length > 0)
+                if (dtResult.Rows.Count != 0)
                 {
-                    strResultMbrName = dtResult.Rows[0]["MBRNAME"].ToString();
-                    return true;
+                    if (dtResult.Rows[0]["MBRNAME"].ToString().Length > 0)
+                    {
+                        strResultMbrName = dtResult.Rows[0]["MBRNAME"].ToString();
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
