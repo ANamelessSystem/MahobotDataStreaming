@@ -121,7 +121,7 @@ namespace Marchen.DAL
         {
             string sqlDmgUpd = " update TTL_DMGRECORDS " +
                 "set userid = '" + strUserID + "', dmg = " + intDMG + ", round = " + intRound + ", bc = " + intBossCode + ", extime = " + intExTime + " " +
-                "where time >= trunc(sysdate,'mm') and time < trunc(add_months(sysdate,1),'mm') and grpid = '" + strGrpID + "' and eventid = " + intEID + "";
+                "where grpid = '" + strGrpID + "' and eventid = " + intEID + "";
             try
             {
                 DBHelper.ExecuteCommand(sqlDmgUpd);
