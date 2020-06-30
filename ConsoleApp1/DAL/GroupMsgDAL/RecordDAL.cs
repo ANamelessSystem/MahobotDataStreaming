@@ -92,7 +92,7 @@ namespace Marchen.DAL
 
             string sqlQryDmgRec = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
                 "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
-                "where a.grpid = '" + strGrpID + "' and eventid = '" + intEID + "' and a.TIME >= trunc(sysdate,'mm') order by a.eventid asc";
+                "where a.grpid = '" + strGrpID + "' and eventid = '" + intEID + "' order by a.eventid asc";
             try
             {
                 dtDmgRec = DBHelper.GetDataTable(sqlQryDmgRec);
