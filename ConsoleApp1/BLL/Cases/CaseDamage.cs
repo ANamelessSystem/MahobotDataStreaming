@@ -407,51 +407,84 @@ namespace Marchen.BLL
                     DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天结算时间结束
                     if (InputVariables.IntIsAllFlag == 1)
                     {
-                        dtStart = dtStart.AddDays(1 - dtStart.Day).AddHours(-intHourSet);//月初0点
-                        dtEnd = dtStart.AddDays((dtStart.AddMonths(1) - dtStart).Days - 1).AddSeconds(-1);//月末0点
+                        //dtStart = dtStart.AddDays(1 - dtStart.Day).AddHours(-intHourSet);//月初0点
+                        //dtEnd = dtStart.AddDays((dtStart.AddMonths(1) - dtStart).Days - 1).AddSeconds(-1);//月末0点
+                        if (RecordDAL.QueryDmgRecords_All(InputVariables.DouUID, strGrpID, out DataTable dtDmgRecords))
+                        {
+                            if (InputVariables.IntIsAllFlag == 0)
+                            {
+                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
+                            }
+                            else
+                            {
+                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
+                            }
+                            if (dtDmgRecords.Rows.Count == 0)
+                            {
+                                MsgMessage += new Message("\r\n尚无伤害记录。");
+                            }
+                            else
+                            {
+                                if (DmgOutputUniform(dtDmgRecords, 1, out string strOutput))
+                                {
+                                    MsgMessage += new Message(strOutput);
+                                }
+                                else
+                                {
+                                    MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                    MsgMessage += Message.At(long.Parse(strUserID));
+                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                    return;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
+                        }
                     }
                     else if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
                     {
                         //0点后日期变换，开始日期需查到昨天
                         dtStart = dtStart.AddDays(-1);//当天结算时间开始
                         dtEnd = dtEnd.AddDays(-1);//第二天结算时间结束
+                        if (RecordDAL.QueryDmgRecords(InputVariables.DouUID, strGrpID, dtStart, dtEnd, out DataTable dtDmgRecords))
+                        {
+                            if (InputVariables.IntIsAllFlag == 0)
+                            {
+                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
+                            }
+                            else
+                            {
+                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
+                            }
+                            if (dtDmgRecords.Rows.Count == 0)
+                            {
+                                MsgMessage += new Message("\r\n尚无伤害记录。");
+                            }
+                            else
+                            {
+                                if (DmgOutputUniform(dtDmgRecords, 1, out string strOutput))
+                                {
+                                    MsgMessage += new Message(strOutput);
+                                }
+                                else
+                                {
+                                    MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                    MsgMessage += Message.At(long.Parse(strUserID));
+                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                    return;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
+                        }
                     }
                     else
                     {
 
-                    }
-                    if (RecordDAL.QueryDmgRecords(InputVariables.DouUID, strGrpID, dtStart, dtEnd, out DataTable dtDmgRecords))
-                    {
-                        if (InputVariables.IntIsAllFlag == 0)
-                        {
-                            MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
-                        }
-                        else
-                        {
-                            MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
-                        }
-                        if (dtDmgRecords.Rows.Count == 0)
-                        {
-                            MsgMessage += new Message("\r\n尚无伤害记录。");
-                        }
-                        else
-                        {
-                            if (DmgOutputUniform(dtDmgRecords, 1, out string strOutput))
-                            {
-                                MsgMessage += new Message(strOutput);
-                            }
-                            else
-                            {
-                                MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
                     }
                 }
             }

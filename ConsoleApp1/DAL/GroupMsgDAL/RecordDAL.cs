@@ -281,7 +281,7 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 根据UID查询的方法
+        /// 根据UID查询的方法（当日）
         /// </summary>
         /// <param name="douUserID"></param>
         /// <param name="strGrpID"></param>
@@ -308,6 +308,31 @@ namespace Marchen.DAL
             }
         }
 
+        /// <summary>
+        /// 根据UID查询的方法（当期）
+        /// </summary>
+        /// <param name="douUserID"></param>
+        /// <param name="strGrpID"></param>
+        /// <param name="dtDmgRecords"></param>
+        /// <returns></returns>
+        public static bool QueryDmgRecords_All(double douUserID, string strGrpID, out DataTable dtDmgRecords)
+        {
+            string sqlQryDmgRecByUID = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
+                "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
+                "where a.grpid = '" + strGrpID + "' and a.userid = '" + douUserID + "'" + " order by a.eventid asc";
+            try
+            {
+                dtDmgRecords = DBHelper.GetDataTable(sqlQryDmgRecByUID);
+                Console.WriteLine("SQL语句成功执行");
+                return true;
+            }
+            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            {
+                Console.WriteLine("群：" + strGrpID + "查询伤害时失败，SQL：" + sqlQryDmgRecByUID + "。\r\n" + oex);
+                dtDmgRecords = null;
+                return false;
+            }
+        }
 
         /// <summary>
         /// 读取所有限值设置的方法
