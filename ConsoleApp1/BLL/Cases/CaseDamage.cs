@@ -484,7 +484,39 @@ namespace Marchen.BLL
                     }
                     else
                     {
-
+                        if (RecordDAL.QueryDmgRecords(InputVariables.DouUID, strGrpID, dtStart, dtEnd, out DataTable dtDmgRecords))
+                        {
+                            if (InputVariables.IntIsAllFlag == 0)
+                            {
+                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
+                            }
+                            else
+                            {
+                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
+                            }
+                            if (dtDmgRecords.Rows.Count == 0)
+                            {
+                                MsgMessage += new Message("\r\n尚无伤害记录。");
+                            }
+                            else
+                            {
+                                if (DmgOutputUniform(dtDmgRecords, 1, out string strOutput))
+                                {
+                                    MsgMessage += new Message(strOutput);
+                                }
+                                else
+                                {
+                                    MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
+                                    MsgMessage += Message.At(long.Parse(strUserID));
+                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                    return;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
+                        }
                     }
                 }
             }
