@@ -80,16 +80,12 @@ namespace Marchen.DAL
         /// <summary>
         /// 查询EventID对应记录的方法
         /// </summary>
-        /// <param name="intEID">EventID</param>
+        /// <param name="intEID">档案号</param>
         /// <param name="strGrpID">群号</param>
-        /// <param name="dtDmgRec">返回dt</param>
+        /// <param name="dtDmgRec">返回dt格式时间</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDmgRecByEID(int intEID, string strGrpID, out DataTable dtDmgRec)
         {
-            //string sqlQryDmgRec = "select userid,dmg,round,bc,extime from TTL_DMGRECORDS " +
-            //    "where grpid = '" + strGrpID + "' and eventid =" + intEID + " and " +
-            //    "time >= trunc(sysdate,'mm')+1 and time < trunc(add_months(sysdate,1),'mm')+1";
-
             string sqlQryDmgRec = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
                 "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b on a.USERID=b.MBRID and a.GRPID = b.GRPID " +
                 "where a.grpid = '" + strGrpID + "' and eventid = '" + intEID + "' order by a.eventid asc";
@@ -115,7 +111,7 @@ namespace Marchen.DAL
         /// <param name="intRound">周目</param>
         /// <param name="intBossCode">BOSS代号</param>
         /// <param name="intExTime">是否补时；1：是，2：否。</param>
-        /// <param name="intEID">EventID</param>
+        /// <param name="intEID">档案号</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool DamageUpdate(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime, int intEID)
         {
@@ -226,7 +222,6 @@ namespace Marchen.DAL
         /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDmgRecords(int intBossCode, int intRound, string strGrpID, out DataTable dtDmgRecords)
         {
-            //string strUserID = "";
             Console.WriteLine("启动数据库查询语句");
             string sqlPaddingPattern = "";
             int elementCounter = 0;
@@ -283,11 +278,12 @@ namespace Marchen.DAL
         /// <summary>
         /// 根据UID查询的方法（当日）
         /// </summary>
-        /// <param name="douUserID"></param>
-        /// <param name="strGrpID"></param>
-        /// <param name="isAll">false时查询当日，true时查询全月</param>
-        /// <param name="dtDmgRecords"></param>
-        /// <returns></returns>
+        /// <param name="douUserID">QQ号</param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtStart">查询条件：开始时间</param>
+        /// <param name="dtEnd">查询条件：结束时间</param>
+        /// <param name="dtDmgRecords">dt格式的伤害数据</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDmgRecords(double douUserID, string strGrpID, DateTime dtStart, DateTime dtEnd, out DataTable dtDmgRecords)
         {
             string sqlQryDmgRecByUID = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
@@ -309,12 +305,12 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 根据UID查询的方法（当期）
+        /// 根据UID查询的方法（整期）
         /// </summary>
-        /// <param name="douUserID"></param>
-        /// <param name="strGrpID"></param>
-        /// <param name="dtDmgRecords"></param>
-        /// <returns></returns>
+        /// <param name="douUserID">QQ号</param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="dtDmgRecords">dt格式的伤害数据</param>
+        /// <returns>true：执行成功；false：执行失败。</returns>
         public static bool QueryDmgRecords_All(double douUserID, string strGrpID, out DataTable dtDmgRecords)
         {
             string sqlQryDmgRecByUID = "select userid,dmg,round,bc,extime,eventid,To_char(TIME, 'mm\"月\"dd\"日\"hh24\"点\"') as time,nvl(b.MBRNAME,'已不在名单') as name from TTL_DMGRECORDS a " +
