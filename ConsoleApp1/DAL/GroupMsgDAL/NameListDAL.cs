@@ -166,7 +166,7 @@ namespace Marchen.DAL
         {
             try
             {
-                DBHelper.ExecProd("InitMbrList", "varGrpID", strGrpID);
+                DBHelper.ExecProd("PROC_INITMBRLIST", "varGrpID", strGrpID);
                 return true;
             }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
