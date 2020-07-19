@@ -33,23 +33,23 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (intHourSet < 0)
-            {
-                MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
+            //if (intHourSet < 0)
+            //{
+            //    MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
+            //    MsgMessage += Message.At(long.Parse(strUserID));
+            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            //    return;
+            //}
             if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
             {
                 DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点开始
-                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点结束
+                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点或5点开始
+                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点或5点结束
                 if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
                 {
-                    //0点后日期变换，开始日期需查到昨天
-                    dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
-                    dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束
+                    //0点后日期变换，开始日期需切换到昨天的更新时间点
+                    dtStart = dtStart.AddDays(-1);
+                    dtEnd = dtEnd.AddDays(-1);
                 }
                 if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
                 {
@@ -95,75 +95,75 @@ namespace Marchen.BLL
         /// <param name="memberInfo">消息发起人的成员资料</param>
         /// <param name="intType">命令种类：1=只显示不提醒；2=提醒全部没满三刀的；3=只提醒三刀都没出的</param>
 
-        public static void RemainStrikes(string strGrpID, string strUserID,GroupMemberInfo memberInfo,int intType)
-        {
-            if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
-            {
-                MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            if (intHourSet < 0)
-            {
-                MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
-            {
-                DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点开始
-                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点结束
-                if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
-                {
-                    dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
-                    dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束
-                }
-                if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
-                {
-                    //MsgMessage += new Message("截至目前尚有余刀的成员：");
-                    //int intCount = 0;
-                    //string strLeft1 = "";
-                    //string strLeft2 = "";
-                    //string strLeft3 = "";
-                    //for (int i = 0; i < dtInsuff.Rows.Count; i++)
-                    //{
-                    //    string strUID = dtInsuff.Rows[i]["userid"].ToString();
-                    //    int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
-                    //    if (intCountMain == 2)
-                    //    {
-                    //        intCount += 1;
-                    //        strLeft1 += "\r\nID：" + strUID + "，剩余1刀";
-                    //    }
-                    //    if (intCountMain == 1)
-                    //    {
-                    //        intCount += 2;
-                    //        strLeft2 += "\r\nID：" + strUID + "，剩余2刀";
-                    //    }
-                    //    if (intCountMain == 0)
-                    //    {
-                    //        intCount += 3;
-                    //        strLeft3 += "\r\nID：" + strUID + "，剩余3刀";
-                    //    }
-                    //}
-                    //MsgMessage += new Message(strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
-                    //MsgMessage += new Message("\r\n合计剩余" + intCount.ToString() + "刀");
-                }
-                else
-                {
-                    //MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                    //MsgMessage += Message.At(long.Parse(strUserID));
-                }
-            }
-            else
-            {
-                //MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
-            }
-            //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-        }
+        //public static void RemainStrikes(string strGrpID, string strUserID,GroupMemberInfo memberInfo,int intType)
+        //{
+        //    if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
+        //    {
+        //        MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
+        //        MsgMessage += Message.At(long.Parse(strUserID));
+        //        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+        //        return;
+        //    }
+        //    if (intHourSet < 0)
+        //    {
+        //        MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
+        //        MsgMessage += Message.At(long.Parse(strUserID));
+        //        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+        //        return;
+        //    }
+        //    if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
+        //    {
+        //        DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
+        //        DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点开始
+        //        DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点结束
+        //        if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
+        //        {
+        //            dtStart = dtStart.AddDays(-1);//每天凌晨4点开始
+        //            dtEnd = dtEnd.AddDays(-1);//第二天凌晨4点结束
+        //        }
+        //        if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
+        //        {
+        //            //MsgMessage += new Message("截至目前尚有余刀的成员：");
+        //            //int intCount = 0;
+        //            //string strLeft1 = "";
+        //            //string strLeft2 = "";
+        //            //string strLeft3 = "";
+        //            //for (int i = 0; i < dtInsuff.Rows.Count; i++)
+        //            //{
+        //            //    string strUID = dtInsuff.Rows[i]["userid"].ToString();
+        //            //    int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
+        //            //    if (intCountMain == 2)
+        //            //    {
+        //            //        intCount += 1;
+        //            //        strLeft1 += "\r\nID：" + strUID + "，剩余1刀";
+        //            //    }
+        //            //    if (intCountMain == 1)
+        //            //    {
+        //            //        intCount += 2;
+        //            //        strLeft2 += "\r\nID：" + strUID + "，剩余2刀";
+        //            //    }
+        //            //    if (intCountMain == 0)
+        //            //    {
+        //            //        intCount += 3;
+        //            //        strLeft3 += "\r\nID：" + strUID + "，剩余3刀";
+        //            //    }
+        //            //}
+        //            //MsgMessage += new Message(strLeft1 + "\r\n--------------------" + strLeft2 + "\r\n--------------------" + strLeft3);
+        //            //MsgMessage += new Message("\r\n合计剩余" + intCount.ToString() + "刀");
+        //        }
+        //        else
+        //        {
+        //            //MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
+        //            //MsgMessage += Message.At(long.Parse(strUserID));
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
+        //        //MsgMessage += Message.At(long.Parse(strUserID));
+        //    }
+        //    //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+        //}
 
 
 
