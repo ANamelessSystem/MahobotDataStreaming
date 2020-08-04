@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <Company>Devons System</Company>
     <Product>Puricone_qq_bot</Product>
     <Authors>Devons System</Authors>
