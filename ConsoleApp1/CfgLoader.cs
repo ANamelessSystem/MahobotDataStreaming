@@ -45,8 +45,8 @@ namespace Marchen
                 WritePrivateProfileString(strCfgFileName, "DBUserID", "(数据库用户名)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "DbPassword", "(数据库用户密码)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "DBPort", "(数据库监听端口)", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiAddress", "(酷Q HTTP API的监听地址)", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "(酷Q HTTP API的端口地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "ApiAddress", "(MIRAI HTTP API服务的地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "(MIRAI HTTP API的端口地址)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "ApiForwardToAddress", "(本程序接收酷Q HTTP API传来的信息后转发的地址)", strFilePath);
             }
             catch (Exception ex)
