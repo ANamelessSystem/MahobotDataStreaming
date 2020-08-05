@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Globalization;
-using Sisters.WudiLib;
-using Sisters.WudiLib.Posts;
-using Sisters.WudiLib.Responses;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Mirai_CSharp;
+using Mirai_CSharp.Models;
 using Marchen.Model;
 using Marchen.BLL;
-using System.Timers;
-using System.Runtime.InteropServices;
-using System.IO;
-using System.Text;
+
 
 namespace Marchen.Garden
 {
     class Program
     {
-        static void Main(string[] args)
+        public static async Task Main()
         {
             var culture = CultureInfo.GetCultureInfo("zh-CN");
             CultureInfo.DefaultThreadCurrentCulture = culture;
@@ -32,8 +30,27 @@ namespace Marchen.Garden
                 Console.ReadKey();
                 return;
             }
+
+
+            // 把你要连接到的 mirai-api-http 所需的主机名/IP, 端口 和 AuthKey 全部填好
+            MiraiHttpSessionOptions options = new MiraiHttpSessionOptions(ApiProperties.HttpApiIP, ApiProperties.HttpApiPort, ApiProperties.HttpApiAuthKey);
+            // session 使用 DisposeAsync 模式, 所以使用 await using 自动调用 DisposeAsync 方法。
+            // 你也可以不在这里 await using, 不过使用完 session 后请务必调用 DisposeAsync 方法
+            await using MiraiHttpSession session = new MiraiHttpSession();
+            // 使用上边提供的信息异步连接到 mirai-api-http
+            await session.ConnectAsync(options,long.Parse(SelfProperties.SelfID)); // 自己填机器人QQ号
+
+
+
+
+
+
+
+
+
+
             ApiProperties.HttpApi = new HttpApiClient();
-            ApiProperties.HttpApi.ApiAddress = ApiProperties.ApiAddr;
+            ApiProperties.HttpApi.ApiAddress = ApiProperties.HttpApiIP;
             try
             {
                 SelfProperties.SelfID = ApiProperties.HttpApi.GetLoginInfoAsync().Result.UserId.ToString();
@@ -49,8 +66,8 @@ namespace Marchen.Garden
             ApiPostListener postListener = new ApiPostListener
             {
                 ApiClient = ApiProperties.HttpApi,
-                PostAddress = ApiProperties.ApiPostAddr,
-                ForwardTo = ApiProperties.ApiForwardToAddr
+                PostAddress = ApiProperties.HttpApiPort,
+                ForwardTo = ApiProperties.HttpApiAuthKey
             };
             try
             {

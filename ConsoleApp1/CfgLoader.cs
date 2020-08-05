@@ -45,9 +45,10 @@ namespace Marchen
                 WritePrivateProfileString(strCfgFileName, "DBUserID", "(数据库用户名)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "DbPassword", "(数据库用户密码)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "DBPort", "(数据库监听端口)", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiAddress", "(MIRAI HTTP API服务的地址)", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "(MIRAI HTTP API的端口地址)", strFilePath);
-                WritePrivateProfileString(strCfgFileName, "ApiForwardToAddress", "(本程序接收酷Q HTTP API传来的信息后转发的地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "HttpApiIP", "(MIRAI HTTP API服务的IP地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "HttpApiPort", "(MIRAI HTTP API的端口)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "HttpApiAuthKey", "(MIRAI HTTP API的验证密钥)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "SelfID", "(业务QQ号)", strFilePath);
             }
             catch (Exception ex)
             {
@@ -67,21 +68,15 @@ namespace Marchen
                 try
                 {
                     strCfgFileName = Path.GetFileNameWithoutExtension(strFilePath);
-                    //string[] arrayEncryp = ContentValue(strCfgFileName, "DbPassword").Split(' ');
-                    //StringBuilder sbDecryp = new StringBuilder();
-                    //for (int i = 0; i < arrayEncryp.Length; i++)
-                    //{
-                    //    sbDecryp.Append((char)(keyCode[i] ^ int.Parse(arrayEncryp[i])));
-                    //}
-                    //DBProperties.DBPassword = sbDecryp.ToString();
                     DBProperties.DBPassword = ContentValue(strCfgFileName, "DbPassword").ToString();
                     DBProperties.DBAddress = ContentValue(strCfgFileName, "DBAddress").ToString();
                     DBProperties.DBServiceName = ContentValue(strCfgFileName, "DBServiceName").ToString();
                     DBProperties.DBUserID = ContentValue(strCfgFileName, "DBUserID").ToString();
                     DBProperties.DBPort = ContentValue(strCfgFileName, "DBPort").ToString();
-                    ApiProperties.ApiAddr = ContentValue(strCfgFileName, "ApiAddress").ToString();
-                    ApiProperties.ApiPostAddr = ContentValue(strCfgFileName, "ApiPostAddress").ToString();
-                    ApiProperties.ApiForwardToAddr = ContentValue(strCfgFileName, "ApiForwardToAddress").ToString();
+                    ApiProperties.HttpApiIP = ContentValue(strCfgFileName, "HttpApiIP").ToString();
+                    ApiProperties.HttpApiPort = int.Parse(ContentValue(strCfgFileName, "HttpApiPort").ToString());
+                    ApiProperties.HttpApiAuthKey = ContentValue(strCfgFileName, "HttpApiAuthKey").ToString();
+                    SelfProperties.SelfID = ContentValue(strCfgFileName, "SelfID").ToString();
                     return true;
                 }
                 catch
