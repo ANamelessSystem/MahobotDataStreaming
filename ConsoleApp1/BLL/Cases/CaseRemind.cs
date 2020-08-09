@@ -4,8 +4,8 @@ using System.Text;
 using System.Data;
 using Marchen.DAL;
 using Marchen.Model;
-using Message = Sisters.WudiLib.SendingMessage;
-using Sisters.WudiLib.Responses;
+using Mirai_CSharp;
+using Mirai_CSharp.Models;
 
 namespace Marchen.BLL
 {
@@ -17,74 +17,74 @@ namespace Marchen.BLL
         /// <param name="strGrpID">消息发起人所属群号</param>
         /// <param name="strUserID">消息发起人QQ号</param>
         /// <param name="memberInfo">消息发起人的成员资料</param>
-        public static void NoticeRemainStrikers(string strGrpID, string strUserID, GroupMemberInfo memberInfo)
+        public static void NoticeRemainStrikers(string strGrpID, string strUserID, GroupPermission mbrAuth)
         {
-            if (!(memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager))
-            {
-                MsgMessage += new Message("拒绝：仅有管理员或群主可执行出刀提醒指令。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
-            {
-                MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            //if (intHourSet < 0)
+            //IMessageBase[] chain;
+            //if (!(mbrAuth == GroupPermission.Owner || mbrAuth == GroupPermission.Administrator))
             //{
-            //    MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
-            //    MsgMessage += Message.At(long.Parse(strUserID));
-            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            //    MsgMessage += "拒绝：仅有管理员或群主可执行出刀提醒指令。\r\n";
+            //    chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+            //    session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
             //    return;
             //}
-            if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
-            {
-                DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点或5点开始
-                DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点或5点结束
-                if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
-                {
-                    //0点后日期变换，开始日期需切换到昨天的更新时间点
-                    dtStart = dtStart.AddDays(-1);
-                    dtEnd = dtEnd.AddDays(-1);
-                }
-                if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
-                {
-                    MsgMessage += new Message("请以下成员尽早出刀：");
-                    for (int i = 0; i < dtInsuff.Rows.Count; i++)
-                    {
-                        string strUID = dtInsuff.Rows[i]["MBRID"].ToString();
-                        int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
-                        int intCountLastAtk = int.Parse(dtInsuff.Rows[i]["cla"].ToString());
-                        int intCountExTime = int.Parse(dtInsuff.Rows[i]["cex"].ToString());
-                        if ((intCountMain + intCountLastAtk) < 3)
-                        {
-                            if (intCountLastAtk > intCountExTime)
-                            {
-                                MsgMessage += new Message("\r\nID：" + strUID + "，剩余" + (3 - (intCountMain + intCountLastAtk)).ToString() + "刀与补时刀 ") + Message.At(long.Parse(strUID));
-                            }
-                            else
-                            {
-                                MsgMessage += new Message("\r\nID：" + strUID + "，剩余" + (3 - (intCountMain + intCountLastAtk)).ToString() + "刀 ") + Message.At(long.Parse(strUID));
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
-                }
-            }
-            else
-            {
-                MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-            }
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            //if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
+            //{
+            //    MsgMessage += "与数据库失去连接，查询区域时间设定失败。\r\n";
+            //    chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+            //    session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
+            //    return;
+            //}
+            ////if (intHourSet < 0)
+            ////{
+            ////    MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
+            ////    MsgMessage += Message.At(long.Parse(strUserID));
+            ////    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            ////    return;
+            ////}
+            //if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
+            //{
+            //    DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
+            //    DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//每天凌晨4点或5点开始
+            //    DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天凌晨4点或5点结束
+            //    if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
+            //    {
+            //        //0点后日期变换，开始日期需切换到昨天的更新时间点
+            //        dtStart = dtStart.AddDays(-1);
+            //        dtEnd = dtEnd.AddDays(-1);
+            //    }
+            //    if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
+            //    {
+            //        MsgMessage += "请以下成员尽早出刀：";
+            //        for (int i = 0; i < dtInsuff.Rows.Count; i++)
+            //        {
+            //            string strUID = dtInsuff.Rows[i]["MBRID"].ToString();
+            //            int intCountMain = int.Parse(dtInsuff.Rows[i]["cmain"].ToString());
+            //            int intCountLastAtk = int.Parse(dtInsuff.Rows[i]["cla"].ToString());
+            //            int intCountExTime = int.Parse(dtInsuff.Rows[i]["cex"].ToString());
+            //            if ((intCountMain + intCountLastAtk) < 3)
+            //            {
+            //                if (intCountLastAtk > intCountExTime)
+            //                {
+            //                    MsgMessage += new Message("\r\nID：" + strUID + "，剩余" + (3 - (intCountMain + intCountLastAtk)).ToString() + "刀与补时刀 ") + Message.At(long.Parse(strUID));
+            //                }
+            //                else
+            //                {
+            //                    MsgMessage += new Message("\r\nID：" + strUID + "，剩余" + (3 - (intCountMain + intCountLastAtk)).ToString() + "刀 ") + Message.At(long.Parse(strUID));
+            //                }
+            //            }
+            //        }
+            //    }
+            //    else
+            //    {
+            //        MsgMessage += "与数据库失去连接，查询失败。\r\n";
+            //    }
+            //}
+            //else
+            //{
+            //    MsgMessage += "与数据库失去连接，查询失败。\r\n";
+            //}
+            //chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+            //session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
         }
 
         /// <summary>
@@ -174,18 +174,19 @@ namespace Marchen.BLL
         /// <param name="strUserID">消息发起人QQ号</param>
         public static void ShowRemainStrikes(string strGrpID, string strUserID)
         {
+            IMessageBase[] chain;
             if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
             {
-                MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "与数据库失去连接，查询区域时间设定失败。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (intHourSet < 0)
             {
-                MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
@@ -200,7 +201,7 @@ namespace Marchen.BLL
                 }
                 if (RecordDAL.QueryStrikeStatus(strGrpID, dtStart, dtEnd, out DataTable dtInsuff))
                 {
-                    MsgMessage += new Message("截至目前尚有余刀的成员：");
+                    MsgMessage += "截至目前尚有余刀的成员：";
                     int intCountLeft = 0;
                     int intCountUsed = 0;
                     int intCountExLeft = 0;
@@ -282,49 +283,48 @@ namespace Marchen.BLL
                             strLeft3 += "\r\n剩余3刀：" + strUName + "(" + strUID + ")";
                         }
                     }
-                    MsgMessage += new Message("\r\n--------------------");
+                    MsgMessage += "\r\n--------------------";
                     if (strLeft0_EX != null && strLeft0_EX != "")
                     {
-                        MsgMessage += new Message(strLeft0_EX + "\r\n--------------------");
+                        MsgMessage += strLeft0_EX + "\r\n--------------------";
                     }
                     if (strLeft1_EX != null && strLeft1_EX != "")
                     {
-                        MsgMessage += new Message(strLeft1_EX + "\r\n--------------------");
+                        MsgMessage += strLeft1_EX + "\r\n--------------------";
                     }
                     if (strLeft2_EX != null && strLeft2_EX != "")
                     {
-                        MsgMessage += new Message(strLeft2_EX + "\r\n--------------------");
+                        MsgMessage += strLeft2_EX + "\r\n--------------------";
                     }
                     if (strLeft1 != null && strLeft1 != "")
                     {
-                        MsgMessage += new Message(strLeft1 + "\r\n--------------------");
+                        MsgMessage += strLeft1 + "\r\n--------------------";
                     }
                     if (strLeft2 != null && strLeft2 != "")
                     {
-                        MsgMessage += new Message(strLeft2 + "\r\n--------------------");
+                        MsgMessage += strLeft2 + "\r\n--------------------";
                     }
                     if (strLeft3 != null && strLeft3 != "")
                     {
-                        MsgMessage += new Message(strLeft3 + "\r\n--------------------");
+                        MsgMessage += strLeft3 + "\r\n--------------------";
                     }
-                    MsgMessage += new Message("\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀，" + intCountExLeft.ToString() + "补时刀");
+                    MsgMessage += "\r\n合计已出" + intCountUsed.ToString() + "刀\r\n合计剩余" + intCountLeft.ToString() + "刀，" + intCountExLeft.ToString() + "补时刀";
                     if (strErr != null && strErr != "")
                     {
-                        MsgMessage += new Message("\r\n--------------------" + strErr);
+                        MsgMessage += "\r\n--------------------" + strErr;
                     }
                 }
                 else
                 {
-                    MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += "与数据库失去连接，查询失败。\r\n";
                 }
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += "与数据库失去连接，查询失败。\r\n";
             }
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+            ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
         }
     }
 }

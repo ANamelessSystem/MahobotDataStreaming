@@ -4,8 +4,8 @@ using System.Text;
 using System.Data;
 using Marchen.DAL;
 using Marchen.Model;
-using Message = Sisters.WudiLib.SendingMessage;
-using Sisters.WudiLib.Responses;
+using Mirai_CSharp;
+using Mirai_CSharp.Models;
 
 namespace Marchen.BLL
 {
@@ -18,25 +18,26 @@ namespace Marchen.BLL
         /// <param name="strUserID"></param>
         public static void QueueAdd(string strGrpID, string strUserID, string strCmdContext)
         {
+            IMessageBase[] chain;
             int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
             {
-                MsgMessage += new Message("尚未报名，无法加入队列。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "尚未报名，无法加入队列。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             else if (intMemberStatus == -1)
             {
-                MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "与数据库失去连接，查询名单失败。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             int intSosFlag = 0;
@@ -52,20 +53,20 @@ namespace Marchen.BLL
             {
                 if (intSosFlag == 0)
                 {
-                    MsgMessage += new Message("已加入队列，类型：通常\r\n--------------------\r\n");
+                    MsgMessage += "已加入队列，类型：通常\r\n--------------------\r\n";
                 }
                 else
                 {
-                    MsgMessage += new Message("已加入队列，类型：补时\r\n--------------------\r\n");
+                    MsgMessage += "已加入队列，类型：补时\r\n--------------------\r\n";
                 }
                 QueueShow(strGrpID, strUserID);
             }
             else
             {
                 Console.WriteLine("与数据库失去连接，加入队列失败。\r\n");
-                MsgMessage += new Message("与数据库失去连接，加入队列失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "与数据库失去连接，加入队列失败。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
             }
         }
 
@@ -77,6 +78,7 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void QueueShow(string strGrpID, string strUserID)
         {
+            IMessageBase[] chain;
             HpShowAndSubsCheck(strGrpID, strUserID);
             if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
             {
@@ -85,7 +87,7 @@ namespace Marchen.BLL
                     string strList_normal = "";
                     string strList_sos = "";
                     string strList_ext = "";
-                    string strOutput = "";
+                    string strOutput;
                     for (int i = 0; i < dtQueue.Rows.Count; i++)
                     {
                         if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
@@ -103,29 +105,34 @@ namespace Marchen.BLL
                     }
                     if (strList_sos.Length != 0)
                     {
-                        strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
+                        if (strList_ext.Length != 0 || strList_normal.Length != 0)
+                        {
+                            strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
+                        }
+                        else
+                        {
+                            strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n队列中无人\r\n";
+                        }
                     }
                     else
                     {
                         strOutput = "目前队列：\r\n" + strList_ext + strList_normal;
                     }
-                    MsgMessage += new Message();
-                    MsgMessage += new Message(strOutput);
+                    MsgMessage += strOutput;
                     Console.WriteLine(strOutput);
                 }
                 else
                 {
                     Console.WriteLine("队列中无人");
-                    MsgMessage += new Message("目前队列中无人。\r\n");
+                    MsgMessage += "目前队列中无人。\r\n";
                 }
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += "与数据库失去连接，查询队列失败。\r\n";
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+            ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
         }
 
         /// <summary>
@@ -136,32 +143,33 @@ namespace Marchen.BLL
         /// <param name="intType">0：直接收到C3命令；1：来自其他方法的调用</param>
         public static void QueueQuit(string strGrpID, string strUserID, int intType)
         {
+            IMessageBase[] chain;
             if (QueueDAL.QuitQueue(strGrpID, strUserID, out int deletedCount))
             {
                 if (deletedCount > 0)
                 {
                     Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀移出队列。");
-                    MsgMessage += new Message("已将较早一次队列记录退出。\r\n--------------------\r\n");
+                    MsgMessage += "已将较早一次队列记录退出。\r\n--------------------\r\n";
                 }
                 else
                 {
                     Console.WriteLine("群：" + strGrpID + "，" + strUserID + "移出队列失败：未找到记录。");
                     if (intType == 0)
                     {
-                        MsgMessage += new Message("未找到队列记录。\r\n--------------------\r\n");
+                        MsgMessage += "未找到队列记录。\r\n--------------------\r\n";
                     }
                     if (intType == 1)
                     {
-                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
+                        MsgMessage += "未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n";
                     }
                 }
                 QueueShow(strGrpID, strUserID);
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，退出队列失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "与数据库失去连接，退出队列失败。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
             }
         }
 
@@ -171,9 +179,10 @@ namespace Marchen.BLL
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
         /// <param name="strUserGrpCard"></param>
-        public static void QueueClear(string strGrpID, string strUserID, GroupMemberInfo memberInfo)
+        public static void QueueClear(string strGrpID, string strUserID, GroupPermission mbrAuth)
         {
-            if (memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
+            IMessageBase[] chain;
+            if (mbrAuth == GroupPermission.Owner || mbrAuth == GroupPermission.Administrator)
             {
                 if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue_old))
                 {
@@ -181,38 +190,40 @@ namespace Marchen.BLL
                     {
                         if (QueueDAL.ClearQueue(strGrpID, out int deletedCount))
                         {
-                            MsgMessage += new Message("已清空队列。\r\n--------------------\r\n");
+                            MsgMessage += "已清空队列。\r\n--------------------\r\n";
                             Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
-                            MsgMessage += new Message("由于队列被清空，请以下成员重新排队：");
-                            for (int i = 0; i < dtQueue_old.Rows.Count; i++)
-                            {
-                                string strUID = dtQueue_old.Rows[i]["id"].ToString();
-                                MsgMessage += new Message("\r\nID：" + strUID + "， ") + Message.At(long.Parse(strUID));
-                            }
+                            //MsgMessage += "由于队列被清空，请以下成员重新排队：";
+                            //for (int i = 0; i < dtQueue_old.Rows.Count; i++)
+                            //{
+                            //    string strUID = dtQueue_old.Rows[i]["id"].ToString();
+                            //    //MsgMessage += new Message("\r\nID：" + strUID + "， ") + Message.At(long.Parse(strUID));
+                            //    ////pending at function
+                            //}
                         }
                         else
                         {
                             Console.WriteLine("与数据库失去连接，清空队列失败。");
-                            MsgMessage += new Message("与数据库失去连接，清空队列失败。\r\n");
+                            MsgMessage += "与数据库失去连接，清空队列失败。\r\n";
                         }
                     }
                     else
                     {
                         Console.WriteLine("执行清空队列指令失败，队列中无人。");
-                        MsgMessage += new Message("队列中无人，不需要清空。\r\n");
+                        MsgMessage += "队列中无人，不需要清空。\r\n";
                     }
                 }
                 else
                 {
-                    MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
+                    MsgMessage += "与数据库失去连接，查询队列失败。\r\n";
                 }
             }
             else
             {
                 Console.WriteLine("执行清空队列指令失败，由权限不足的人发起");
-                MsgMessage += new Message("拒绝：仅有管理员或群主可执行队列清空指令。\r\n");
+                MsgMessage += "拒绝：仅有管理员或群主可执行队列清空指令。\r\n";
             }
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+            ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
         }
 
         /// <summary>
@@ -222,18 +233,19 @@ namespace Marchen.BLL
         /// <param name="strUserID">QQ号</param>
         public static void QueueSos(string strGrpID, string strUserID,string strCmdContext)
         {
+            IMessageBase[] chain;
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "输入【@MahoBot help】获取帮助。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (InputVariables.IntBossCode == -1)
             {
-                MsgMessage += new Message("未能找到BOSS编号。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "未能找到BOSS编号。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (InputVariables.IntRound == -1)
@@ -252,20 +264,20 @@ namespace Marchen.BLL
                 if (updCount > 0)
                 {
                     Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀置为等待救援状态。（B" + InputVariables.IntBossCode + "，" + InputVariables.IntRound + "周目）");
-                    MsgMessage += new Message("已将较早一次队列记录置为等待救援状态。\r\n--------------------\r\n");
+                    MsgMessage += "已将较早一次队列记录置为等待救援状态。\r\n--------------------\r\n";
                 }
                 else
                 {
                     Console.WriteLine("群：" + strGrpID + "，" + strUserID + "修改队列状态失败：未找到记录。");
-                    MsgMessage += new Message("未找到队列记录，请先进入队列再改为等待救援状态。\r\n--------------------\r\n");
+                    MsgMessage += "未找到队列记录，请先进入队列再改为等待救援状态。\r\n--------------------\r\n";
                 }
                 QueueShow(strGrpID, strUserID);
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，修改队列状态失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "与数据库失去连接，修改队列状态失败。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
             }
         }
 
@@ -371,6 +383,7 @@ namespace Marchen.BLL
         /// <param name="strGrpID">群号</param>
         public static void HpShowAndSubsCheck(string strGrpID,string strInputUserID = "0")
         {
+            IMessageBase[] chain;
             if (Format_Progress(strGrpID, out int _round, out int _bc, out int _hp, out int _ratio))
             {
                 string strOutput;
@@ -384,10 +397,10 @@ namespace Marchen.BLL
                 }
                 else
                 {
-                    MsgMessage += new Message("获取进度时发生预想外的错误，已关闭血量显示。\r\n");
+                    MsgMessage += "获取进度时发生预想外的错误，已关闭血量显示。\r\n";
                     return;
                 }
-                MsgMessage += new Message(strOutput + "\r\n--------------------\r\n");
+                MsgMessage += strOutput + "\r\n--------------------\r\n";
             }
             else
             {
@@ -419,7 +432,9 @@ namespace Marchen.BLL
                     for (int i = 0; i < dtSubsMembers.Rows.Count; i++)
                     {
                         long lUserID = long.Parse(dtSubsMembers.Rows[i]["USERID"].ToString());
-                        ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, strRemindContext);
+                        //ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, strRemindContext);
+                        chain = new IMessageBase[] { new PlainMessage(strRemindContext) };
+                        ApiProperties.session.SendFriendMessageAsync(lUserID, chain).Wait();
                         Console.WriteLine("已私聊通知" + lUserID.ToString() + "(" + strGrpID + ")");
                         SubscribeDAL.UpdateRemindFlag(strGrpID, lUserID.ToString(), _round, _bc, intProgType);
                         Console.WriteLine("已更新通知状态" + lUserID.ToString() + "(" + strGrpID + ")");
@@ -437,21 +452,25 @@ namespace Marchen.BLL
                 {
                     if (!(dtSosList.Rows[0][0] is DBNull))
                     {
-                        MsgMessage += new Message("下树提醒：");
+                        //MsgMessage += "下树提醒：";
                         for (int i = 0; i < dtSosList.Rows.Count; i++)
                         {
-                            //现在引用的类库（WUDILIB）在同一条信息at了多次同一个人时，显示效果会劣化，故在具备输入UID时避开第二次以上at该UID的情况发生
                             if (dtSosList.Rows[i]["userid"].ToString() != strInputUserID)
                             {
-                                if (i > 0 && i < dtSosList.Rows.Count)
-                                {
-                                    MsgMessage += new Message("、");
-                                }
+                                //if (i > 0 && i < dtSosList.Rows.Count)
+                                //{
+                                //    MsgMessage += "、";
+                                //}
                                 string strUID = dtSosList.Rows[i]["userid"].ToString();
-                                MsgMessage += Message.At(long.Parse(strUID));
+                                //MsgMessage += Message.At(long.Parse(strUID));
+                                ////pending at function
+                                ////TRY IT OUT
+                                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUID), "") };
+                                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
+                                MsgMessage = "";
                             }
                         }
-                        MsgMessage += new Message("\r\n--------------------\r\n");
+                        MsgMessage += "\r\n--------------------\r\n";
                     }
                 }
             }
@@ -460,5 +479,6 @@ namespace Marchen.BLL
                 Console.WriteLine("下树查询失败（数据库错误）");
             }
         }
+        protected DataTable dtSosFinishList;
     }
 }

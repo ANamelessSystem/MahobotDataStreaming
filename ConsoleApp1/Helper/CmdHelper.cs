@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Marchen.Model;
-using Message = Sisters.WudiLib.SendingMessage;
 using System.Text.RegularExpressions;
 using Marchen.DAL;
 using System.Data;
@@ -124,7 +123,7 @@ namespace Marchen.BLL
                     if (!int.TryParse(e.Replace("周目", ""), out int intOutRound))
                     {
                         Console.WriteLine(DateTime.Now.ToString() + "无法识别周目数，元素为：" + e.ToString());
-                        MsgMessage += new Message("无法识别周目数，请确保填入的周目数为数字。\r\n");
+                        MsgMessage += "无法识别周目数，请确保填入的周目数为数字。\r\n";
                         isCorrect = false;
                     }
                     else
@@ -132,13 +131,13 @@ namespace Marchen.BLL
                         if (intOutRound > ValueLimits.RoundLimitMax)
                         {
                             Console.WriteLine(DateTime.Now.ToString() + "周目数过高，输入字串为：" + e.ToString() + "，上限值为：" + ValueLimits.RoundLimitMax.ToString());
-                            MsgMessage += new Message("所填入的周目数(" + intOutRound.ToString() + ")高于目前设定的上限值（" + ValueLimits.RoundLimitMax.ToString() + "）。\r\n");
+                            MsgMessage += "所填入的周目数(" + intOutRound.ToString() + ")高于目前设定的上限值（" + ValueLimits.RoundLimitMax.ToString() + "）。\r\n";
                             isCorrect = false;
                         }
                         else if (intOutRound < 1)
                         {
                             Console.WriteLine(DateTime.Now.ToString() + "周目数过低，输入字串为：" + e.ToString());
-                            MsgMessage += new Message("所填入的周目数（" + intOutRound.ToString() + "）低于有效值（1）。\r\n");
+                            MsgMessage += "所填入的周目数（" + intOutRound.ToString() + "）低于有效值（1）。\r\n";
                             isCorrect = false;
                         }
                         else
@@ -152,7 +151,7 @@ namespace Marchen.BLL
                     if (!int.TryParse(e.ToLower().Replace("r", ""), out int intOutRound))
                     {
                         Console.WriteLine(DateTime.Now.ToString() + "无法识别周目数，元素为：" + e.ToString());
-                        MsgMessage += new Message("无法识别周目数，请确保填入的周目数为数字。\r\n");
+                        MsgMessage += "无法识别周目数，请确保填入的周目数为数字。\r\n";
                         isCorrect = false;
                     }
                     else
@@ -160,13 +159,13 @@ namespace Marchen.BLL
                         if (intOutRound > ValueLimits.RoundLimitMax)
                         {
                             Console.WriteLine(DateTime.Now.ToString() + "周目数过高，输入字串为：" + e.ToString() + "，上限值为：" + ValueLimits.RoundLimitMax.ToString());
-                            MsgMessage += new Message("所填入的周目数(" + intOutRound.ToString() + ")高于目前设定的上限值（" + ValueLimits.RoundLimitMax.ToString() + "）。\r\n");
+                            MsgMessage += "所填入的周目数(" + intOutRound.ToString() + ")高于目前设定的上限值（" + ValueLimits.RoundLimitMax.ToString() + "）。\r\n";
                             isCorrect = false;
                         }
                         else if (intOutRound < 1)
                         {
                             Console.WriteLine(DateTime.Now.ToString() + "周目数过低，输入字串为：" + e.ToString());
-                            MsgMessage += new Message("所填入的周目数（" + intOutRound.ToString() + "）低于有效值（1）。\r\n");
+                            MsgMessage += "所填入的周目数（" + intOutRound.ToString() + "）低于有效值（1）。\r\n";
                             isCorrect = false;
                         }
                         else
@@ -180,7 +179,7 @@ namespace Marchen.BLL
                     if (!int.TryParse(e.ToLower().Replace("e", ""), out int intOutEID))
                     {
                         Console.WriteLine(DateTime.Now.ToString() + "无法识别档案号，元素为：" + e.ToString());
-                        MsgMessage += new Message("无法识别档案号，请确保填入的档案号为数字。\r\n");
+                        MsgMessage += "无法识别档案号，请确保填入的档案号为数字。\r\n";
                         isCorrect = false;
                     }
                     else
@@ -188,7 +187,7 @@ namespace Marchen.BLL
                         if (intOutEID < 1)
                         {
                             Console.WriteLine(DateTime.Now.ToString() + "无法识别档案号，元素为：" + e.ToString());
-                            MsgMessage += new Message("所填入的档案号（" + intOutEID + "）低于有效值（1）。\r\n");
+                            MsgMessage += "所填入的档案号（" + intOutEID + "）低于有效值（1）。\r\n";
                             isCorrect = false;
                         }
                         else
@@ -202,7 +201,7 @@ namespace Marchen.BLL
                     if (!double.TryParse(e.ToLower().Replace("u", ""), out double douOutUID))
                     {
                         Console.WriteLine(DateTime.Now.ToString() + "无法识别QQ号，元素为：" + e.ToString());
-                        MsgMessage += new Message("无法识别QQ号，请确保填入的QQ号为数字。\r\n");
+                        MsgMessage += "无法识别QQ号，请确保填入的QQ号为数字。\r\n";
                         isCorrect = false;
                     }
                     else
@@ -215,7 +214,7 @@ namespace Marchen.BLL
                     if (!double.TryParse(e.Substring(e.IndexOf("=") + 1, e.IndexOf("]") - (e.IndexOf("=") + 1)), out double douOutUID))
                     {
                         Console.WriteLine(DateTime.Now.ToString() + "无法识别QQ号，元素为：" + e.ToString());
-                        MsgMessage += new Message("无法识别QQ号，请确保填入的QQ号为数字。\r\n");
+                        MsgMessage += "无法识别QQ号，请确保填入的QQ号为数字。\r\n";
                         isCorrect = false;
                     }
                     else
@@ -228,7 +227,7 @@ namespace Marchen.BLL
                     if (!int.TryParse(e.ToLower().Replace("b", ""), out int intOutBC))
                     {
                         Console.WriteLine(DateTime.Now.ToString() + "无法识别BOSS编号，元素为：" + e.ToString());
-                        MsgMessage += new Message("无法识别BOSS，请确保填入的BOSS编号为数字。\r\n");
+                        MsgMessage += "无法识别BOSS，请确保填入的BOSS编号为数字。\r\n";
                         isCorrect = false;
                     }
                     else
@@ -236,13 +235,13 @@ namespace Marchen.BLL
                         if (intOutBC > ValueLimits.BossLimitMax)
                         {
                             Console.WriteLine(DateTime.Now.ToString() + "BOSS编号超限，输入字串为：" + e.ToString() + "，上限值为：" + ValueLimits.BossLimitMax.ToString());
-                            MsgMessage += new Message("所填入的BOSS编号(" + intOutBC.ToString() + ")高于目前设定的上限值（" + ValueLimits.BossLimitMax.ToString() + "）。\r\n");
+                            MsgMessage += "所填入的BOSS编号(" + intOutBC.ToString() + ")高于目前设定的上限值（" + ValueLimits.BossLimitMax.ToString() + "）。\r\n";
                             isCorrect = false;
                         }
                         else if (intOutBC < 1)
                         {
                             Console.WriteLine(DateTime.Now.ToString() + "周目数过低，输入字串为：" + e.ToString());
-                            MsgMessage += new Message("所填入的周目数（" + intOutBC.ToString() + "）低于有效值（1）。\r\n");
+                            MsgMessage += "所填入的周目数（" + intOutBC.ToString() + "）低于有效值（1）。\r\n";
                             isCorrect = false;
                         }
                         else
@@ -324,14 +323,14 @@ namespace Marchen.BLL
             if (!rgxPattern.IsMatch(e.ToString()))
             {
                 Console.WriteLine("无法识别伤害，输入值为：" + e);
-                MsgMessage += new Message("无法识别伤害，请检查输入的伤害值(" + e + ")。\r\n");
+                MsgMessage += "无法识别伤害，请检查输入的伤害值(" + e + ")。\r\n";
                 InputVariables.IntDMG = -1;
                 return false;
             }
             else if (!decimal.TryParse(Regex.Replace(e, @"[^\d.\d]", ""), out decimal dclOutDamage))
             {
                 Console.WriteLine("无法识别伤害，输入值为：" + e);
-                MsgMessage += new Message("无法识别伤害，请检查输入的伤害值(" + e + ")。\r\n");
+                MsgMessage += "无法识别伤害，请检查输入的伤害值(" + e + ")。\r\n";
                 InputVariables.IntDMG = -1;
                 return false;
             }
@@ -340,7 +339,7 @@ namespace Marchen.BLL
                 if (!int.TryParse(decimal.Round(dclOutDamage * intMultiplier, 0).ToString(), out int intOutDamage))
                 {
                     Console.WriteLine("无法识别伤害，输入值为：" + e);
-                    MsgMessage += new Message("无法识别伤害，请检查输入的伤害值(" + dclOutDamage.ToString() + ")。\r\n");
+                    MsgMessage += "无法识别伤害，请检查输入的伤害值(" + dclOutDamage.ToString() + ")。\r\n";
                     InputVariables.IntDMG = -1;
                     return false;
                 }
@@ -349,14 +348,14 @@ namespace Marchen.BLL
                     if (intOutDamage > ValueLimits.DamageLimitMax)
                     {
                         Console.WriteLine("伤害值超出可信范围，输入字串为：" + e + "，上限值为：" + ValueLimits.DamageLimitMax.ToString());
-                        MsgMessage += new Message("所填入的伤害值(" + intOutDamage.ToString() + ")高于目前设定的上限值（" + ValueLimits.DamageLimitMax.ToString() + "）。\r\n");
+                        MsgMessage += "所填入的伤害值(" + intOutDamage.ToString() + ")高于目前设定的上限值（" + ValueLimits.DamageLimitMax.ToString() + "）。\r\n";
                         InputVariables.IntDMG = -1;
                         return false;
                     }
                     else if (intOutDamage < 1)
                     {
                         Console.WriteLine("伤害值过低，输入字串为：" + e);
-                        MsgMessage += new Message("所填入的伤害值（" + intOutDamage.ToString() + "）低于有效值（1），如为掉线请使用掉线指令记录。\r\n");
+                        MsgMessage += "所填入的伤害值（" + intOutDamage.ToString() + "）低于有效值（1），如为掉线请使用掉线指令记录。\r\n";
                         InputVariables.IntDMG = -1;
                         return false;
                     }

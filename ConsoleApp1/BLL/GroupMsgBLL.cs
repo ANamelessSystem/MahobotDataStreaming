@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Data;
 using Marchen.Model;
-using Message = Sisters.WudiLib.SendingMessage;
-using MessageContext = Sisters.WudiLib.Posts.Message;
 using System.Text.RegularExpressions;
 using Marchen.DAL;
-using Sisters.WudiLib.Responses;
+using Mirai_CSharp.Models;
+using System.Threading.Tasks;
+using Mirai_CSharp;
 
 namespace Marchen.BLL
 {
@@ -22,29 +22,20 @@ namespace Marchen.BLL
                     int intGrpType = int.Parse(dtVfyResult.Rows[0]["ORG_TYPE"].ToString());
                     if (intGrpStat != 1)
                     {
-                        MsgMessage += new Message("本群已关闭bot功能，请联系bot维护团队。");
-                        Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
-                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                         bResullt = false;
                     }
                     if (intGrpType != 0)
                     {
-                        //非公主连接，等待下一个程序响应
-                        bResullt = false;
+                        bResullt = false;//非公主连接，等待下一个程序响应
                     }
                 }
                 else
                 {
-                    MsgMessage += new Message("本群激活状态有误，请联系bot维护团队。");
-                    Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     bResullt = false;
                 }
             }
             else
             {
-                MsgMessage += new Message("验证时连接数据库失败，请联系bot维护团队。");
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 bResullt = false;
             }
             return bResullt;
@@ -52,38 +43,33 @@ namespace Marchen.BLL
         /// <summary>
         /// 消息
         /// </summary>
-        protected static Message MsgMessage;
+        protected static string MsgMessage;
+        
 
         /// <summary>
         /// 解析收到的来自群的内容
         /// </summary>
         /// <param name="receivedMessage">收到的消息内容</param>
         /// <param name="memberInfo">发出此消息的用户信息</param>
-        public static void GrpMsgReco(MessageContext receivedMessage, GroupMemberInfo memberInfo)
+        public static async Task<bool> GrpMsgReco(GroupPermission mbrAuth, string strUserGrpCard, string strGrpID, string strUserID, string strMsgInput)
         {
-            MsgMessage = new Message("");
-            string strRawcontext = receivedMessage.RawMessage.ToString().Trim();
+            MsgMessage = "";
+            string strRawcontext = strMsgInput.Trim();
             string cmdAtMeAlone = "[CQ:at,qq=" + SelfProperties.SelfID + "]";
-            string strGrpID = receivedMessage.GetType().GetProperty("GroupId").GetValue(receivedMessage, null).ToString();
             if (strRawcontext.Contains(cmdAtMeAlone))
             {
-                var message = new Message("");
                 if (!GroupVerification(strGrpID))
                 {
-                    return;
+                    MsgMessage += "管理者未在本群开放功能，请联系维护团队。";
+                    IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                    await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
+                    return false;
                 }
                 Console.WriteLine("接收到一条来自群：" + strGrpID + "的Notice，开始解析内容");
                 //分离命令头和命令体，命令头(strCmdHead)：功能识别区，命令体(strCmdContext)：数据包含区。
                 string strCmdHead = strRawcontext.Replace(cmdAtMeAlone, "").Trim().Split(' ')[0];
                 string strCmdContext = strRawcontext.Replace(cmdAtMeAlone, "").Replace(strCmdHead, "").Trim();
                 string strSpecCmdText = strRawcontext.Replace(cmdAtMeAlone, "").Trim();
-                string strUserID = receivedMessage.UserId.ToString();
-                string strUserGrpCard = memberInfo.InGroupName.ToString().Trim();
-                string strUserNickName = memberInfo.Nickname.ToString().Trim();
-                if (strUserGrpCard == null || strUserGrpCard == "")
-                {
-                    strUserGrpCard = strUserNickName;
-                }
                 string cmdType = "";
                 if (strCmdHead.ToLower() == "c1" || strCmdHead == "排队")
                 {
@@ -210,7 +196,7 @@ namespace Marchen.BLL
                         break;
                     case "clear":
                         {
-                            CaseQueue.QueueClear(strGrpID, strUserID, memberInfo);
+                            CaseQueue.QueueClear(strGrpID, strUserID, mbrAuth);
                         }
                         break;
                     case "debrief":
@@ -218,25 +204,27 @@ namespace Marchen.BLL
                             if (!CmdHelper.LoadValueLimits())
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
-                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
+                                MsgMessage += "无法读取上限值设置，请联系维护人员。";
+                                IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                                await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
+                                return false;
                             }
                             CaseDamage.DmgRecAdd(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     case "help":
                         {
-                            message += new Message("加入队列：【@MahoBot c1】可进入队列\r\n");
-                            message += new Message("查询队列：【@MahoBot c2】可查询当前在队列中的人\r\n");
-                            message += new Message("退出队列：【@MahoBot c3】可离开队列\r\n");
-                            message += new Message("伤害记录：【@MahoBot 伤害 B(n) （伤害值）】（如@MahoBot 伤害 B2 1374200）\r\n 伤害值可如137w等模糊格式\r\n");
-                            message += new Message("尾刀的伤害记录：【@MahoBot 伤害 尾刀 B(n) （伤害值）】\r\n");
-                            message += new Message("掉线记录：【@MahoBot 伤害 掉线】可记录一次掉线\r\n");
-                            message += new Message("其他功能及用例请参考命令表\r\n https://docs.qq.com/sheet/DRGthS3JpS1ZibHlL?opendocxfrom=admin&preview_token=&coord=F27A0C0&tab=BB08J2 \r\n");
-                            message += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
+                            MsgMessage +=
+                                "加入队列：【@MahoBot c1】可进入队列\r\n" +
+                                "查询队列：【@MahoBot c2】可查询当前在队列中的人\r\n" +
+                                "退出队列：【@MahoBot c3】可离开队列\r\n" +
+                                "伤害记录：【@MahoBot 伤害 B(n) （伤害值）】（如@MahoBot 伤害 B2 1374200）\r\n 伤害值可如137w等模糊格式\r\n" +
+                                "尾刀的伤害记录：【@MahoBot 伤害 尾刀 B(n) （伤害值）】\r\n" +
+                                "掉线记录：【@MahoBot 伤害 掉线】可记录一次掉线\r\n" +
+                                "其他功能及用例请参考命令表\r\n https://docs.qq.com/sheet/DRGthS3JpS1ZibHlL?opendocxfrom=admin&preview_token=&coord=F27A0C0&tab=BB08J2 \r\n" +
+                                "加入队列：【@MahoBot c1】可进入队列\r\n";
+                            IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                            await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
                         }
                         break;
                     case "dmgmod":
@@ -244,12 +232,12 @@ namespace Marchen.BLL
                             if (!CmdHelper.LoadValueLimits())
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
-                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
+                                MsgMessage += "无法读取上限值设置，请联系维护人员。";
+                                IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                                await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
+                                return false;
                             }
-                            CaseDamage.DmgModify(strGrpID, strUserID, strCmdContext, memberInfo);
+                            CaseDamage.DmgModify(strGrpID, strUserID, strCmdContext, mbrAuth);
                         }
                         break;
                     case "dmgshow":
@@ -257,10 +245,10 @@ namespace Marchen.BLL
                             if (!CmdHelper.LoadValueLimits())
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
-                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
+                                MsgMessage += "无法读取上限值设置，请联系维护人员。";
+                                IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                                await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
+                                return false;
                             }
                             CaseDamage.RecordQuery(strGrpID, strUserID, strCmdContext);
                         }
@@ -272,7 +260,9 @@ namespace Marchen.BLL
                         break;
                     case "remainnotice":
                         {
-                            CaseRemind.NoticeRemainStrikers(strGrpID, strUserID, memberInfo);
+                            //CaseRemind.NoticeRemainStrikers(strGrpID, strUserID, mbrAuth);
+                            IMessageBase[] chain  = new IMessageBase[] { new PlainMessage("本功能暂时关闭中。") };
+                            ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                         }
                         break;
                     case "namelistalt":
@@ -287,7 +277,7 @@ namespace Marchen.BLL
                         break;
                     case "namelistdel":
                         {
-                            CaseNameList.NameListDelete(strGrpID, strUserID, strCmdContext, memberInfo);
+                            CaseNameList.NameListDelete(strGrpID, strUserID, strCmdContext, mbrAuth);
                         }
                         break;
                     case "bosssubsadd":
@@ -295,10 +285,10 @@ namespace Marchen.BLL
                             if (!CmdHelper.LoadValueLimits())
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
-                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
+                                MsgMessage += "无法读取上限值设置，请联系维护人员。";
+                                IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                                await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
+                                return false;
                             }
                             CaseSubscribe.SubsAdd(strGrpID, strUserID, strCmdContext);
                         }
@@ -313,10 +303,10 @@ namespace Marchen.BLL
                             if (!CmdHelper.LoadValueLimits())
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
-                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
+                                MsgMessage += "无法读取上限值设置，请联系维护人员。";
+                                IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                                await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
+                                return false;
                             }
                             CaseSubscribe.SubsDel(strGrpID, strUserID, strCmdContext);
                         }
@@ -331,10 +321,10 @@ namespace Marchen.BLL
                             if (!CmdHelper.LoadValueLimits())
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
-                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
+                                MsgMessage += "无法读取上限值设置，请联系维护人员。";
+                                IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                                await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
+                                return false;
                             }
                             CaseQueue.QueueSos(strGrpID, strUserID, strCmdContext);
                         }
@@ -346,17 +336,22 @@ namespace Marchen.BLL
                     //    break;
                     case "namelistinit":
                         {
-                            CaseNameList.InitNameList(strGrpID, memberInfo);
+                            CaseNameList.InitNameList(strGrpID, mbrAuth);
                         }
                         break;
                     case "unknown":
                         {
-                            message += new Message("无法识别内容,输入【@MahoBot help】以查询命令表。\r\n");
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
-                            //RecordDAL.RecordUnknownContext(strGrpID, strUserID, cmdContext);
+                            MsgMessage += "无法识别内容,输入【@MahoBot help】以查询命令表。\r\n";
+                            IMessageBase[] chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                            await ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain);
                         }
                         break;
                 }
+                return false;
+            }
+            else
+            {
+                return false;
             }
         }
     }

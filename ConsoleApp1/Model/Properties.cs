@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Sisters.WudiLib;
+﻿using Mirai_CSharp;
 
 namespace Marchen.Model
 {
@@ -17,15 +14,12 @@ namespace Marchen.Model
         /// </summary>
         public static string HttpApiIP { get; set; }
 
-        ///// <summary>
-        ///// API实例
-        ///// </summary>
-        //public static HttpApiClient HttpApi { get; set; }
-
         /// <summary>
-        /// 内容转发地址，将收到的所有内容再次上报到此地址
+        /// AUTHKEY
         /// </summary>
         public static string HttpApiAuthKey { get; set; }
+
+        public static MiraiHttpSession session;
     }
 
     public static class SelfProperties

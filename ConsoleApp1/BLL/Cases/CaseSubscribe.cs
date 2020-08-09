@@ -4,8 +4,7 @@ using System.Text;
 using System.Data;
 using Marchen.DAL;
 using Marchen.Model;
-using Message = Sisters.WudiLib.SendingMessage;
-using Sisters.WudiLib.Responses;
+using Mirai_CSharp.Models;
 
 
 namespace Marchen.BLL
@@ -20,32 +19,33 @@ namespace Marchen.BLL
         /// <param name="strCmdContext">用户输入的命令内容</param>
         public static void SubsAdd(string strGrpID, string strUserID, string strCmdContext)
         {
+            IMessageBase[] chain;
             int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
             if (intMemberStatus == 0)
             {
-                MsgMessage += new Message("尚未报名，订阅BOSS失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "尚未报名，订阅BOSS失败。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             else if (intMemberStatus == -1)
             {
-                MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "与数据库失去连接，订阅BOSS失败。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (InputVariables.IntBossCode == -1)
             {
-                MsgMessage += new Message("未能找到BOSS编号，订阅BOSS失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "未能找到BOSS编号，订阅BOSS失败。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (InputVariables.IntEXT == -1)
@@ -66,16 +66,16 @@ namespace Marchen.BLL
                     {
                         if (intSubsType == 1)
                         {
-                            MsgMessage += new Message("已新增B" + InputVariables.IntBossCode + "的订阅，类型：补时。\r\n");
+                            MsgMessage += "已新增B" + InputVariables.IntBossCode + "的订阅，类型：补时。\r\n";
                         }
                         else
                         {
-                            MsgMessage += new Message("已新增B" + InputVariables.IntBossCode + "的订阅，类型：通常。\r\n");
+                            MsgMessage += "已新增B" + InputVariables.IntBossCode + "的订阅，类型：通常。\r\n";
                         }
                     }
                     else
                     {
-                        MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
+                        MsgMessage += "与数据库失去连接，订阅BOSS失败。\r\n";
                     }
                 }
                 else
@@ -84,25 +84,25 @@ namespace Marchen.BLL
                     {
                         if (intSubsType == 1)
                         {
-                            MsgMessage += new Message("已将B" + InputVariables.IntBossCode + "的订阅类型修改为：补时。\r\n");
+                            MsgMessage += "已将B" + InputVariables.IntBossCode + "的订阅类型修改为：补时。\r\n";
                         }
                         else
                         {
-                            MsgMessage += new Message("已将B" + InputVariables.IntBossCode + "的订阅类型修改为：通常。\r\n");
+                            MsgMessage += "已将B" + InputVariables.IntBossCode + "的订阅类型修改为：通常。\r\n";
                         }
                     }
                     else
                     {
-                        MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
+                        MsgMessage += "与数据库失去连接，订阅BOSS失败。\r\n";
                     }
                 }
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，订阅BOSS失败。\r\n");
+                MsgMessage += "与数据库失去连接，订阅BOSS失败。\r\n";
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+            ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
         }
 
         /// <summary>
@@ -112,11 +112,12 @@ namespace Marchen.BLL
         /// <param name="strUserID">QQ号</param>
         public static void SubsShow(string strGrpID, string strUserID, string strCmdContext)
         {
+            IMessageBase[] chain;
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 //MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (InputVariables.IntIsAllFlag == 0)
@@ -138,16 +139,16 @@ namespace Marchen.BLL
                     }
                     if (strOutput != "")
                     {
-                        MsgMessage += new Message("目前正在订阅的BOSS为：" + strOutput + "\r\n");
+                        MsgMessage += "目前正在订阅的BOSS为：" + strOutput + "\r\n";
                     }
                     else
                     {
-                        MsgMessage += new Message("尚无订阅记录\r\n");
+                        MsgMessage += "尚无订阅记录\r\n";
                     }
                 }
                 else
                 {
-                    MsgMessage += new Message("与数据库失去连接，查看已订阅BOSS失败。\r\n");
+                    MsgMessage += "与数据库失去连接，查看已订阅BOSS失败。\r\n";
                 }
             }
             else
@@ -218,23 +219,27 @@ namespace Marchen.BLL
                         strOutputB5 = "\r\n无";
                     }
                     //MsgMessage += new Message("B1订阅人数(" + intCountB1 + "人)：" + strOutputB1 + "\r\n---------------------\r\nB2订阅人数(" + intCountB2 + "人)：" + strOutputB2 + "\r\n---------------------\r\nB3订阅人数(" + intCountB3 + "人)：" + strOutputB3 + "\r\n---------------------\r\nB4订阅人数(" + intCountB4 + "人)：" + strOutputB4 + "\r\n---------------------\r\nB5订阅人数(" + intCountB5 + "人)：" + strOutputB5 + "\r\n");
-                    MsgMessage = new Message("B1订阅人数(" + intCountB1 + "人)：" + strOutputB1 + "\r\n---------------------");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    MsgMessage = new Message("B2订阅人数(" + intCountB2 + "人)：" + strOutputB2 + "\r\n---------------------");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    MsgMessage = new Message("B3订阅人数(" + intCountB3 + "人)：" + strOutputB3 + "\r\n---------------------");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    MsgMessage = new Message("B4订阅人数(" + intCountB4 + "人)：" + strOutputB4 + "\r\n---------------------");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    MsgMessage = new Message("B5订阅人数(" + intCountB5 + "人)：" + strOutputB5 + "\r\n---------------------\r\n");
+                    MsgMessage = "B1订阅人数(" + intCountB1 + "人)：" + strOutputB1 + "\r\n---------------------";
+                    chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                    ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
+                    MsgMessage = "B2订阅人数(" + intCountB2 + "人)：" + strOutputB2 + "\r\n---------------------";
+                    chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                    ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
+                    MsgMessage = "B3订阅人数(" + intCountB3 + "人)：" + strOutputB3 + "\r\n---------------------";
+                    chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                    ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
+                    MsgMessage = "B4订阅人数(" + intCountB4 + "人)：" + strOutputB4 + "\r\n---------------------";
+                    chain = new IMessageBase[] { new PlainMessage(MsgMessage) };
+                    ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
+                    MsgMessage = "B5订阅人数(" + intCountB5 + "人)：" + strOutputB5 + "\r\n---------------------\r\n";
                 }
                 else
                 {
-                    MsgMessage += new Message("与数据库失去连接，查看已订阅BOSS失败。\r\n");
+                    MsgMessage += "与数据库失去连接，查看已订阅BOSS失败。\r\n";
                 }
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+            ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
         }
 
 
@@ -246,37 +251,38 @@ namespace Marchen.BLL
         /// <param name="strCmdContext">用户输入的命令内容</param>
         public static void SubsDel(string strGrpID, string strUserID, string strCmdContext)
         {
+            IMessageBase[] chain;
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "输入【@MahoBot help】获取帮助。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (InputVariables.IntBossCode == -1)
             {
-                MsgMessage += new Message("未能找到BOSS编号。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += "未能找到BOSS编号。\r\n";
+                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
                 return;
             }
             if (SubscribeDAL.DelBossSubs(strGrpID, strUserID, InputVariables.IntBossCode, out int intDelCount))
             {
                 if (intDelCount > 0)
                 {
-                    MsgMessage += new Message("退订B"+ InputVariables.IntBossCode + "成功。\r\n");
+                    MsgMessage += "退订B"+ InputVariables.IntBossCode + "成功。\r\n";
                 }
                 else
                 {
-                    MsgMessage += new Message("尚未订阅该BOSS。\r\n");
+                    MsgMessage += "尚未订阅该BOSS。\r\n";
                 }
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，退订失败。\r\n");
+                MsgMessage += "与数据库失去连接，退订失败。\r\n";
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
+            ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
         }
 
         /// <summary>
@@ -291,12 +297,12 @@ namespace Marchen.BLL
             {
                 if (intDelCount > 0)
                 {
-                    MsgMessage += new Message("【已自动退订B" + intBossCode + "。】\r\n");
+                    MsgMessage += "【已自动退订B" + intBossCode + "。】\r\n";
                 }
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，退订失败。\r\n");
+                MsgMessage += "与数据库失去连接，退订失败。\r\n";
             }
         }
     }

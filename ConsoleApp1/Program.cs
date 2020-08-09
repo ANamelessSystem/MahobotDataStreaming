@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Mirai_CSharp;
 using Mirai_CSharp.Models;
+using Mirai_CSharp.Example;
 using Marchen.Model;
 using Marchen.BLL;
 
@@ -22,103 +23,29 @@ namespace Marchen.Garden
             DisbleQuickEditMode();
 
 
-
-
             if (!CfgLoader.LoadConfigFile())
             {
                 Console.WriteLine("请按任意键退出，并在编辑配置文件完成后重启。");
                 Console.ReadKey();
                 return;
             }
-
-
-            // 把你要连接到的 mirai-api-http 所需的主机名/IP, 端口 和 AuthKey 全部填好
-            MiraiHttpSessionOptions options = new MiraiHttpSessionOptions(ApiProperties.HttpApiIP, ApiProperties.HttpApiPort, ApiProperties.HttpApiAuthKey);
-            // session 使用 DisposeAsync 模式, 所以使用 await using 自动调用 DisposeAsync 方法。
-            // 你也可以不在这里 await using, 不过使用完 session 后请务必调用 DisposeAsync 方法
-            await using MiraiHttpSession session = new MiraiHttpSession();
-            // 使用上边提供的信息异步连接到 mirai-api-http
-            await session.ConnectAsync(options,long.Parse(SelfProperties.SelfID)); // 自己填机器人QQ号
-
-
-
-
-
-
-
-
-
-
-            ApiProperties.HttpApi = new HttpApiClient();
-            ApiProperties.HttpApi.ApiAddress = ApiProperties.HttpApiIP;
-            try
-            {
-                SelfProperties.SelfID = ApiProperties.HttpApi.GetLoginInfoAsync().Result.UserId.ToString();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                Console.WriteLine("获取自己的ID时出现错误，请确认酷Q的运行情况与HTTP API插件的安装。");
-                Console.WriteLine("点击任意键退出");
-                Console.ReadKey();
-                return;
-            }
-            ApiPostListener postListener = new ApiPostListener
-            {
-                ApiClient = ApiProperties.HttpApi,
-                PostAddress = ApiProperties.HttpApiPort,
-                ForwardTo = ApiProperties.HttpApiAuthKey
-            };
-            try
-            {
-                postListener.StartListen();
-            }
-            catch (System.Net.HttpListenerException hlex)
-            {
-                Console.WriteLine(hlex);
-                Console.WriteLine("无法打开端口，使用netsh命令添加监听地址为URL保留项后重启本程序");
-                Console.WriteLine("点击任意键退出");
-                Console.ReadKey();
-                return;
-            }
-            Console.WriteLine("监听启动成功");
-            
-            
-            ValueLimits.DamageLimitMax = 0;
-            ValueLimits.RoundLimitMax = 0;
             if (!CmdHelper.LoadValueLimits())
             {
                 Console.WriteLine("警告：无法读取上限值设置！");
             }
-            //Timer timer = new Timer();
-            //timer.Enabled = true;
-            //timer.Interval = 1800000;
-            //timer.Start();
-            //timer.Elapsed += new ElapsedEventHandler(Reminder);
-            postListener.MessageEvent += (api, message) =>
-            {
-                if (message.Endpoint is GroupEndpoint)
-                {
-                    //处理群消息
-                    GroupMemberInfo memberInfo = api.GetGroupMemberInfoAsync(long.Parse(message.GetType().GetProperty("GroupId").GetValue(message, null).ToString()), message.UserId).Result;
-                    GroupMsgBLL.GrpMsgReco(message, memberInfo);
-                }
-                else if (message.Endpoint is DiscussEndpoint)
-                {
-                    //处理讨论组消息
-                }
-                else if (message.Endpoint is PrivateEndpoint)
-                {
-                    //处理私聊消息
-                    //2019.05.15
-                    //PrivateMsgBLL.PriMsgReco(message);
-                }
-                else
-                {
-                    //其他
-                }
-            };
+            ValueLimits.DamageLimitMax = 0;
+            ValueLimits.RoundLimitMax = 0;
+
+            #region Mirai Listening Setup
+            MiraiHttpSessionOptions options = new MiraiHttpSessionOptions(ApiProperties.HttpApiIP, ApiProperties.HttpApiPort, ApiProperties.HttpApiAuthKey);
+            await using MiraiHttpSession session = new MiraiHttpSession();
+            ExamplePlugin plugin = new ExamplePlugin();
+            session.AddPlugin(plugin);
+            await session.ConnectAsync(options, long.Parse(SelfProperties.SelfID));
+            ApiProperties.session = session;
             Console.ReadKey();
+            #endregion
+
         }
 
         #region 关闭控制台 快速编辑模式、插入模式
