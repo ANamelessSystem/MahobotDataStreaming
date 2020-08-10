@@ -131,6 +131,39 @@ namespace Marchen.BLL
             {
                 MsgMessage += "与数据库失去连接，查询队列失败。\r\n";
             }
+            ////下树提醒
+            //if (QueueDAL.QuerySosList(strGrpID, _bc, _round, out DataTable dtSosList))
+            //{
+            //    if (dtSosList != null && dtSosList.Rows.Count > 0)
+            //    {
+            //        if (!(dtSosList.Rows[0][0] is DBNull))
+            //        {
+            //            //MsgMessage += "下树提醒：";
+            //            for (int i = 0; i < dtSosList.Rows.Count; i++)
+            //            {
+            //                if (dtSosList.Rows[i]["userid"].ToString() != strInputUserID)
+            //                {
+            //                    //if (i > 0 && i < dtSosList.Rows.Count)
+            //                    //{
+            //                    //    MsgMessage += "、";
+            //                    //}
+            //                    string strUID = dtSosList.Rows[i]["userid"].ToString();
+            //                    //MsgMessage += Message.At(long.Parse(strUID));
+            //                    ////pending at function
+            //                    ////TRY IT OUT
+            //                    //chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUID), "") };
+            //                    //ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
+            //                    //MsgMessage = "";
+            //                }
+            //            }
+            //            MsgMessage += "\r\n--------------------\r\n";
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    Console.WriteLine("下树查询失败（数据库错误）");
+            //}
             chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUserID), "") };
             ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
         }
@@ -445,39 +478,39 @@ namespace Marchen.BLL
             {
                 Console.WriteLine("提醒查询失败（数据库错误）");
             }
-            //下树提醒
-            if (QueueDAL.QuerySosList(strGrpID, _bc, _round, out DataTable dtSosList))
-            {
-                if (dtSosList != null && dtSosList.Rows.Count > 0)
-                {
-                    if (!(dtSosList.Rows[0][0] is DBNull))
-                    {
-                        //MsgMessage += "下树提醒：";
-                        for (int i = 0; i < dtSosList.Rows.Count; i++)
-                        {
-                            if (dtSosList.Rows[i]["userid"].ToString() != strInputUserID)
-                            {
-                                //if (i > 0 && i < dtSosList.Rows.Count)
-                                //{
-                                //    MsgMessage += "、";
-                                //}
-                                string strUID = dtSosList.Rows[i]["userid"].ToString();
-                                //MsgMessage += Message.At(long.Parse(strUID));
-                                ////pending at function
-                                ////TRY IT OUT
-                                chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUID), "") };
-                                ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
-                                MsgMessage = "";
-                            }
-                        }
-                        MsgMessage += "\r\n--------------------\r\n";
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("下树查询失败（数据库错误）");
-            }
+            ////下树提醒
+            //if (QueueDAL.QuerySosList(strGrpID, _bc, _round, out DataTable dtSosList))
+            //{
+            //    if (dtSosList != null && dtSosList.Rows.Count > 0)
+            //    {
+            //        if (!(dtSosList.Rows[0][0] is DBNull))
+            //        {
+            //            //MsgMessage += "下树提醒：";
+            //            for (int i = 0; i < dtSosList.Rows.Count; i++)
+            //            {
+            //                if (dtSosList.Rows[i]["userid"].ToString() != strInputUserID)
+            //                {
+            //                    //if (i > 0 && i < dtSosList.Rows.Count)
+            //                    //{
+            //                    //    MsgMessage += "、";
+            //                    //}
+            //                    string strUID = dtSosList.Rows[i]["userid"].ToString();
+            //                    //MsgMessage += Message.At(long.Parse(strUID));
+            //                    ////pending at function
+            //                    ////TRY IT OUT
+            //                    //chain = new IMessageBase[] { new PlainMessage(MsgMessage), new AtMessage(long.Parse(strUID), "") };
+            //                    //ApiProperties.session.SendGroupMessageAsync(long.Parse(strGrpID), chain).Wait();
+            //                    //MsgMessage = "";
+            //                }
+            //            }
+            //            MsgMessage += "\r\n--------------------\r\n";
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    Console.WriteLine("下树查询失败（数据库错误）");
+            //}
         }
         protected DataTable dtSosFinishList;
     }
