@@ -103,7 +103,14 @@ namespace Marchen.BLL
                     }
                     if (strList_sos.Length != 0)
                     {
-                        strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
+                        if (strList_ext != "" && strList_normal != "")
+                        {
+                            strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
+                        }
+                        else
+                        {
+                            strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列中无人。\r\n";
+                        }
                     }
                     else
                     {
@@ -366,7 +373,7 @@ namespace Marchen.BLL
 
 
         /// <summary>
-        /// 显示血量并检查是否有预定列表
+        /// 显示血量并检查是否有预定列表和下树提醒
         /// </summary>
         /// <param name="strGrpID">群号</param>
         public static void HpShowAndSubsCheck(string strGrpID,string strInputUserID = "0")
@@ -440,16 +447,11 @@ namespace Marchen.BLL
                         MsgMessage += new Message("下树提醒：");
                         for (int i = 0; i < dtSosList.Rows.Count; i++)
                         {
-                            //现在引用的类库（WUDILIB）在同一条信息at了多次同一个人时，显示效果会劣化，故在具备输入UID时避开第二次以上at该UID的情况发生
-                            if (dtSosList.Rows[i]["userid"].ToString() != strInputUserID)
+                            if (i > 0 && i < dtSosList.Rows.Count)
                             {
-                                if (i > 0 && i < dtSosList.Rows.Count)
-                                {
-                                    MsgMessage += new Message("、");
-                                }
-                                string strUID = dtSosList.Rows[i]["userid"].ToString();
-                                MsgMessage += Message.At(long.Parse(strUID));
+                                MsgMessage += new Message("、");
                             }
+                            MsgMessage += Message.At(long.Parse(dtSosList.Rows[i]["userid"].ToString()));
                         }
                         MsgMessage += new Message("\r\n--------------------\r\n");
                     }
