@@ -24,14 +24,14 @@ namespace Marchen.BLL
             if (intMemberStatus == 0)
             {
                 MsgMessage += new Message("尚未报名，无法上传伤害。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             else if (intMemberStatus == -1)
             {
                 MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -41,7 +41,7 @@ namespace Marchen.BLL
             //分拆命令
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -92,7 +92,7 @@ namespace Marchen.BLL
             {
                 //判断数据正误标记位
                 MsgMessage += new Message("伤害记录退回。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -105,7 +105,7 @@ namespace Marchen.BLL
             else
             {
                 MsgMessage += new Message("与数据库失去连接，查询进度失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -141,7 +141,7 @@ namespace Marchen.BLL
                         {
                             MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B" + _bc + "，可报B" + (_bc - 1) + "、B" + _bc + "或B" + (_bc + 1) + "。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
                         }
-                        MsgMessage += Message.At(long.Parse(strUserID));
+                        //MsgMessage += Message.At(long.Parse(strUserID));
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                         return;
                     }
@@ -204,7 +204,7 @@ namespace Marchen.BLL
             else
             {
                 MsgMessage += new Message("与数据库失去连接，伤害保存失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -228,14 +228,14 @@ namespace Marchen.BLL
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 //MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             if (InputVariables.IntEID == -1)
             {
                 MsgMessage += new Message("未识别出需要修改的档案号。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -245,7 +245,7 @@ namespace Marchen.BLL
                 {
                     Console.WriteLine("输入的档案号：" + InputVariables.IntEID + " 未能找到数据。");
                     MsgMessage += new Message("输入的档案号：" + InputVariables.IntEID + " 未能找到数据。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
+                    //MsgMessage += Message.At(long.Parse(strUserID));
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     return;
                 }
@@ -253,7 +253,7 @@ namespace Marchen.BLL
                 {
                     Console.WriteLine("输入的档案号：" + InputVariables.IntEID + " 返回非唯一结果。");
                     MsgMessage += new Message("输入的档案号：" + InputVariables.IntEID + " 返回非唯一结果，请联系维护团队。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
+                    //MsgMessage += Message.At(long.Parse(strUserID));
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     return;
                 }
@@ -305,7 +305,7 @@ namespace Marchen.BLL
                 else
                 {
                     MsgMessage += new Message("与数据库失去连接，修改失败。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
+                    //MsgMessage += Message.At(long.Parse(strUserID));
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     return;
                 }
@@ -314,7 +314,7 @@ namespace Marchen.BLL
             {
                 Console.WriteLine("只有本人或管理员以上可修改。修改者：" + strUserID + " 原记录：" + strOriUID + "EventID：" + InputVariables.IntEID.ToString());
                 MsgMessage += new Message("只有本人或管理员以上可修改。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -331,7 +331,7 @@ namespace Marchen.BLL
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -360,7 +360,7 @@ namespace Marchen.BLL
                         else
                         {
                             MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                            MsgMessage += Message.At(long.Parse(strUserID));
+                            //MsgMessage += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                             return;
                         }
@@ -388,14 +388,14 @@ namespace Marchen.BLL
                 if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
                 {
                     MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
+                    //MsgMessage += Message.At(long.Parse(strUserID));
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     return;
                 }
                 if (intHourSet < 0)
                 {
                     MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
+                    //MsgMessage += Message.At(long.Parse(strUserID));
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     return;
                 }
@@ -431,7 +431,7 @@ namespace Marchen.BLL
                                 else
                                 {
                                     MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                    MsgMessage += Message.At(long.Parse(strUserID));
+                                    //MsgMessage += Message.At(long.Parse(strUserID));
                                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                     return;
                                 }
@@ -470,7 +470,7 @@ namespace Marchen.BLL
                                 else
                                 {
                                     MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                    MsgMessage += Message.At(long.Parse(strUserID));
+                                    //MsgMessage += Message.At(long.Parse(strUserID));
                                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                     return;
                                 }
@@ -506,7 +506,7 @@ namespace Marchen.BLL
                                 else
                                 {
                                     MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                    MsgMessage += Message.At(long.Parse(strUserID));
+                                    //MsgMessage += Message.At(long.Parse(strUserID));
                                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                     return;
                                 }
@@ -541,7 +541,7 @@ namespace Marchen.BLL
                             else
                             {
                                 MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                MsgMessage += Message.At(long.Parse(strUserID));
+                                //MsgMessage += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
@@ -555,7 +555,7 @@ namespace Marchen.BLL
                             else
                             {
                                 MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                MsgMessage += Message.At(long.Parse(strUserID));
+                                //MsgMessage += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
@@ -572,7 +572,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("不支持的查询模式。仅支持以下四种条件查询：\r\n1.单独按档案号查询\r\n2.单独按QQ号查询\r\n3.单独按周目查询\r\n4.同时按BOSS与周目查询。\r\n");
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
+            //MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             return;
         }

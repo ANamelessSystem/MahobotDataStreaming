@@ -219,7 +219,7 @@ namespace Marchen.BLL
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
                                 MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
+                                //MsgMessage += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
@@ -235,7 +235,7 @@ namespace Marchen.BLL
                             message += new Message("尾刀的伤害记录：【@MahoBot 伤害 尾刀 B(n) （伤害值）】\r\n");
                             message += new Message("掉线记录：【@MahoBot 伤害 掉线】可记录一次掉线\r\n");
                             message += new Message("其他功能及用例请参考命令表\r\n https://docs.qq.com/sheet/DRGthS3JpS1ZibHlL?opendocxfrom=admin&preview_token=&coord=F27A0C0&tab=BB08J2 \r\n");
-                            message += Message.At(long.Parse(strUserID));
+                            //message += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }
                         break;
@@ -245,7 +245,7 @@ namespace Marchen.BLL
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
                                 MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
+                                //MsgMessage += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
@@ -258,7 +258,7 @@ namespace Marchen.BLL
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
                                 MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
+                                //MsgMessage += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
@@ -296,7 +296,7 @@ namespace Marchen.BLL
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
                                 MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
+                                //MsgMessage += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
@@ -314,7 +314,7 @@ namespace Marchen.BLL
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
                                 MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
+                                //MsgMessage += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
@@ -332,7 +332,7 @@ namespace Marchen.BLL
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
                                 MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
-                                MsgMessage += Message.At(long.Parse(strUserID));
+                                //MsgMessage += Message.At(long.Parse(strUserID));
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }

@@ -22,20 +22,20 @@ namespace Marchen.BLL
             if (intMemberStatus == 0)
             {
                 MsgMessage += new Message("尚未报名，无法加入队列。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             else if (intMemberStatus == -1)
             {
                 MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -64,7 +64,7 @@ namespace Marchen.BLL
             {
                 Console.WriteLine("与数据库失去连接，加入队列失败。\r\n");
                 MsgMessage += new Message("与数据库失去连接，加入队列失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             }
         }
@@ -129,9 +129,9 @@ namespace Marchen.BLL
             else
             {
                 MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
+            //MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
 
@@ -167,7 +167,7 @@ namespace Marchen.BLL
             else
             {
                 MsgMessage += new Message("与数据库失去连接，退出队列失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             }
         }
@@ -232,14 +232,14 @@ namespace Marchen.BLL
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             if (InputVariables.IntBossCode == -1)
             {
                 MsgMessage += new Message("未能找到BOSS编号。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -271,7 +271,7 @@ namespace Marchen.BLL
             else
             {
                 MsgMessage += new Message("与数据库失去连接，修改队列状态失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             }
         }

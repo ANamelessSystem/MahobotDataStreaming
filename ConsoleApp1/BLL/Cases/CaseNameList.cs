@@ -29,7 +29,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("数据库错误，更新成员名单失败。\r\n");
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
+            //MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
 
@@ -62,7 +62,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
+            //MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
 
@@ -76,14 +76,14 @@ namespace Marchen.BLL
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             if (InputVariables.DouUID == -1)
             {
                 MsgMessage += new Message("未识别出需要删除的QQ号。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -119,11 +119,11 @@ namespace Marchen.BLL
             {
                 Console.WriteLine("只有本人或管理员以上可删除对应名单。修改者：" + strUserID + " 原记录：" + InputVariables.DouUID.ToString());
                 MsgMessage += new Message("只有本人或管理员以上可删除对应的名单。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            MsgMessage += Message.At(long.Parse(strUserID));
+            //MsgMessage += Message.At(long.Parse(strUserID));
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
 

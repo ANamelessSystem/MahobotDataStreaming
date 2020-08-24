@@ -22,14 +22,14 @@ namespace Marchen.BLL
             if (!(memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager))
             {
                 MsgMessage += new Message("拒绝：仅有管理员或群主可执行出刀提醒指令。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
             {
                 MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -76,13 +76,13 @@ namespace Marchen.BLL
                 else
                 {
                     MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
+                    //MsgMessage += Message.At(long.Parse(strUserID));
                 }
             }
             else
             {
                 MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
             }
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
@@ -177,14 +177,14 @@ namespace Marchen.BLL
             if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
             {
                 MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             if (intHourSet < 0)
             {
                 MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -316,13 +316,13 @@ namespace Marchen.BLL
                 else
                 {
                     MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                    MsgMessage += Message.At(long.Parse(strUserID));
+                    //MsgMessage += Message.At(long.Parse(strUserID));
                 }
             }
             else
             {
                 MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
-                MsgMessage += Message.At(long.Parse(strUserID));
+                //MsgMessage += Message.At(long.Parse(strUserID));
             }
             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
