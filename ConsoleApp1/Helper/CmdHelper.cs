@@ -96,6 +96,7 @@ namespace Marchen.BLL
             //CommonVariables.IntSubsType = -1;
             InputVariables.IntTimeOutFlag = 0;
             InputVariables.IntIsAllFlag = 0;
+            InputVariables.IntIsBmpFlag = 0;
             string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string e in sArray)
             {
@@ -118,6 +119,10 @@ namespace Marchen.BLL
                 else if (e == "全部" || e.ToLower() == "all")
                 {
                     InputVariables.IntIsAllFlag = 1;
+                }
+                else if (e == "图片" || e.ToLower() == "bmp" || e.ToLower() == "pic" || e.ToLower() == "jpg")
+                {
+                    InputVariables.IntIsBmpFlag = 1;
                 }
                 else if (e.Contains("周目"))
                 {
@@ -280,13 +285,13 @@ namespace Marchen.BLL
                     }
                 }
             }
-            Console.WriteLine("完成元素拆分\r\n结果：isCorrect=" + isCorrect.ToString());
-            Console.WriteLine("IntEID=" + InputVariables.IntEID);
-            Console.WriteLine("DouUID=" + InputVariables.DouUID);
-            Console.WriteLine("IntBossCode=" + InputVariables.IntBossCode);
-            Console.WriteLine("IntRound=" + InputVariables.IntRound);
-            Console.WriteLine("IntDMG=" + InputVariables.IntDMG);
-            Console.WriteLine("IntEXT=" + InputVariables.IntEXT);
+            //Console.WriteLine("完成元素拆分\r\n结果：isCorrect=" + isCorrect.ToString());
+            //Console.WriteLine("IntEID=" + InputVariables.IntEID);
+            //Console.WriteLine("DouUID=" + InputVariables.DouUID);
+            //Console.WriteLine("IntBossCode=" + InputVariables.IntBossCode);
+            //Console.WriteLine("IntRound=" + InputVariables.IntRound);
+            //Console.WriteLine("IntDMG=" + InputVariables.IntDMG);
+            //Console.WriteLine("IntEXT=" + InputVariables.IntEXT);
             return isCorrect;
         }
 

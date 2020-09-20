@@ -267,7 +267,7 @@ namespace Marchen.BLL
                         break;
                     case "remainshow":
                         {
-                            CaseRemind.ShowRemainStrikes(strGrpID, strUserID);
+                            CaseRemind.ShowRemainStrikes(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     case "remainnotice":

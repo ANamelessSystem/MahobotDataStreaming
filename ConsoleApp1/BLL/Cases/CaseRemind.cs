@@ -6,6 +6,7 @@ using Marchen.DAL;
 using Marchen.Model;
 using Message = Sisters.WudiLib.SendingMessage;
 using Sisters.WudiLib.Responses;
+using Marchen.Helper;
 
 namespace Marchen.BLL
 {
@@ -172,7 +173,7 @@ namespace Marchen.BLL
         /// </summary>
         /// <param name="strGrpID">消息发起人所属群号</param>
         /// <param name="strUserID">消息发起人QQ号</param>
-        public static void ShowRemainStrikes(string strGrpID, string strUserID)
+        public static void ShowRemainStrikes(string strGrpID, string strUserID,string strCmdContext)
         {
             if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
             {
@@ -184,6 +185,12 @@ namespace Marchen.BLL
             if (intHourSet < 0)
             {
                 MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
+                //MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (!CmdHelper.CmdSpliter(strCmdContext))
+            {
                 //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
@@ -324,7 +331,14 @@ namespace Marchen.BLL
                 MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
                 //MsgMessage += Message.At(long.Parse(strUserID));
             }
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            if (InputVariables.IntIsBmpFlag == 0)
+            {
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            }
+            else
+            {
+                MsgSendHelper.UniversalMsgSender(1,1,strGrpID,MsgMessage.Raw.ToString());
+            }
         }
     }
 }

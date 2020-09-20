@@ -103,13 +103,27 @@ namespace Marchen.BLL
                     }
                     if (strList_sos.Length != 0)
                     {
-                        if (strList_ext != "" && strList_normal != "")
+                        if (InputVariables.IntIsAllFlag == 1)
                         {
-                            strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
+                            if (strList_ext != "" && strList_normal != "")
+                            {
+                                strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
+                            }
+                            else
+                            {
+                                strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列中无人。\r\n";
+                            }
                         }
                         else
                         {
-                            strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列中无人。\r\n";
+                            if (strList_ext != "" && strList_normal != "")
+                            {
+                                strOutput = "有" + strList_sos.Length.ToString() + "人正在挂树\r\n" + strList_ext + strList_normal;
+                            }
+                            else
+                            {
+                                strOutput = "有" + strList_sos.Length.ToString() + "人正在挂树\r\n--------------------\r\n目前队列中无人。\r\n";
+                            }
                         }
                     }
                     else
