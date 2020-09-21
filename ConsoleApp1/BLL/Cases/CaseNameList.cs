@@ -4,6 +4,7 @@ using Marchen.DAL;
 using Marchen.Model;
 using Message = Sisters.WudiLib.SendingMessage;
 using Sisters.WudiLib.Responses;
+using Marchen.Helper;
 
 namespace Marchen.BLL
 {
@@ -38,8 +39,14 @@ namespace Marchen.BLL
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
-        public static void NameListShow(string strGrpID, string strUserID)
+        public static void NameListShow(string strGrpID, string strUserID,string strCmdContext)
         {
+            if (!CmdHelper.CmdSpliter(strCmdContext))
+            {
+                //MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
             if (NameListDAL.QryNameList(strGrpID, out DataTable dtNameList))
             {
                 if (dtNameList.Rows.Count > 0)
@@ -63,7 +70,14 @@ namespace Marchen.BLL
                 MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
             }
             //MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            if (InputVariables.IntIsBmpFlag == 0)
+            {
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            }
+            else
+            {
+                MsgSendHelper.UniversalMsgSender(1, 1, strGrpID, MsgMessage.Raw.ToString());
+            }
         }
 
         /// <summary>

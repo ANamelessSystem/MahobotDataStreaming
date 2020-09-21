@@ -282,7 +282,7 @@ namespace Marchen.BLL
                         break;
                     case "namelistshow":
                         {
-                            CaseNameList.NameListShow(strGrpID, strUserID);
+                            CaseNameList.NameListShow(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     case "namelistdel":
