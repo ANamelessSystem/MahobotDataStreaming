@@ -96,13 +96,13 @@ namespace Marchen.Helper
                 _ContentHeight = Regex.Matches(strContent, "\r\n").Count;
             }
             //create bitmap base on the length and height
-            Bitmap image = new Bitmap((int)Math.Ceiling((_ContentLength * 19.0)), (_ContentHeight * 30));
+            Bitmap image = new Bitmap((int)Math.Ceiling((_ContentLength * 15.0)), (_ContentHeight * 25));
             Graphics g = Graphics.FromImage(image);
             byte[] _byteArray;
             try
             {
                 g.Clear(Color.White);
-                Font font = new Font("Microsoft YaHei", 15.5f, (FontStyle.Regular));
+                Font font = new Font("Microsoft YaHei", 12.5f, (FontStyle.Regular));
                 SolidBrush drawBrush = new SolidBrush(Color.Black);
                 g.DrawString(strContent, font, drawBrush, 2, 2);
                 using (MemoryStream _memStream = new MemoryStream())
