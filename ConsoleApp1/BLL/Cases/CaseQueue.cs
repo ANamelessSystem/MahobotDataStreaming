@@ -59,7 +59,7 @@ namespace Marchen.BLL
                 {
                     MsgMessage += new Message("已加入队列，类型：补时\r\n--------------------\r\n");
                 }
-                MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
+                MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage);
                 //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 MsgMessage = new Message("");
                 QueueShow(strGrpID, strUserID);
@@ -107,13 +107,13 @@ namespace Marchen.BLL
                     }
                     if (intCount_sos > 0)
                     {
-                        if (strList_ext != "" && strList_normal != "")
+                        if (strList_ext == "" && strList_normal == "")
                         {
-                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n" + strList_ext + strList_normal;
+                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n--------------------\r\n目前队列中无人。\r\n";
                         }
                         else
                         {
-                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n--------------------\r\n目前队列中无人。\r\n";
+                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
                         }
                     }
                     else
@@ -134,7 +134,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
             }
-            MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
+            MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage);
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace Marchen.BLL
                         MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
                     }
                 }
-                MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
+                MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage);
                 MsgMessage = new Message("");
                 QueueShow(strGrpID, strUserID);
             }
@@ -375,6 +375,10 @@ namespace Marchen.BLL
             }
         }
 
+        /// <summary>
+        /// 查挂树名单
+        /// </summary>
+        /// <param name="strGrpID">群号</param>
         public static void QueueShow_Sos(string strGrpID)
         {
             if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
@@ -386,17 +390,17 @@ namespace Marchen.BLL
                     {
                         if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
                         {
-                            strList_sos += "【"+i.ToString()+"】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】\r\n";
+                            strList_sos += "【挂树第"+i.ToString()+"名】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】\r\n";
                         }
                     }
                     string strOutput;
                     if (strList_sos.Length != 0)
                     {
-                        strOutput = "光荣榜：\r\n" + strList_sos;
+                        strOutput = "光   荣   榜：\r\n" + strList_sos;
                     }
                     else
                     {
-                        strOutput = "目前队列无人挂树。\r\n";
+                        strOutput = "目前队列无人挂树。太好了，继续保持。\r\n";
                     }
                     MsgMessage += new Message();
                     MsgMessage += new Message(strOutput);
@@ -410,7 +414,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
             }
-            MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
+            MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage);
         }
 
         /// <summary>

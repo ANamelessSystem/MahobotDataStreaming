@@ -21,45 +21,45 @@ namespace Marchen.Helper
         /// <param name="iTargetType">目标类型：0.个人；1.群</param>
         /// <param name="strTargetID">目标ID，不管个人还是群都是用的同一个标签</param>
         /// <param name="strContent">内容，文本</param>
-        public static void  UniversalMsgSender(int iSendType,int iTargetType,string strTargetID,string strContent)
+        public static void  UniversalMsgSender(int iSendType,int iTargetType,string strTargetID,Message msgMessage)
         {
-            Message MsgMessage = new Message("");
-            //Text
-            if (iSendType == 0)
+            string strRawMessage = msgMessage.Raw.ToString();
+            if (strRawMessage == "" || msgMessage is null)
             {
-                MsgMessage += new Message(strContent);
+                return;
             }
-            //Convert to Image
-            else if (iSendType == 1)
-            {
-                ConvertText2Pic(strContent,0,out Message _outMessage);
-                MsgMessage += _outMessage;
-            }
+            Message _outMessage = new Message("");
             //Judge by the number of content lines
-            else
+            if (iSendType == 2)
             {
                 //this number of lines is also the maxium height for ranging the bitmap
-                int _ContentHeight = Regex.Matches(strContent, "\r\n").Count;
+                int _ContentHeight = Regex.Matches(strRawMessage, "\r\n").Count;
                 //when it's too long, convert it to a picture
                 if (_ContentHeight > 9)
                 {
                     //_ContentHeight += 1;
-                    ConvertText2Pic(strContent, _ContentHeight, out Message _outMessage);
-                    MsgMessage += _outMessage;
+                    ConvertText2Pic(strRawMessage, _ContentHeight, out _outMessage);
                 }
                 //or just pass through
                 else
                 {
-                    MsgMessage += new Message(strContent);
+                    _outMessage = msgMessage;
                 }
+
             }
+            //Convert to Image
+            else if (iSendType == 1)
+            {
+                ConvertText2Pic(strRawMessage, 0,out _outMessage);
+            }
+            //Target type,0:private,1:group
             if (iTargetType == 0)
             {
-                ApiProperties.HttpApi.SendPrivateMessageAsync(long.Parse(strTargetID), MsgMessage).Wait();
+                ApiProperties.HttpApi.SendPrivateMessageAsync(long.Parse(strTargetID), _outMessage).Wait();
             }
             else
             {
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strTargetID), MsgMessage).Wait();
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strTargetID), _outMessage).Wait();
             }
         }
 
