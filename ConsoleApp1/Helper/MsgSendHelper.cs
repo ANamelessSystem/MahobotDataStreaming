@@ -17,7 +17,7 @@ namespace Marchen.Helper
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="iSendType">发送形式：0.文本；1.转换成图片</param>
+        /// <param name="iSendType">发送形式：0.文本；1.转换成图片；2.自动判断</param>
         /// <param name="iTargetType">目标类型：0.个人；1.群</param>
         /// <param name="strTargetID">目标ID，不管个人还是群都是用的同一个标签</param>
         /// <param name="strContent">内容，文本</param>
@@ -30,46 +30,27 @@ namespace Marchen.Helper
                 MsgMessage += new Message(strContent);
             }
             //Convert to Image
+            else if (iSendType == 1)
+            {
+                ConvertText2Pic(strContent,0,out Message _outMessage);
+                MsgMessage += _outMessage;
+            }
+            //Judge by the number of content lines
             else
             {
-                if (strContent == null || strContent.Trim() == String.Empty)
-                    return;
-                //get the maxium length to range the bitmap
-                int _ContentLength = 0;
-                string[] strArr = strContent.Split("\r\n");
-                for (int i = 0; i < strArr.Length; i++)
+                //this number of lines is also the maxium height for ranging the bitmap
+                int _ContentHeight = Regex.Matches(strContent, "\r\n").Count;
+                //when it's too long, convert it to a picture
+                if (_ContentHeight > 9)
                 {
-                    if (strArr[i].Length > _ContentLength)
-                    {
-                        _ContentLength = strArr[i].Length;
-                    }
+                    //_ContentHeight += 1;
+                    ConvertText2Pic(strContent, _ContentHeight, out Message _outMessage);
+                    MsgMessage += _outMessage;
                 }
-                //get the maxium height to range the bitmap
-                int _ContentHeight = Regex.Matches(strContent, "\r\n").Count + 1;
-                //create bitmap base on the length and height
-                Bitmap image = new Bitmap((int)Math.Ceiling((_ContentLength * 18.0)), (_ContentHeight * 28));
-                Graphics g = Graphics.FromImage(image);
-                byte[] _byteArray;
-                try
+                //or just pass through
+                else
                 {
-                    g.Clear(Color.White);
-                    Font font = new Font("Microsoft YaHei", 15.5f, (FontStyle.Bold));
-                    //System.Drawing.Drawing2D.LinearGradientBrush brush = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(0, 0, image.Width, image.Height), Color.Black, Color.DarkRed, 1.2f, true);
-                    SolidBrush drawBrush = new SolidBrush(Color.Black);
-                    g.DrawString(strContent, font, drawBrush, 2, 2);
-                    using (MemoryStream _memStream = new MemoryStream())
-                    {
-                        image.Save(_memStream, ImageFormat.Png);
-                        _byteArray = new byte[_memStream.Length];
-                        _memStream.Seek(0, SeekOrigin.Begin);
-                        _memStream.Read(_byteArray, 0, (int)_memStream.Length);
-                    }
-                    MsgMessage += Message.ByteArrayImage(_byteArray);
-                }
-                finally
-                {
-                    g.Dispose();
-                    image.Dispose();
+                    MsgMessage += new Message(strContent);
                 }
             }
             if (iTargetType == 0)
@@ -79,6 +60,60 @@ namespace Marchen.Helper
             else
             {
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strTargetID), MsgMessage).Wait();
+            }
+        }
+
+        /// <summary>
+        /// 将指定文本转换为图片
+        /// </summary>
+        /// <param name="strContent">指定文本</param>
+        /// <param name="msgMessage">理应只包含有一张图片的message</param>
+        private static void ConvertText2Pic(string strContent,int _ContentHeight, out Message _message)
+        {
+            _message = new Message("");
+            //Console.WriteLine("图片转换失败，内容为空");
+            if (strContent == null || strContent.Trim() == string.Empty)
+            { 
+                return; 
+            }
+            //get the maxium length to range the bitmap
+            int _ContentLength = 0;
+            string[] strArr = strContent.Split("\r\n");
+            for (int i = 0; i < strArr.Length; i++)
+            {
+                if (strArr[i].Length > _ContentLength)
+                {
+                    _ContentLength = strArr[i].Length;
+                }
+            }
+            //get the maxium height to range the bitmap
+            if (_ContentHeight < 1)
+            {
+                _ContentHeight = Regex.Matches(strContent, "\r\n").Count;
+            }
+            //create bitmap base on the length and height
+            Bitmap image = new Bitmap((int)Math.Ceiling((_ContentLength * 19.0)), (_ContentHeight * 29));
+            Graphics g = Graphics.FromImage(image);
+            byte[] _byteArray;
+            try
+            {
+                g.Clear(Color.White);
+                Font font = new Font("Microsoft YaHei", 15.5f, (FontStyle.Regular));
+                SolidBrush drawBrush = new SolidBrush(Color.Black);
+                g.DrawString(strContent, font, drawBrush, 2, 2);
+                using (MemoryStream _memStream = new MemoryStream())
+                {
+                    image.Save(_memStream, ImageFormat.Png);
+                    _byteArray = new byte[_memStream.Length];
+                    _memStream.Seek(0, SeekOrigin.Begin);
+                    _memStream.Read(_byteArray, 0, (int)_memStream.Length);
+                }
+                _message += Message.ByteArrayImage(_byteArray);
+            }
+            finally
+            {
+                g.Dispose();
+                image.Dispose();
             }
         }
     }

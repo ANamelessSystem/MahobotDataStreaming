@@ -6,6 +6,7 @@ using Marchen.DAL;
 using Marchen.Model;
 using Message = Sisters.WudiLib.SendingMessage;
 using Sisters.WudiLib.Responses;
+using Marchen.Helper;
 
 namespace Marchen.BLL
 {
@@ -39,7 +40,7 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            int intSosFlag = 0;
+            int intSosFlag;
             if (InputVariables.IntEXT == 1)
             {
                 intSosFlag = 2;
@@ -58,6 +59,9 @@ namespace Marchen.BLL
                 {
                     MsgMessage += new Message("已加入队列，类型：补时\r\n--------------------\r\n");
                 }
+                MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
+                //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage = new Message("");
                 QueueShow(strGrpID, strUserID);
             }
             else
@@ -146,7 +150,8 @@ namespace Marchen.BLL
                 //MsgMessage += Message.At(long.Parse(strUserID));
             }
             //MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
         }
 
         /// <summary>
@@ -176,6 +181,8 @@ namespace Marchen.BLL
                         MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
                     }
                 }
+                MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
+                MsgMessage = new Message("");
                 QueueShow(strGrpID, strUserID);
             }
             else

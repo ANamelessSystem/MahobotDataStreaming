@@ -96,7 +96,7 @@ namespace Marchen.BLL
             //CommonVariables.IntSubsType = -1;
             InputVariables.IntTimeOutFlag = 0;
             InputVariables.IntIsAllFlag = 0;
-            InputVariables.IntIsBmpFlag = 0;
+            InputVariables.IntSendType = 2;
             string[] sArray = strCmdContext.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string e in sArray)
             {
@@ -122,7 +122,11 @@ namespace Marchen.BLL
                 }
                 else if (e == "图片" || e.ToLower() == "bmp" || e.ToLower() == "pic" || e.ToLower() == "jpg")
                 {
-                    InputVariables.IntIsBmpFlag = 1;
+                    InputVariables.IntSendType = 1;
+                }
+                else if (e == "文字" || e.ToLower() == "txt" || e.ToLower() == "text")
+                {
+                    InputVariables.IntSendType = 0;
                 }
                 else if (e.Contains("周目"))
                 {

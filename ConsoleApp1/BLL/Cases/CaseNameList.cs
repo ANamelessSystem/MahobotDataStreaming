@@ -70,7 +70,7 @@ namespace Marchen.BLL
                 MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
             }
             //MsgMessage += Message.At(long.Parse(strUserID));
-            if (InputVariables.IntIsBmpFlag == 0)
+            if (InputVariables.IntSendType == 0)
             {
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             }
