@@ -54,15 +54,15 @@ namespace Marchen.BLL
                 if (intSosFlag == 0)
                 {
                     MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已加入队列，类型：通常\r\n");
+                    MsgMessage += new Message("已加入队列，类型：通常\r\n--------------------\r\n");
                 }
                 else
                 {
                     MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已加入队列，类型：补时\r\n");
+                    MsgMessage += new Message("已加入队列，类型：补时\r\n--------------------\r\n");
                 }
-                MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
-                MsgMessage = new Message("");
+                //MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
+                //MsgMessage = new Message("");
                 QueueShow(strGrpID, strUserID);
             }
             else
@@ -82,7 +82,7 @@ namespace Marchen.BLL
         /// <param name="strUserGrpCard"></param>
         public static void QueueShow(string strGrpID, string strUserID)
         {
-            HpShowAndSubsCheck(strGrpID, strUserID);
+            HpShowAndSubsCheck(strGrpID);
             if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
             {
                 if (dtQueue.Rows.Count > 0)
@@ -114,14 +114,14 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
+                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n--------------------\r\n队列：\r\n" + strList_ext + strList_normal;
                         }
                     }
                     else
                     {
-                        strOutput = "目前队列：\r\n" + strList_ext + strList_normal;
+                        strOutput = "队列：\r\n" + strList_ext + strList_normal;
                     }
-                    MsgMessage += new Message();
+                    //MsgMessage += new Message();
                     MsgMessage += new Message(strOutput);
                     Console.WriteLine(strOutput);
                 }
@@ -152,7 +152,7 @@ namespace Marchen.BLL
                 {
                     //Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀移出队列。");
                     MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已将较早一次队列记录退出。\r\n");
+                    MsgMessage += new Message("已将较早一次队列记录退出。\r\n--------------------\r\n");
                 }
                 else
                 {
@@ -160,16 +160,16 @@ namespace Marchen.BLL
                     if (intType == 0)
                     {
                         MsgMessage += Message.At(long.Parse(strUserID));
-                        MsgMessage += new Message("未找到队列记录。\r\n");
+                        MsgMessage += new Message("未找到队列记录。\r\n--------------------\r\n");
                     }
                     if (intType == 1)
                     {
                         MsgMessage += Message.At(long.Parse(strUserID));
-                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n");
+                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
                     }
                 }
-                MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
-                MsgMessage = new Message("");
+                //MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
+                //MsgMessage = new Message("");
                 QueueShow(strGrpID, strUserID);
             }
             else
@@ -425,18 +425,18 @@ namespace Marchen.BLL
         /// 显示血量并检查是否有预定列表和下树提醒
         /// </summary>
         /// <param name="strGrpID">群号</param>
-        public static void HpShowAndSubsCheck(string strGrpID,string strInputUserID = "0")
+        public static void HpShowAndSubsCheck(string strGrpID)
         {
             if (Format_Progress(strGrpID, out int _round, out int _bc, out int _hp, out int _ratio))
             {
                 string strOutput;
                 if (_ratio == 10000)
                 {
-                    strOutput = "目前进度：" + _round.ToString() + "周目，B" + _bc.ToString() + "，剩余血量=" + _hp + "万";
+                    strOutput = "进度：" + _round.ToString() + "周目，B" + _bc.ToString() + "，剩余血量=" + _hp + "万";
                 }
                 else if (_ratio == 1)
                 {
-                    strOutput = "目前进度：" + _round.ToString() + "周目，B" + _bc.ToString() + "，剩余血量=" + _hp;
+                    strOutput = "进度：" + _round.ToString() + "周目，B" + _bc.ToString() + "，剩余血量=" + _hp;
                 }
                 else
                 {
@@ -510,6 +510,8 @@ namespace Marchen.BLL
             {
                 Console.WriteLine("下树查询失败（数据库错误）");
             }
+            MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
+            MsgMessage = new Message("");
         }
     }
 }
