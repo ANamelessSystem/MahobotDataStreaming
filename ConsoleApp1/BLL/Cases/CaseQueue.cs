@@ -53,14 +53,15 @@ namespace Marchen.BLL
             {
                 if (intSosFlag == 0)
                 {
-                    MsgMessage += new Message("已加入队列，类型：通常\r\n--------------------\r\n");
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message("已加入队列，类型：通常\r\n");
                 }
                 else
                 {
-                    MsgMessage += new Message("已加入队列，类型：补时\r\n--------------------\r\n");
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message("已加入队列，类型：补时\r\n");
                 }
-                MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage);
-                //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
                 MsgMessage = new Message("");
                 QueueShow(strGrpID, strUserID);
             }
@@ -149,22 +150,25 @@ namespace Marchen.BLL
             {
                 if (deletedCount > 0)
                 {
-                    Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀移出队列。");
-                    MsgMessage += new Message("已将较早一次队列记录退出。\r\n--------------------\r\n");
+                    //Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀移出队列。");
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message("已将较早一次队列记录退出。\r\n");
                 }
                 else
                 {
-                    Console.WriteLine("群：" + strGrpID + "，" + strUserID + "移出队列失败：未找到记录。");
+                    //Console.WriteLine("群：" + strGrpID + "，" + strUserID + "移出队列失败：未找到记录。");
                     if (intType == 0)
                     {
-                        MsgMessage += new Message("未找到队列记录。\r\n--------------------\r\n");
+                        MsgMessage += Message.At(long.Parse(strUserID));
+                        MsgMessage += new Message("未找到队列记录。\r\n");
                     }
                     if (intType == 1)
                     {
-                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
+                        MsgMessage += Message.At(long.Parse(strUserID));
+                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n");
                     }
                 }
-                MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage);
+                MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
                 MsgMessage = new Message("");
                 QueueShow(strGrpID, strUserID);
             }

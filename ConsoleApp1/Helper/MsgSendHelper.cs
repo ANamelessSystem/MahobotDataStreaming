@@ -50,7 +50,11 @@ namespace Marchen.Helper
             //Convert to Image
             else if (iSendType == 1)
             {
-                ConvertText2Pic(strRawMessage, 0,out _outMessage);
+                ConvertText2Pic(strRawMessage, 0, out _outMessage);
+            }
+            else
+            {
+                _outMessage = msgMessage;
             }
             //Target type,0:private,1:group
             if (iTargetType == 0)
