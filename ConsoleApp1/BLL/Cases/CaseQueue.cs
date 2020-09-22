@@ -87,14 +87,14 @@ namespace Marchen.BLL
                 if (dtQueue.Rows.Count > 0)
                 {
                     string strList_normal = "";
-                    string strList_sos = "";
                     string strList_ext = "";
-                    string strOutput = "";
+                    int intCount_sos = 0;
+                    string strOutput;
                     for (int i = 0; i < dtQueue.Rows.Count; i++)
                     {
                         if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
                         {
-                            strList_sos += "【等救】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】\r\n";
+                            intCount_sos += 1;
                         }
                         else if (dtQueue.Rows[i]["sosflag"].ToString() == "2")
                         {
@@ -105,29 +105,15 @@ namespace Marchen.BLL
                             strList_normal += "【" + dtQueue.Rows[i]["SEQ"].ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
                         }
                     }
-                    if (strList_sos.Length != 0)
+                    if (intCount_sos > 0)
                     {
-                        if (InputVariables.IntIsAllFlag == 1)
+                        if (strList_ext != "" && strList_normal != "")
                         {
-                            if (strList_ext != "" && strList_normal != "")
-                            {
-                                strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列：\r\n" + strList_ext + strList_normal;
-                            }
-                            else
-                            {
-                                strOutput = "正在挂树：\r\n" + strList_sos + "--------------------\r\n目前队列中无人。\r\n";
-                            }
+                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n" + strList_ext + strList_normal;
                         }
                         else
                         {
-                            if (strList_ext != "" && strList_normal != "")
-                            {
-                                strOutput = "有" + strList_sos.Length.ToString() + "人正在挂树\r\n" + strList_ext + strList_normal;
-                            }
-                            else
-                            {
-                                strOutput = "有" + strList_sos.Length.ToString() + "人正在挂树\r\n--------------------\r\n目前队列中无人。\r\n";
-                            }
+                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n--------------------\r\n目前队列中无人。\r\n";
                         }
                     }
                     else
@@ -147,10 +133,7 @@ namespace Marchen.BLL
             else
             {
                 MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
             }
-            //MsgMessage += Message.At(long.Parse(strUserID));
-            //ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
         }
 
@@ -248,7 +231,7 @@ namespace Marchen.BLL
         /// </summary>
         /// <param name="strGrpID">群号</param>
         /// <param name="strUserID">QQ号</param>
-        public static void QueueSos(string strGrpID, string strUserID,string strCmdContext)
+        public static void QueueAdd_Sos(string strGrpID, string strUserID,string strCmdContext)
         {
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
@@ -392,6 +375,43 @@ namespace Marchen.BLL
             }
         }
 
+        public static void QueueShow_Sos(string strGrpID)
+        {
+            if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
+            {
+                if (dtQueue.Rows.Count > 0)
+                {
+                    string strList_sos = "";
+                    for (int i = 0; i < dtQueue.Rows.Count; i++)
+                    {
+                        if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
+                        {
+                            strList_sos += "【"+i.ToString()+"】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】\r\n";
+                        }
+                    }
+                    string strOutput;
+                    if (strList_sos.Length != 0)
+                    {
+                        strOutput = "光荣榜：\r\n" + strList_sos;
+                    }
+                    else
+                    {
+                        strOutput = "目前队列无人挂树。\r\n";
+                    }
+                    MsgMessage += new Message();
+                    MsgMessage += new Message(strOutput);
+                }
+                else
+                {
+                    MsgMessage += new Message("目前队列中无人。\r\n");
+                }
+            }
+            else
+            {
+                MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
+            }
+            MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage.Raw.ToString());
+        }
 
         /// <summary>
         /// 显示血量并检查是否有预定列表和下树提醒

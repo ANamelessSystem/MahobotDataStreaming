@@ -100,6 +100,11 @@ namespace Marchen.BLL
                     cmdType = "queuequit";
                     Console.WriteLine("识别为退出排刀");
                 }
+                else if (strCmdHead.ToLower() == "c4" || strCmdHead == "查看挂树")
+                {
+                    cmdType = "sosshow";
+                    Console.WriteLine("识别为查询挂树名单");
+                }
                 else if (strCmdHead.ToLower() == "clear" || strCmdHead == "清空队列")
                 {
                     cmdType = "clear";
@@ -206,6 +211,11 @@ namespace Marchen.BLL
                     case "queuequit":
                         {
                             CaseQueue.QueueQuit(strGrpID, strUserID, 0);
+                        }
+                        break;
+                    case "sosshow":
+                        {
+                            CaseQueue.QueueShow_Sos(strGrpID);
                         }
                         break;
                     case "clear":
@@ -336,7 +346,7 @@ namespace Marchen.BLL
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
-                            CaseQueue.QueueSos(strGrpID, strUserID, strCmdContext);
+                            CaseQueue.QueueAdd_Sos(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     //case "score":
