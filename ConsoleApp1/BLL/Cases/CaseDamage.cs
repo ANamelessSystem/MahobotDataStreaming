@@ -614,19 +614,19 @@ namespace Marchen.BLL
                     string resultString = "";
                     if (intLayoutType == 0)//查询EID（抬头显示EID）
                     {
-                        resultString = strRName + "(" + strRUID + ")：" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + "；\r\n          记录时间：[" + strRTime + "]";
+                        resultString = strRName + "(" + strRUID + ")：" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + "；\r\n          记录时间：" + strRTime;
                     }
                     else if (intLayoutType == 1)//查询UID（抬头显示UID+昵称）
                     {
-                        resultString = "E" + strREID + "：" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + "；\r\n          记录时间：[" + strRTime + "]";
+                        resultString = "E" + strREID + "：" + strRRound + "周目；B" + strRBC + "；伤害=" + strRDmg + "；\r\n          记录时间：" + strRTime;
                     }
                     else if (intLayoutType == 2)//查询周目（抬头显示周目）
                     {
-                        resultString = "B" + strRBC + "；" + strRName + "(" + strRUID + ")：伤害=" + strRDmg + "；\r\n       记录时间：[" + strRTime + "]" + " 【E" + strREID + "】";
+                        resultString = "B" + strRBC + "；" + strRName + "(" + strRUID + ")：伤害=" + strRDmg + "；\r\n       记录时间：" + strRTime + " 【E" + strREID + "】";
                     }
                     else //3 查询周目+BOSS（抬头显示周目+BOSS）
                     {
-                        resultString = "E" + strREID + "：" + strRName + "(" + strRUID + ")：伤害=" + strRDmg + "；\r\n          记录时间：[" + strRTime + "]";
+                        resultString = "E" + strREID + "：" + strRName + "(" + strRUID + ")：伤害=" + strRDmg + "；\r\n          记录时间：" + strRTime;
                     }
                     strOutput += resultString + "\r\n";
                 }
