@@ -331,7 +331,7 @@ namespace Marchen.BLL
                 MsgMessage += new Message("与数据库失去连接，查询失败。\r\n");
                 //MsgMessage += Message.At(long.Parse(strUserID));
             }
-            MsgSendHelper.UniversalMsgSender(InputVariables.IntSendType, 1, strGrpID, MsgMessage);
+            MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
         }
     }
 }

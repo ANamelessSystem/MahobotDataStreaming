@@ -12,16 +12,18 @@ using System.Text.RegularExpressions;
 
 namespace Marchen.Helper
 {
+    enum MsgSendType { Raw, Picture, Auto };
+    enum MsgTargetType { Private, Group };
     class MsgSendHelper
     {
         /// <summary>
-        /// 
+        /// 全局发送控制
         /// </summary>
-        /// <param name="iSendType">发送形式：0.文本；1.转换成图片；2.自动判断</param>
-        /// <param name="iTargetType">目标类型：0.个人；1.群</param>
-        /// <param name="strTargetID">目标ID，不管个人还是群都是用的同一个标签</param>
-        /// <param name="strContent">内容，文本</param>
-        public static void  UniversalMsgSender(int iSendType,int iTargetType,string strTargetID,Message msgMessage)
+        /// <param name="msgSendType"></param>
+        /// <param name="msgTargetType"></param>
+        /// <param name="strTargetID"></param>
+        /// <param name="msgMessage"></param>
+        public static void UniversalMsgSender(MsgSendType msgSendType, MsgTargetType msgTargetType, string strTargetID, Message msgMessage)
         {
             string strRawMessage = msgMessage.Raw.ToString();
             if (strRawMessage == "" || msgMessage is null)
@@ -30,12 +32,12 @@ namespace Marchen.Helper
             }
             Message _outMessage = new Message("");
             //Judge by the number of content lines
-            if (iSendType == 2)
+            if (msgSendType is MsgSendType.Auto)
             {
                 //this number of lines is also the maxium height for ranging the bitmap
                 int _ContentHeight = Regex.Matches(strRawMessage, "\r\n").Count;
                 //when it's too long, convert it to a picture
-                if (_ContentHeight > 9)
+                if (_ContentHeight > 8)
                 {
                     //_ContentHeight += 1;
                     ConvertText2Pic(strRawMessage, _ContentHeight, out _outMessage);
@@ -48,7 +50,7 @@ namespace Marchen.Helper
 
             }
             //Convert to Image
-            else if (iSendType == 1)
+            else if (msgSendType is MsgSendType.Picture)
             {
                 ConvertText2Pic(strRawMessage, 0, out _outMessage);
             }
@@ -57,7 +59,7 @@ namespace Marchen.Helper
                 _outMessage = msgMessage;
             }
             //Target type,0:private,1:group
-            if (iTargetType == 0)
+            if (msgTargetType is MsgTargetType.Private)
             {
                 ApiProperties.HttpApi.SendPrivateMessageAsync(long.Parse(strTargetID), _outMessage).Wait();
             }

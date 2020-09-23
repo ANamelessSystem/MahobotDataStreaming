@@ -135,7 +135,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
             }
-            MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage);
+            MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace Marchen.BLL
                     if (_hp > 9999)
                     {
                         //5位正数以上自动转换为以万为单位优化显示
-                        _hp = int.Parse(_hp.ToString().Substring(0, _hp.ToString().Length - 4));
+                        _hp = int.Parse(_hp.ToString()[0..^4]);
                         _ratio = 10000;
                         return true;
                     }
@@ -333,7 +333,7 @@ namespace Marchen.BLL
                                 //Console.WriteLine("误差内跳到下个BOSS");
                                 _bc = 1;
                                 _round += 1;
-                                _hp = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString().Substring(0, dtBossMaxHP.Rows[0]["HP"].ToString().Length - 4));
+                                _hp = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString()[0..^4]);
                                 _ratio = 10000;
                                 return true;
                             }
@@ -349,7 +349,7 @@ namespace Marchen.BLL
                             {
                                 //Console.WriteLine("误差内跳到下个BOSS");
                                 _bc += 1;
-                                _hp = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString().Substring(0, dtBossMaxHP.Rows[0]["HP"].ToString().Length - 4));
+                                _hp = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString()[0..^4]);
                                 _ratio = 10000;
                                 return true;
                             }
@@ -418,7 +418,7 @@ namespace Marchen.BLL
             {
                 MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
             }
-            MsgSendHelper.UniversalMsgSender(2, 1, strGrpID, MsgMessage);
+            MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
         }
 
         /// <summary>
@@ -510,7 +510,7 @@ namespace Marchen.BLL
             {
                 Console.WriteLine("下树查询失败（数据库错误）");
             }
-            MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
+            MsgSendHelper.UniversalMsgSender(MsgSendType.Raw, MsgTargetType.Group, strGrpID, MsgMessage);
             MsgMessage = new Message("");
         }
     }

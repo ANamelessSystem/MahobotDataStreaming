@@ -7,6 +7,7 @@ using Marchen.Model;
 using Message = Sisters.WudiLib.SendingMessage;
 using System.Text.RegularExpressions;
 using Sisters.WudiLib.Responses;
+using Marchen.Helper;
 
 namespace Marchen.BLL
 {
@@ -573,7 +574,7 @@ namespace Marchen.BLL
                 MsgMessage += new Message("不支持的查询模式。仅支持以下四种条件查询：\r\n1.单独按档案号查询\r\n2.单独按QQ号查询\r\n3.单独按周目查询\r\n4.同时按BOSS与周目查询。\r\n");
             }
             //MsgMessage += Message.At(long.Parse(strUserID));
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
             return;
         }
 

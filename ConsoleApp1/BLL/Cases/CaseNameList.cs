@@ -76,7 +76,7 @@ namespace Marchen.BLL
             }
             else
             {
-                MsgSendHelper.UniversalMsgSender(1, 1, strGrpID, MsgMessage);
+                MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
             }
         }
 

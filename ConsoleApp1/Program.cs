@@ -118,8 +118,7 @@ namespace Marchen.Garden
         public static void DisbleQuickEditMode()
         {
             IntPtr hStdin = GetStdHandle(STD_INPUT_HANDLE);
-            uint mode;
-            GetConsoleMode(hStdin, out mode);
+            GetConsoleMode(hStdin, out uint mode);
             mode &= ~ENABLE_QUICK_EDIT_MODE;//移除快速编辑模式
             mode &= ~ENABLE_INSERT_MODE;      //移除插入模式
             SetConsoleMode(hStdin, mode);
