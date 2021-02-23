@@ -37,7 +37,8 @@ namespace Marchen.Helper
                 //this number of lines is also the maxium height for ranging the bitmap
                 int _ContentHeight = Regex.Matches(strRawMessage, "\r\n").Count;
                 //when it's too long, convert it to a picture
-                if (_ContentHeight > 8)
+                //update 20210223 seems getting worse...
+                if (_ContentHeight > 3)
                 {
                     //_ContentHeight += 1;
                     ConvertText2Pic(strRawMessage, _ContentHeight, out _outMessage);
