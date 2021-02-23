@@ -54,12 +54,12 @@ namespace Marchen.BLL
                 if (intSosFlag == 0)
                 {
                     MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已加入队列，类型：通常\r\n--------------------\r\n");
+                    MsgMessage += new Message("已加入队列，类型：通常\r\n");
                 }
                 else
                 {
                     MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已加入队列，类型：补时\r\n--------------------\r\n");
+                    MsgMessage += new Message("已加入队列，类型：补时\r\n");
                 }
                 //MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
                 //MsgMessage = new Message("");
@@ -110,11 +110,11 @@ namespace Marchen.BLL
                     {
                         if (strList_ext == "" && strList_normal == "")
                         {
-                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n--------------------\r\n目前队列中无人。\r\n";
+                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n目前队列中无人。\r\n";
                         }
                         else
                         {
-                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n--------------------\r\n队列：\r\n" + strList_ext + strList_normal;
+                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n队列：\r\n" + strList_ext + strList_normal;
                         }
                     }
                     else
@@ -152,7 +152,7 @@ namespace Marchen.BLL
                 {
                     //Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀移出队列。");
                     MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已将较早一次队列记录退出。\r\n--------------------\r\n");
+                    MsgMessage += new Message("已将较早一次队列记录退出。\r\n");
                 }
                 else
                 {
@@ -160,12 +160,12 @@ namespace Marchen.BLL
                     if (intType == 0)
                     {
                         MsgMessage += Message.At(long.Parse(strUserID));
-                        MsgMessage += new Message("未找到队列记录。\r\n--------------------\r\n");
+                        MsgMessage += new Message("未找到队列记录。\r\n");
                     }
                     if (intType == 1)
                     {
                         MsgMessage += Message.At(long.Parse(strUserID));
-                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n--------------------\r\n");
+                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n");
                     }
                 }
                 //MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
@@ -196,7 +196,7 @@ namespace Marchen.BLL
                     {
                         if (QueueDAL.ClearQueue(strGrpID, out int deletedCount))
                         {
-                            MsgMessage += new Message("已清空队列。\r\n--------------------\r\n");
+                            MsgMessage += new Message("已清空队列。\r\n");
                             Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
                             MsgMessage += new Message("由于队列被清空，请以下成员重新排队：");
                             for (int i = 0; i < dtQueue_old.Rows.Count; i++)
@@ -267,12 +267,12 @@ namespace Marchen.BLL
                 if (updCount > 0)
                 {
                     Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀置为等待救援状态。（B" + InputVariables.IntBossCode + "，" + InputVariables.IntRound + "周目）");
-                    MsgMessage += new Message("已将较早一次队列记录置为等待救援状态。\r\n--------------------\r\n");
+                    MsgMessage += new Message("已将较早一次队列记录置为等待救援状态。\r\n");
                 }
                 else
                 {
                     Console.WriteLine("群：" + strGrpID + "，" + strUserID + "修改队列状态失败：未找到记录。");
-                    MsgMessage += new Message("未找到队列记录，请先进入队列再改为等待救援状态。\r\n--------------------\r\n");
+                    MsgMessage += new Message("未找到队列记录，请先进入队列再改为等待救援状态。\r\n");
                 }
                 QueueShow(strGrpID, strUserID);
             }
@@ -443,7 +443,7 @@ namespace Marchen.BLL
                     MsgMessage += new Message("获取进度时发生预想外的错误，已关闭血量显示。\r\n");
                     return;
                 }
-                MsgMessage += new Message(strOutput + "\r\n--------------------\r\n");
+                MsgMessage += new Message(strOutput + "\r\n");
             }
             else
             {
@@ -502,7 +502,7 @@ namespace Marchen.BLL
                             }
                             MsgMessage += Message.At(long.Parse(dtSosList.Rows[i]["userid"].ToString()));
                         }
-                        MsgMessage += new Message("\r\n--------------------\r\n");
+                        MsgMessage += new Message("\r\n");
                     }
                 }
             }

@@ -180,9 +180,10 @@ namespace Marchen.BLL
                     strDmg_Type = "尾刀";
                 }
                 Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + InputVariables.IntBossCode.ToString() + "，" + intRound_Calculate.ToString() + "周目，数值：" + InputVariables.IntDMG.ToString() + "，补时标识：" + InputVariables.IntEXT);
-                //吞消息比较频繁，先发送保存的消息，再显示血量
+                //吞消息比较频繁，先发送保存的消息，再进行队列操作的输出
                 MsgMessage = new Message("伤害已保存，类型：" + strDmg_Type + "，周目：" + intRound_Calculate + "，档案号=" + intEID.ToString() + "\r\n");
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage = new Message("");
                 //如果是尾刀，自动订阅下个周目的相同BOSS
                 if (isProxyRecord)
                 {
