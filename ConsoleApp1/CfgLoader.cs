@@ -48,6 +48,8 @@ namespace Marchen
                 WritePrivateProfileString(strCfgFileName, "ApiAddress", "(酷Q HTTP API的监听地址)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "ApiPostAddress", "(酷Q HTTP API的端口地址)", strFilePath);
                 WritePrivateProfileString(strCfgFileName, "ApiForwardToAddress", "(本程序接收酷Q HTTP API传来的信息后转发的地址)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "TestMode", "(调试模式，1为开，0为关)", strFilePath);
+                WritePrivateProfileString(strCfgFileName, "TestGrpID", "(调试群号，调试模式为开的情况下，只对该群响应)", strFilePath);
             }
             catch (Exception ex)
             {
@@ -82,6 +84,8 @@ namespace Marchen
                     ApiProperties.ApiAddr = ContentValue(strCfgFileName, "ApiAddress").ToString();
                     ApiProperties.ApiPostAddr = ContentValue(strCfgFileName, "ApiPostAddress").ToString();
                     ApiProperties.ApiForwardToAddr = ContentValue(strCfgFileName, "ApiForwardToAddress").ToString();
+                    EnvSettings.TestMode = ContentValue(strCfgFileName, "TestMode").ToString();
+                    EnvSettings.TestGrpID = ContentValue(strCfgFileName, "TestGrpID").ToString();
                     return true;
                 }
                 catch

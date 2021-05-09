@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using System.Threading;
+using Oracle.ManagedDataAccess.Client;
 
 namespace Marchen.DAL
 {
@@ -13,7 +14,7 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtVfyResult">返回dt格式的结果</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool GroupRegVerify(string strGrpID,out DataTable dtVfyResult)
+        public static bool GroupRegVerify(string strGrpID, out DataTable dtVfyResult)
         {
             string sqlGrpVfy = "select ORG_STAT,ORG_TYPE from TTL_ORGLIST where ORG_ID='" + strGrpID + "'";
             bool bResult = false;
@@ -53,68 +54,101 @@ namespace Marchen.DAL
         }
 
         /// <summary>
-        /// 加入队列的方法
+        /// 加入队列或挂树的方法
         /// </summary>
         /// <param name="strGrpID">群号</param>
-        /// <param name="strUserID">用户QQ号</param>
-        /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool AddQueue(string strGrpID, string strUserID,int intSosFlag = 0)
+        /// <param name="intBC">BOSS编号</param>
+        /// <param name="strUserID">用户Q号</param>
+        /// <param name="intType">类型，0通常，1补时，2挂树</param>
+        /// <param name="intRound">周目</param>
+        public static void JoinQueue(string strGrpID, int intBC, string strUserID, int intType, int intRound = 0)
         {
-            //查询队列表中的最大序列值，如果查询结果是非空，则序号为查询的最大序号+1，如果查询结果为空则使用1
-            DataTable dtMaxSeq = new DataTable();
-            int intSequence = 1;
-            string sqlQryMaxSeq = "select max(seq) as maxseq from TTL_Queue where grpid ='" + strGrpID + "'";
+            OracleParameter[] param = new OracleParameter[]
+            {
+                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,20),
+                new OracleParameter(":i_numBossCode", OracleDbType.Int16,1),
+                new OracleParameter(":i_varUserID", OracleDbType.Varchar2,20),
+                new OracleParameter(":i_numType", OracleDbType.Int16,1),
+                new OracleParameter(":i_numRound", OracleDbType.Int16,3)
+            };
+            param[0].Value = strGrpID;
+            param[0].Direction = ParameterDirection.Input;
+            param[1].Value = intBC;
+            param[1].Direction = ParameterDirection.Input;
+            param[2].Value = strUserID;
+            param[2].Direction = ParameterDirection.Input;
+            param[3].Value = intType;
+            param[3].Direction = ParameterDirection.Input;
+            param[4].Value = intRound;
+            param[4].Direction = ParameterDirection.Input;
             try
             {
-                dtMaxSeq = DBHelper.GetDataTable(sqlQryMaxSeq);
+                DBHelper.ExecuteProdNonQuery("PROC_QUEUEADD_NEW", param);
             }
-            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            catch (OracleException orex)
             {
-                Console.WriteLine("查询最大序号时跳出错误，SQL：" + sqlQryMaxSeq + "。\r\n" + orex);
-                return false;
-            }
-            if (dtMaxSeq.Rows[0]["maxseq"].ToString().Trim() != null && dtMaxSeq.Rows[0]["maxseq"].ToString().Trim() != "")
-            {
-                intSequence = int.Parse(dtMaxSeq.Rows[0]["maxseq"].ToString()) + 1;
-            }
-            string sqlAddSeq = "insert into TTL_Queue(seq,id,grpid,sosflag) values(" + intSequence + ",'" + strUserID + "','" + strGrpID + "'," + intSosFlag + ")";
-            try
-            {
-                DBHelper.ExecuteCommand(sqlAddSeq);
-                return true;
-            }
-            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
-            {
-                Console.WriteLine("写入队列时跳出错误，SQL：" + sqlAddSeq + "。\r\n" + orex);
-                return false;
+                if (orex.Number == 20101)
+                {
+                    throw new Exception("无法同时加入多个队伍，请先使用C3退出现有队伍。");
+                }
+                else if (orex.Number == 20102)
+                {
+                    throw new Exception("尚未加入队伍，请先加入一个队伍。");
+                }
+                else if (orex.Number == 20104)
+                {
+                    throw new Exception("缺少周目值，请指定周目值。");
+                }
+                else
+                {
+                    Console.WriteLine(DateTime.Now.ToString() + "执行PROC_QUEUEADD_NEW时跳出错误：" + orex);
+                    throw new Exception("未知数据库错误代码" + orex.Number.ToString() + "，请联系bot管理员。");
+                }
             }
         }
 
         /// <summary>
         /// 读取当前队列的方法
         /// </summary>
-        /// <param name="strGrpID">群号</param>
-        /// <param name="dtQueue">包含id（用户qq号）,seq（序号）,name（用户群名片）的查询结果</param>
-        /// <returns>
-        /// true：执行成功；false：执行失败。
-        /// </returns>
-        public static bool ShowQueue(string strGrpID, out DataTable dtQueue)
+        /// <param name="strGrpID"></param>
+        /// <param name="intBC"></param>
+        /// <param name="strUserID"></param>
+        /// <param name="intType"></param>
+        /// <param name="dtQueue"></param>
+        public static void ShowQueue(string strGrpID, int intBC, string strUserID, int intType, out DataTable dtQueue)
         {
-            string sqlQrySeq = "select ID,SEQ,SOSFLAG,BC,ROUND,b.MBRNAME from TTL_QUEUE a " +
-                "left join (select MBRID,MBRNAME,GRPID from TTL_MBRLIST) b " +
-                "on a.GRPID = b.GRPID and a.ID = b.MBRID " +
-                "where a.GRPID = '" + strGrpID + "' and a.SEQ > 0 order by a.SEQ asc";
-
+            OracleParameter[] param = new OracleParameter[]
+            {
+                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,20),
+                new OracleParameter(":i_numBossCode", OracleDbType.Int16,1),
+                new OracleParameter(":i_varUserID", OracleDbType.Varchar2,20),
+                new OracleParameter(":i_numQueryAll", OracleDbType.Int16,1),
+                new OracleParameter(":o_refQueue",OracleDbType.RefCursor)
+            };
+            param[0].Value = strGrpID;
+            param[0].Direction = ParameterDirection.Input;
+            param[1].Value = intBC;
+            param[1].Direction = ParameterDirection.Input;
+            param[2].Value = strUserID;
+            param[2].Direction = ParameterDirection.Input;
+            param[3].Value = intType;
+            param[3].Direction = ParameterDirection.Input;
+            param[4].Direction = ParameterDirection.Output;
             try
             {
-                dtQueue = DBHelper.GetDataTable(sqlQrySeq);
-                return true;
+                dtQueue = DBHelper.ExecuteProdQuery("PROC_QUEUEQUERY_NEW", param);
             }
-            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            catch (OracleException orex)
             {
-                Console.WriteLine("查询队列时跳出错误，SQL：" + sqlQrySeq + "。\r\n" + orex);
+                if (orex.Number == 20102)
+                {
+                    throw new Exception("尚未加入队列，请先加入一个队列，或使用BOSS编号指定查询的队列，或使用all字段查询所有队列。");
+                }
+                else
+                {
+                    Console.WriteLine(DateTime.Now.ToString() + "执行PROC_QUEUEQUERY_NEW时跳出错误：" + orex);
+                }
                 dtQueue = null;
-                return false;
             }
         }
 
@@ -133,7 +167,7 @@ namespace Marchen.DAL
                 intDelCount = DBHelper.ExecuteCommand(sqlDelTopQueue);
                 return true;
             }
-            catch (Oracle.ManagedDataAccess.Client.OracleException orex)
+            catch (OracleException orex)
             {
                 Console.WriteLine("修改队列时跳出错误，SQL：" + sqlDelTopQueue + "。\r\n" + orex);
                 intDelCount = 0;
@@ -170,7 +204,7 @@ namespace Marchen.DAL
         /// <param name="strUserID">QQ号</param>
         /// <param name="intUpdCount">受到影响的行数</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool UpdateQueueToSos(string strGrpID, string strUserID,int intBossCode,int intRound, out int intUpdCount)
+        public static bool UpdateQueueToSos(string strGrpID, string strUserID, int intBossCode, int intRound, out int intUpdCount)
         {
             string sqlUpdateQueueToSos = "update TTL_Queue set sosflag = '1',bc = '" + intBossCode + "',round = '" + intRound + "' " +
                 "where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue " +
@@ -179,7 +213,7 @@ namespace Marchen.DAL
             {
                 intUpdCount = DBHelper.ExecuteCommand(sqlUpdateQueueToSos);
                 return true;
-            } 
+            }
             catch (Oracle.ManagedDataAccess.Client.OracleException orex)
             {
                 Console.WriteLine("修改队列时跳出错误，SQL：" + sqlUpdateQueueToSos + "。\r\n" + orex);

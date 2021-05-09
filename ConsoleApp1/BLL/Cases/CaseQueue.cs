@@ -7,6 +7,7 @@ using Marchen.Model;
 using Message = Sisters.WudiLib.SendingMessage;
 using Sisters.WudiLib.Responses;
 using Marchen.Helper;
+using Oracle.ManagedDataAccess.Client;
 
 namespace Marchen.BLL
 {
@@ -15,127 +16,349 @@ namespace Marchen.BLL
         /// <summary>
         /// 加入队列
         /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">用户号</param>
         public static void QueueAdd(string strGrpID, string strUserID, string strCmdContext)
         {
             int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
+            #region member check and context splite error
             if (intMemberStatus == 0)
             {
-                MsgMessage += new Message("尚未报名，无法加入队列。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message("尚未报名，无法加入队列，请先使用nla命令加入成员名单。\r\n");
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             else if (intMemberStatus == -1)
             {
                 MsgMessage += new Message("与数据库失去连接，查询名单失败。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            int intSosFlag;
+            if (InputVariables.IntBossCode == -1)
+            {
+                MsgMessage += new Message("需要输入BOSS编号才可加入队列。\r\n");
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            #endregion
+            if (InputVariables.IntEXT != 0 && InputVariables.IntEXT != 1)
+            {
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message("填入的队列类型不正确（类型留空或填补时）。\r\n");
+                return;
+            }
+            try
+            {
+                QueueDAL.JoinQueue(strGrpID, InputVariables.IntBossCode, strUserID, InputVariables.IntEXT);
+            }
+            catch (Exception ex)
+            {
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message(ex.Message.ToString());
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (InputVariables.IntEXT == 0)
+            {
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message("已加入B" + InputVariables.IntBossCode.ToString() + "队列，类型：通常\r\n");
+            }
             if (InputVariables.IntEXT == 1)
             {
-                intSosFlag = 2;
-            }
-            else
-            {
-                intSosFlag = 0;
-            }
-            if (QueueDAL.AddQueue(strGrpID, strUserID, intSosFlag))
-            {
-                if (intSosFlag == 0)
-                {
-                    MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已加入队列，类型：通常\r\n");
-                }
-                else
-                {
-                    MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已加入队列，类型：补时\r\n");
-                }
-                //MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
-                //MsgMessage = new Message("");
-                QueueShow(strGrpID, strUserID);
-            }
-            else
-            {
-                Console.WriteLine("与数据库失去连接，加入队列失败。\r\n");
-                MsgMessage += new Message("与数据库失去连接，加入队列失败。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message("已加入B" + InputVariables.IntBossCode.ToString() + "队列，类型：补时\r\n");
             }
         }
 
         /// <summary>
         /// 展示队列
         /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="strUserID"></param>
-        /// <param name="strUserGrpCard"></param>
-        public static void QueueShow(string strGrpID, string strUserID)
+        /// <param name="strGrpID">群号</param>
+        /// <param name="strUserID">用户号</param>
+        public static void QueueShow(string strGrpID, string strUserID, string strCmdContext)
         {
-            HpShowAndSubsCheck(strGrpID);
-            if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
+            //HpShowAndSubsCheck(strGrpID);
+            if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                if (dtQueue.Rows.Count > 0)
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (InputVariables.IntBossCode == -1)
+            {
+                InputVariables.IntBossCode = 0;
+            }
+            DataTable dtQueue;
+            try
+            {
+                QueueDAL.ShowQueue(strGrpID, InputVariables.IntBossCode, strUserID, InputVariables.IntIsAllFlag, out dtQueue);
+            }
+            catch (Exception ex)
+            {
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message(ex.Message.ToString());
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (dtQueue.Rows.Count > 0)
+            {
+                //string strList_normal = "";
+                //string strList_ext = "";
+                int intCount_B1 = 0;
+                int intCount_B2 = 0;
+                int intCount_B3 = 0;
+                int intCount_B4 = 0;
+                int intCount_B5 = 0;
+                int intCount_B1_Sos = 0;
+                int intCount_B2_Sos = 0;
+                int intCount_B3_Sos = 0;
+                int intCount_B4_Sos = 0;
+                int intCount_B5_Sos = 0;
+                int intCount_B1_Ext = 0;
+                int intCount_B2_Ext = 0;
+                int intCount_B3_Ext = 0;
+                int intCount_B4_Ext = 0;
+                int intCount_B5_Ext = 0;
+                string strOutput_B1 = "B1队列：";
+                string strOutput_B2 = "B2队列：";
+                string strOutput_B3 = "B3队列：";
+                string strOutput_B4 = "B4队列：";
+                string strOutput_B5 = "B5队列：";
+                string strList_Normal_B1 = "";
+                string strList_Normal_B2 = "";
+                string strList_Normal_B3 = "";
+                string strList_Normal_B4 = "";
+                string strList_Normal_B5 = "";
+                string strList_Ext_B1 = "";
+                string strList_Ext_B2 = "";
+                string strList_Ext_B3 = "";
+                string strList_Ext_B4 = "";
+                string strList_Ext_B5 = "";
+                #region datatable loop select to queue strings and count
+                for (int i = 0; i < dtQueue.Rows.Count; i++)
                 {
-                    string strList_normal = "";
-                    string strList_ext = "";
-                    int intCount_sos = 0;
-                    string strOutput;
-                    for (int i = 0; i < dtQueue.Rows.Count; i++)
+                    if (dtQueue.Rows[i]["BC"].ToString() == "1")
                     {
-                        if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
+                        intCount_B1 += 1;
+                        if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "1")
                         {
-                            intCount_sos += 1;
+                            intCount_B1_Ext += 1;
+                            strList_Ext_B1 += "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
                         }
-                        else if (dtQueue.Rows[i]["sosflag"].ToString() == "2")
+                        else if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "2")
                         {
-                            strList_ext += "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                            intCount_B1_Sos += 1;
                         }
                         else
                         {
-                            strList_normal += "【" + dtQueue.Rows[i]["SEQ"].ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                            //original seq no display:dtQueue.Rows[i]["SEQ"].ToString()
+                            //change to count 2021.05.08, normal queue for counting
+                            strList_Normal_B1 += "【" + (intCount_B1 - intCount_B1_Ext - intCount_B1_Sos).ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
                         }
                     }
-                    if (intCount_sos > 0)
+                    else if (dtQueue.Rows[i]["BC"].ToString() == "2")
                     {
-                        if (strList_ext == "" && strList_normal == "")
+                        intCount_B2 += 1;
+                        if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "1")
                         {
-                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n目前队列中无人。\r\n";
+                            intCount_B2_Ext += 1;
+                            strList_Ext_B2 += "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                        }
+                        else if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "2")
+                        {
+                            intCount_B2_Sos += 1;
                         }
                         else
                         {
-                            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n队列：\r\n" + strList_ext + strList_normal;
+                            strList_Normal_B2 += "【" + (intCount_B2 - intCount_B2_Ext - intCount_B2_Sos).ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
                         }
+                    }
+                    else if (dtQueue.Rows[i]["BC"].ToString() == "3")
+                    {
+                        intCount_B3 += 1;
+                        if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "1")
+                        {
+                            intCount_B3_Ext += 1;
+                            strList_Ext_B3 += "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                        }
+                        else if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "2")
+                        {
+                            intCount_B3_Sos += 1;
+                        }
+                        else
+                        {
+                            strList_Normal_B3 += "【" + (intCount_B3 - intCount_B3_Ext - intCount_B3_Sos).ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                        }
+                    }
+                    else if (dtQueue.Rows[i]["BC"].ToString() == "4")
+                    {
+                        intCount_B4 += 1;
+                        if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "1")
+                        {
+                            intCount_B4_Ext += 1;
+                            strList_Ext_B4 += "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                        }
+                        else if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "2")
+                        {
+                            intCount_B4_Sos += 1;
+                        }
+                        else
+                        {
+                            strList_Normal_B4 += "【" + (intCount_B4 - intCount_B4_Ext - intCount_B4_Sos).ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                        }
+                    }
+                    else if (dtQueue.Rows[i]["BC"].ToString() == "5")
+                    {
+                        intCount_B5 += 1;
+                        if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "1")
+                        {
+                            intCount_B5_Ext += 1;
+                            strList_Ext_B5 += "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                        }
+                        else if (dtQueue.Rows[i]["JOINTYPE"].ToString() == "2")
+                        {
+                            intCount_B5_Sos += 1;
+                        }
+                        else
+                        {
+                            strList_Normal_B5 += "【" + (intCount_B5 - intCount_B5_Ext - intCount_B5_Sos).ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+                        }
+                    }
+                }
+                #endregion
+                if (intCount_B1_Sos > 0)
+                {
+                    if (strList_Ext_B1 == "" && strList_Normal_B1 == "")
+                    {
+                        strOutput_B1 += "（" + intCount_B1_Sos + "人挂树）。\r\n目前队列中无人。\r\n";
                     }
                     else
                     {
-                        strOutput = "队列：\r\n" + strList_ext + strList_normal;
+                        strOutput_B1 += "（" + intCount_B1_Sos + "人挂树）。\r\n" + strList_Ext_B1 + strList_Normal_B1;
                     }
-                    //MsgMessage += new Message();
-                    MsgMessage += new Message(strOutput);
-                    Console.WriteLine(strOutput);
                 }
                 else
                 {
-                    Console.WriteLine("队列中无人");
-                    MsgMessage += new Message("目前队列中无人。\r\n");
+                    strOutput_B1 += "\r\n" + strList_Ext_B1 + strList_Normal_B1;
+                }
+                if (intCount_B2_Sos > 0)
+                {
+                    if (strList_Ext_B2 == "" && strList_Normal_B2 == "")
+                    {
+                        strOutput_B2 += "（" + intCount_B2_Sos + "人挂树）。\r\n目前队列中无人。\r\n";
+                    }
+                    else
+                    {
+                        strOutput_B2 += "（" + intCount_B2_Sos + "人挂树）。\r\n" + strList_Ext_B2 + strList_Normal_B2;
+                    }
+                }
+                else
+                {
+                    strOutput_B2 += "\r\n" + strList_Ext_B2 + strList_Normal_B2;
+                }
+                if (intCount_B3_Sos > 0)
+                {
+                    if (strList_Ext_B3 == "" && strList_Normal_B3 == "")
+                    {
+                        strOutput_B3 += "（" + intCount_B3_Sos + "人挂树）。\r\n目前队列中无人。\r\n";
+                    }
+                    else
+                    {
+                        strOutput_B3 += "（" + intCount_B3_Sos + "人挂树）。\r\n" + strList_Ext_B3 + strList_Normal_B3;
+                    }
+                }
+                else
+                {
+                    strOutput_B3 += "\r\n" + strList_Ext_B3 + strList_Normal_B3;
+                }
+                if (intCount_B4_Sos > 0)
+                {
+                    if (strList_Ext_B4 == "" && strList_Normal_B4 == "")
+                    {
+                        strOutput_B4 += "（" + intCount_B4_Sos + "人挂树）。\r\n目前队列中无人。\r\n";
+                    }
+                    else
+                    {
+                        strOutput_B4 += "（" + intCount_B4_Sos + "人挂树）。\r\n" + strList_Ext_B4 + strList_Normal_B4;
+                    }
+                }
+                else
+                {
+                    strOutput_B4 += "\r\n" + strList_Ext_B4 + strList_Normal_B4;
+                }
+                if (intCount_B5_Sos > 0)
+                {
+                    if (strList_Ext_B5 == "" && strList_Normal_B5 == "")
+                    {
+                        strOutput_B5 += "（" + intCount_B5_Sos + "人挂树）。\r\n目前队列中无人。\r\n";
+                    }
+                    else
+                    {
+                        strOutput_B5 += "（" + intCount_B5_Sos + "人挂树）。\r\n" + strList_Ext_B5 + strList_Normal_B5;
+                    }
+                }
+                else
+                {
+                    strOutput_B5 += "\r\n" + strList_Ext_B5 + strList_Normal_B5;
                 }
             }
-            else
-            {
-                MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
-            }
-            MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //    for (int i = 0; i < dtQueue.Rows.Count; i++)
+            //    {
+            //        if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
+            //        {
+            //            intCount_sos += 1;
+            //        }
+            //        else if (dtQueue.Rows[i]["sosflag"].ToString() == "2")
+            //        {
+            //            strList_ext += "【补时】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+            //        }
+            //        else
+            //        {
+            //            strList_normal += "【" + dtQueue.Rows[i]["SEQ"].ToString() + "】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")\r\n";
+            //        }
+            //    }
+            //    if (intCount_sos > 0)
+            //    {
+            //        if (strList_ext == "" && strList_normal == "")
+            //        {
+            //            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n目前队列中无人。\r\n";
+            //        }
+            //        else
+            //        {
+            //            strOutput = "有" + intCount_sos + "人正在挂树！使用c4看看他们是谁。\r\n队列：\r\n" + strList_ext + strList_normal;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        strOutput = "队列：\r\n" + strList_ext + strList_normal;
+            //    }
+            //    MsgMessage += new Message(strOutput);
+            //    Console.WriteLine(strOutput);
+            //}
+            //else
+            //{
+            //    Console.WriteLine("队列中无人");
+            //    MsgMessage += new Message("目前队列中无人。\r\n");
+            //}
+            //MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
         }
 
         /// <summary>
@@ -170,7 +393,7 @@ namespace Marchen.BLL
                 }
                 //MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
                 //MsgMessage = new Message("");
-                QueueShow(strGrpID, strUserID);
+                //QueueShow(strGrpID, strUserID);
             }
             else
             {
@@ -186,49 +409,49 @@ namespace Marchen.BLL
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
         /// <param name="strUserGrpCard"></param>
-        public static void QueueClear(string strGrpID, string strUserID, GroupMemberInfo memberInfo)
-        {
-            if (memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
-            {
-                if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue_old))
-                {
-                    if (dtQueue_old.Rows.Count > 0)
-                    {
-                        if (QueueDAL.ClearQueue(strGrpID, out int deletedCount))
-                        {
-                            MsgMessage += new Message("已清空队列。\r\n");
-                            Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
-                            MsgMessage += new Message("由于队列被清空，请以下成员重新排队：");
-                            for (int i = 0; i < dtQueue_old.Rows.Count; i++)
-                            {
-                                string strUID = dtQueue_old.Rows[i]["id"].ToString();
-                                MsgMessage += new Message("\r\nID：" + strUID + "， ") + Message.At(long.Parse(strUID));
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("与数据库失去连接，清空队列失败。");
-                            MsgMessage += new Message("与数据库失去连接，清空队列失败。\r\n");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("执行清空队列指令失败，队列中无人。");
-                        MsgMessage += new Message("队列中无人，不需要清空。\r\n");
-                    }
-                }
-                else
-                {
-                    MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
-                }
-            }
-            else
-            {
-                Console.WriteLine("执行清空队列指令失败，由权限不足的人发起");
-                MsgMessage += new Message("拒绝：仅有管理员或群主可执行队列清空指令。\r\n");
-            }
-            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-        }
+        //public static void QueueClear(string strGrpID, string strUserID, GroupMemberInfo memberInfo)
+        //{
+        //    if (memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
+        //    {
+        //        if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue_old))
+        //        {
+        //            if (dtQueue_old.Rows.Count > 0)
+        //            {
+        //                if (QueueDAL.ClearQueue(strGrpID, out int deletedCount))
+        //                {
+        //                    MsgMessage += new Message("已清空队列。\r\n");
+        //                    Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
+        //                    MsgMessage += new Message("由于队列被清空，请以下成员重新排队：");
+        //                    for (int i = 0; i < dtQueue_old.Rows.Count; i++)
+        //                    {
+        //                        string strUID = dtQueue_old.Rows[i]["id"].ToString();
+        //                        MsgMessage += new Message("\r\nID：" + strUID + "， ") + Message.At(long.Parse(strUID));
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    Console.WriteLine("与数据库失去连接，清空队列失败。");
+        //                    MsgMessage += new Message("与数据库失去连接，清空队列失败。\r\n");
+        //                }
+        //            }
+        //            else
+        //            {
+        //                Console.WriteLine("执行清空队列指令失败，队列中无人。");
+        //                MsgMessage += new Message("队列中无人，不需要清空。\r\n");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine("执行清空队列指令失败，由权限不足的人发起");
+        //        MsgMessage += new Message("拒绝：仅有管理员或群主可执行队列清空指令。\r\n");
+        //    }
+        //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+        //}
 
         /// <summary>
         /// 将一个队列记录修改为等待救援
@@ -274,7 +497,7 @@ namespace Marchen.BLL
                     Console.WriteLine("群：" + strGrpID + "，" + strUserID + "修改队列状态失败：未找到记录。");
                     MsgMessage += new Message("未找到队列记录，请先进入队列再改为等待救援状态。\r\n");
                 }
-                QueueShow(strGrpID, strUserID);
+                //QueueShow(strGrpID, strUserID);
             }
             else
             {
@@ -383,43 +606,43 @@ namespace Marchen.BLL
         /// 查挂树名单
         /// </summary>
         /// <param name="strGrpID">群号</param>
-        public static void QueueShow_Sos(string strGrpID)
-        {
-            if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
-            {
-                if (dtQueue.Rows.Count > 0)
-                {
-                    string strList_sos = "";
-                    for (int i = 0; i < dtQueue.Rows.Count; i++)
-                    {
-                        if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
-                        {
-                            strList_sos += "【挂树第"+i.ToString()+"名】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】\r\n";
-                        }
-                    }
-                    string strOutput;
-                    if (strList_sos.Length != 0)
-                    {
-                        strOutput = "光   荣   榜：\r\n" + strList_sos;
-                    }
-                    else
-                    {
-                        strOutput = "目前队列无人挂树。太好了，继续保持。\r\n";
-                    }
-                    MsgMessage += new Message();
-                    MsgMessage += new Message(strOutput);
-                }
-                else
-                {
-                    MsgMessage += new Message("目前队列中无人。\r\n");
-                }
-            }
-            else
-            {
-                MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
-            }
-            MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
-        }
+        //public static void QueueShow_Sos(string strGrpID)
+        //{
+        //    if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
+        //    {
+        //        if (dtQueue.Rows.Count > 0)
+        //        {
+        //            string strList_sos = "";
+        //            for (int i = 0; i < dtQueue.Rows.Count; i++)
+        //            {
+        //                if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
+        //                {
+        //                    strList_sos += "【挂树第"+i.ToString()+"名】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】\r\n";
+        //                }
+        //            }
+        //            string strOutput;
+        //            if (strList_sos.Length != 0)
+        //            {
+        //                strOutput = "光   荣   榜：\r\n" + strList_sos;
+        //            }
+        //            else
+        //            {
+        //                strOutput = "目前队列无人挂树。太好了，继续保持。\r\n";
+        //            }
+        //            MsgMessage += new Message();
+        //            MsgMessage += new Message(strOutput);
+        //        }
+        //        else
+        //        {
+        //            MsgMessage += new Message("目前队列中无人。\r\n");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
+        //    }
+        //    MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
+        //}
 
         /// <summary>
         /// 显示血量并检查是否有预定列表和下树提醒

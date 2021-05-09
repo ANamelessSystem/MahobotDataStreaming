@@ -205,7 +205,7 @@ namespace Marchen.BLL
                         break;
                     case "queueshow":
                         {
-                            CaseQueue.QueueShow(strGrpID, strUserID);
+                            CaseQueue.QueueShow(strGrpID, strUserID, strCmdContext);
                         }
                         break;
                     case "queuequit":
@@ -215,12 +215,12 @@ namespace Marchen.BLL
                         break;
                     case "sosshow":
                         {
-                            CaseQueue.QueueShow_Sos(strGrpID);
+                            //CaseQueue.QueueShow_Sos(strGrpID);
                         }
                         break;
                     case "clear":
                         {
-                            CaseQueue.QueueClear(strGrpID, strUserID, memberInfo);
+                            //CaseQueue.QueueClear(strGrpID, strUserID, memberInfo);
                         }
                         break;
                     case "debrief":

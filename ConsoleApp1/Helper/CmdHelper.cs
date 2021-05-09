@@ -39,17 +39,14 @@ namespace Marchen.BLL
                     if (ValueLimits.DamageLimitMax == 0)
                     {
                         Console.WriteLine("未能获取伤害上限，请检查TTL_LIMITS表中是否有DAMAGE_MAX项");
-                        //return false;
                     }
                     else if (ValueLimits.RoundLimitMax == 0)
                     {
                         Console.WriteLine("未能获取周目上限，请检查TTL_LIMITS表中是否有ROUND_MAX项");
-                        //return false;
                     }
                     else if (ValueLimits.BossLimitMax == 0)
                     {
                         Console.WriteLine("未能获取BOSS编号上限，请检查TTL_LIMITS表中是否有BOSS_MAX项");
-                        //return false;
                     }
                     else
                     {
@@ -63,7 +60,6 @@ namespace Marchen.BLL
                 else
                 {
                     Console.WriteLine("向数据库读取上限值时无返回条目，请检查TTL_LIMITS表。");
-                    //return false;
                 }
             }
             return isCorrect;
@@ -87,12 +83,12 @@ namespace Marchen.BLL
         {
             Console.WriteLine("开始拆分元素");
             bool isCorrect = true;
-            InputVariables.IntEID = -1;
-            InputVariables.DouUID = -1;
-            InputVariables.IntBossCode = -1;
-            InputVariables.IntRound = -1;
-            InputVariables.IntDMG = -1;
-            InputVariables.IntEXT = -1;
+            InputVariables.IntEID = -1;//输入的事件ID，档案号
+            InputVariables.DouUID = -1;//输入的用户ID
+            InputVariables.IntBossCode = -1;//输入的BOSS编号
+            InputVariables.IntRound = -1;//输入的周目编号
+            InputVariables.IntDMG = -1;//输入的伤害值
+            InputVariables.IntEXT = 0;//输入的类型值，0=正常，1=补时，2=尾刀
             //CommonVariables.IntSubsType = -1;
             InputVariables.IntTimeOutFlag = 0;
             InputVariables.IntIsAllFlag = 0;

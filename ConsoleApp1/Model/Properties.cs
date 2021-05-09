@@ -5,6 +5,9 @@ using Sisters.WudiLib;
 
 namespace Marchen.Model
 {
+    /// <summary>
+    /// api设定，设定接收与发送api，只写了http方式
+    /// </summary>
     public static class ApiProperties
     {
         /// <summary>
@@ -36,6 +39,10 @@ namespace Marchen.Model
         public static string SelfID { get; set; }
     }
 
+
+    /// <summary>
+    /// 数据库属性，只写了Oracle DB方式
+    /// </summary>
     class DBProperties
     {
         /// <summary>
@@ -62,5 +69,22 @@ namespace Marchen.Model
         /// 数据库服务名
         /// </summary>
         public static string DBServiceName { get; set; }
+    }
+
+
+
+    /// <summary>
+    /// 环境设定，主要指的是调试环境
+    /// </summary>
+    class EnvSettings
+    {
+        /// <summary>
+        /// 调试模式，启动后只对调试群号内容响应
+        /// </summary>
+        public static string TestMode { get; set; }
+        /// <summary>
+        /// 调试群号
+        /// </summary>
+        public static string TestGrpID { get; set; }
     }
 }
