@@ -98,8 +98,8 @@ namespace Marchen.Helper
             {
                 _ContentHeight = Regex.Matches(strContent, "\r\n").Count;
             }
-            //create bitmap base on the length and height
-            Bitmap image = new Bitmap((int)Math.Ceiling((_ContentLength * 15.0)), (_ContentHeight * 25));
+            //create bitmap base on the length and height//L:15 H:25//L:16 H:23
+            Bitmap image = new Bitmap((int)Math.Ceiling((_ContentLength * 16.0)), (_ContentHeight * 23));
             Graphics g = Graphics.FromImage(image);
             byte[] _byteArray;
             try

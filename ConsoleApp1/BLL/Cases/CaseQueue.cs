@@ -104,9 +104,9 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (dtQueue.Rows.Count > 0)
-            {
-                int intBCBaseValue = 0;
+            //if (dtQueue.Rows.Count > 0)
+            //{
+                int intBCBaseValue = 1;
                 int intBCRange = ValueLimits.BossLimitMax + 1;
                 string strOutput = "";
                 if (InputVariables.IntIsAllFlag == 0 && InputVariables.IntBossCode > 0)
@@ -116,11 +116,11 @@ namespace Marchen.BLL
                 }
                 else if (InputVariables.IntIsAllFlag == 1)
                 {
-
+                    //按初始化赋值即可，不需要特别在这里写什么
                 }
                 else
                 {
-                    Console.WriteLine(DateTime.Now.ToString() + "执行队列请求时跳出错误\r\n" + strCmdContext + "\r\nALLFLAG=" + InputVariables.IntIsAllFlag.ToString() + ";BC=" + InputVariables.IntBossCode.ToString() );
+                    Console.WriteLine(DateTime.Now.ToString() + "执行队列请求时出现未预料的错误\r\n" + strCmdContext + "\r\nALLFLAG=" + InputVariables.IntIsAllFlag.ToString() + ";BC=" + InputVariables.IntBossCode.ToString());
                     MsgMessage += new Message("查询队列出现错误，请联系bot维护人员。");
                     MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
                 }
@@ -156,11 +156,11 @@ namespace Marchen.BLL
                     {
                         if (intCount_Sos == intCount)//只有人挂树而无有效队列的情况
                         {
-                            strOutput += "（" + intCount_Sos + "人挂树）。\r\n目前队列中无人。\r\n";
+                            strOutput += "（" + intCount_Sos + "人挂树）\r\n目前队列中无人。\r\n";
                         }
                         else
                         {
-                            strOutput += "（" + intCount_Sos + "人挂树）。\r\n" + strList_Ext + strList_Normal;
+                            strOutput += "（" + intCount_Sos + "人挂树）\r\n" + strList_Ext + strList_Normal;
                         }
                     }
                     else
@@ -170,7 +170,12 @@ namespace Marchen.BLL
                 }
                 MsgMessage += new Message(strOutput);
                 MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
-            }
+            //}
+            //else
+            //{
+            //    MsgMessage += new Message("B" + InputVariables.IntBossCode.ToString() + "队列：\r\n目前队列中无人。");
+            //    MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
+            //}
         }
 
         /// <summary>
