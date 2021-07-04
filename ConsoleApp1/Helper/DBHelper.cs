@@ -34,6 +34,17 @@ namespace Marchen.DAL
             }
         }
 
+        public static void DBConnectClose()
+        {
+            if (connection.State == ConnectionState.Open)
+            {
+                connection.Close();
+            }
+            if (connection.State == ConnectionState.Broken)
+            {
+                connection.Close();
+            }
+        }
         /// <summary>
         /// 采用DataTable方式查询
         /// </summary>
@@ -135,14 +146,14 @@ namespace Marchen.DAL
         public static DataSet ExecuteProd2DataSet(string strProdName, OracleParameter[] paras)
         {
             OracleCommand cmd = new OracleCommand();
-            cmd.Connection = connection;
+            cmd.Connection = Connection;
             cmd.CommandText = strProdName;
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddRange(paras);
             OracleDataAdapter daReader = new OracleDataAdapter(cmd);
             DataSet ds = new DataSet();
             daReader.Fill(ds);
-            connection.Close();
+            Connection.Close();
             return ds;
         }
     }

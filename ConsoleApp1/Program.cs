@@ -22,7 +22,7 @@ namespace Marchen.Garden
             CultureInfo.CurrentCulture = culture;
             CultureInfo.CurrentUICulture = culture;
             DisbleQuickEditMode();
-
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
 
 
@@ -107,8 +107,13 @@ namespace Marchen.Garden
             };
             Console.ReadKey();
         }
-
-        #region 关闭控制台 快速编辑模式、插入模式
+        #region 关闭前行为
+        static void OnProcessExit(object sender, EventArgs e)
+        {
+            DAL.DBHelper.DBConnectClose();
+        }
+        #endregion
+        #region 关闭快速编辑模式、插入模式
         const int STD_INPUT_HANDLE = -10;
         const uint ENABLE_QUICK_EDIT_MODE = 0x0040;
         const uint ENABLE_INSERT_MODE = 0x0020;

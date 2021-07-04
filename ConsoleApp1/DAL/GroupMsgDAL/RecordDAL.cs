@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using Marchen.Model;
+using Oracle.ManagedDataAccess.Client;
 
 namespace Marchen.DAL
 {
@@ -186,31 +187,29 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtProgress">dt格式进度表</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool GetBossProgress(string strGrpID, out DataTable dtProgress)
+        public static void GetBossProgress(string strGrpID, out DataTable dtProgress)
         {
-            string sqlQueryProgress = "select c.maxbc,c.maxround,(d.HP-c.totaldmg) as hpremain from " +
-                "(select max(a.MAXBC) as maxbc, max(a.MAXROUND) as maxround, nvl(sum(b.DMG), 0) as totaldmg from " +
-                "(select nvl(max(bc), 1) as maxbc, nvl(max(round), 1) as maxround from TTL_DMGRECORDS where " +
-                "grpid = '" + strGrpID + "' and round = (select max(round) from " +
-                "TTL_DMGRECORDS where grpid = '" + strGrpID + "')) a " +
-                "left join (select dmg, bc, round from TTL_DMGRECORDS where grpid = '" + strGrpID + "') b " +
-                "on a.MAXBC = b.bc and a.maxround = b.round) c " +
-                "left join ((select regioncode,roundmin, roundmax, bc, hp from ttl_hpset " +
-                "right join (select org_region from ttl_orglist where org_id = '" + strGrpID + "') " +
-                "on REGIONCODE = ORG_REGION)) d " +
-                "on c.MAXROUND between d.ROUNDMIN and d.ROUNDMAX and c.MAXBC = d.bc";
+            OracleParameter[] param = new OracleParameter[]
+            {
+                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,20),
+                new OracleParameter(":o_refProgress",OracleDbType.RefCursor)
+            };
+            param[0].Value = strGrpID;
+            param[0].Direction = ParameterDirection.Input;
+            param[1].Direction = ParameterDirection.Output;
             try
             {
-                dtProgress = DBHelper.GetDataTable(sqlQueryProgress);
-                return true;
+                dtProgress = DBHelper.ExecuteProdQuery("PROC_PROGQUERY", param);
             }
-            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            catch (OracleException orex)
             {
-                Console.WriteLine("查询目前进度时发生错误，SQL：" + sqlQueryProgress + "。\r\n" + oex);
+                Console.WriteLine(DateTime.Now.ToString() + "执行PROC_PROGQUERY时跳出错误：" + orex);
                 dtProgress = null;
-                return false;
             }
         }
+
+
+
 
         /// <summary>
         /// 根据BOSS或周目或两方查询出刀记录的方法

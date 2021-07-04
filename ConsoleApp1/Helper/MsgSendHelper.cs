@@ -9,6 +9,7 @@ using Sisters.WudiLib.Responses;
 using System.IO;
 using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
+using System.Data;
 
 namespace Marchen.Helper
 {
@@ -38,7 +39,8 @@ namespace Marchen.Helper
                 int _ContentHeight = Regex.Matches(strRawMessage, "\r\n").Count;
                 //when it's too long, convert it to a picture
                 //update 20210223 seems getting worse...
-                if (_ContentHeight > 3)
+                //update 20210601 seems good now
+                if (_ContentHeight > 30)
                 {
                     //_ContentHeight += 1;
                     ConvertText2Pic(strRawMessage, _ContentHeight, out _outMessage);
@@ -121,6 +123,43 @@ namespace Marchen.Helper
             {
                 g.Dispose();
                 image.Dispose();
+            }
+        }
+
+        public static void ProgressStringFormat(DataRow[] drsProgress,out string strProgressFormat)
+        {
+            //预想效果：B1（1周目，1阶段，万单位/亿单位）[0..^4]/[0..^8]
+            //ITEMS IN DATAROW:
+            //GRPID BC ROUND PARSE DMG HP ROUNDMIN ROUNDMAX
+            string strHPRemain = "";
+            double douHPRemain = double.Parse(drsProgress[0]["HP"].ToString()) - double.Parse(drsProgress[0]["DMG"].ToString());
+            int intParse = int.Parse(drsProgress[0]["PARSE"].ToString());
+            int intRound = int.Parse(drsProgress[0]["ROUND"].ToString());
+            int intRoundMax = int.Parse(drsProgress[0]["ROUNDMAX"].ToString());
+            int intRoundMin = int.Parse(drsProgress[0]["ROUNDMIN"].ToString());
+            if (douHPRemain >= 10000 && douHPRemain < 100000000)
+            {
+                strHPRemain = douHPRemain.ToString()[0..^4] + "万";
+            }
+            else if (douHPRemain >= 100000000)
+            {
+                strHPRemain = douHPRemain.ToString()[0..^8] + "亿";
+            }
+            else
+            {
+                strHPRemain = douHPRemain.ToString();
+            }
+            if (intRoundMax - intRound == 1)
+            {
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（注：下周目换阶段），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余：" + strHPRemain + "，";
+            }
+            else if (intRound == intRoundMin)
+            {
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（注：阶段已更新），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余：" + strHPRemain + "，";
+            }
+            else
+            {
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目，" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余：" + strHPRemain + "，";
             }
         }
     }
