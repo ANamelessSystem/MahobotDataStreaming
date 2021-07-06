@@ -94,7 +94,7 @@ namespace Marchen.BLL
             int intBCBaseValue;
             int intBCRange;
             string strOutput = "";
-            string strProgress = "";
+            string strProcessRow = "";
             if (InputVariables.IntIsAllFlag == 1)
             {
                 intBCBaseValue = 1;
@@ -144,7 +144,6 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-
             for (int i = intBCBaseValue; i < intBCRange; i++)
             {
                 int intCount = 0;
@@ -175,26 +174,38 @@ namespace Marchen.BLL
                 if (dtProgress.Rows.Count > 0)
                 {
                     DataRow[] drProgress = dtProgress.Select("BC = " + i.ToString());
-                    MsgSendHelper.ProgressStringFormat(drProgress,out strProgress);
-                    
-                    
+                    MsgSendHelper.ProgressRowHandler(drProgress,out strProcessRow);
                 }
-                
-                strOutput += "B" + i.ToString() + strProgress + "队列：";
+                if (InputVariables.IntIsAllFlag == 1)
+                {
+                    strOutput += "B" + i.ToString() + strProcessRow + "队列：";
+                }
+                else
+                {
+                    strOutput += "B" + i.ToString() + strProcessRow + "队列：";
+                }
                 if (intCount > 0)
                 {
                     if (intCount_Sos == intCount)//只有人挂树而无有效队列的情况
                     {
                         strOutput += "（" + intCount_Sos + "人挂树）\r\n目前队列中无人。\r\n";
                     }
-                    else
+                    else if (intCount_Sos != 0)
                     {
                         strOutput += "（" + intCount_Sos + "人挂树）\r\n" + strList_Ext + strList_Normal;
+                    }
+                    else
+                    {
+                        strOutput += "\r\n" + strList_Ext + strList_Normal;
                     }
                 }
                 else
                 {
                     strOutput += "\r\n目前队列中无人。\r\n";
+                }
+                if (InputVariables.IntIsAllFlag == 1)
+                {
+                    strOutput += "\r\n";
                 }
             }
             MsgMessage += new Message(strOutput);
@@ -207,38 +218,24 @@ namespace Marchen.BLL
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
         /// <param name="intType">0：直接收到C3命令；1：来自其他方法的调用</param>
-        public static void QueueQuit(string strGrpID, string strUserID, int intType)
+        public static void QueueQuit(string strGrpID, string strUserID, string strCmdContext)
         {
             if (QueueDAL.QuitQueue(strGrpID, strUserID, out int deletedCount))
             {
                 if (deletedCount > 0)
                 {
-                    //Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀移出队列。");
                     MsgMessage += Message.At(long.Parse(strUserID));
                     MsgMessage += new Message("已将较早一次队列记录退出。\r\n");
                 }
                 else
                 {
-                    //Console.WriteLine("群：" + strGrpID + "，" + strUserID + "移出队列失败：未找到记录。");
-                    if (intType == 0)
-                    {
-                        MsgMessage += Message.At(long.Parse(strUserID));
-                        MsgMessage += new Message("未找到队列记录。\r\n");
-                    }
-                    if (intType == 1)
-                    {
-                        MsgMessage += Message.At(long.Parse(strUserID));
-                        MsgMessage += new Message("未找到队列记录，这可能是一次未排刀的伤害上报。\r\n");
-                    }
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message("退出队列失败：未找到队列记录。\r\n");
                 }
-                //MsgSendHelper.UniversalMsgSender(0, 1, strGrpID, MsgMessage);
-                //MsgMessage = new Message("");
-                //QueueShow(strGrpID, strUserID);
             }
             else
             {
                 MsgMessage += new Message("与数据库失去连接，退出队列失败。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
             }
         }
@@ -479,98 +476,5 @@ namespace Marchen.BLL
         //    }
         //    MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
         //}
-
-        /// <summary>
-        /// 显示血量并检查是否有预定列表和下树提醒
-        /// </summary>
-        /// <param name="strGrpID">群号</param>
-        public static void HpShowAndSubsCheck(string strGrpID)
-        {
-            if (Format_Progress(strGrpID, out int _round, out int _bc, out int _hp, out int _ratio))
-            {
-                string strOutput;
-                if (_ratio == 10000)
-                {
-                    strOutput = "进度：" + _round.ToString() + "周目，B" + _bc.ToString() + "，剩余血量=" + _hp + "万";
-                }
-                else if (_ratio == 1)
-                {
-                    strOutput = "进度：" + _round.ToString() + "周目，B" + _bc.ToString() + "，剩余血量=" + _hp;
-                }
-                else
-                {
-                    MsgMessage += new Message("获取进度时发生预想外的错误，已关闭血量显示。\r\n");
-                    return;
-                }
-                MsgMessage += new Message(strOutput + "\r\n");
-            }
-            else
-            {
-                //Message += new Message("获取进度时发生预想外的错误，已关闭血量显示。\r\n");
-                return;
-            }
-            //订阅提醒
-            int intProgType;
-            if ((_hp * _ratio) > 3000000)
-            {
-                //提醒到订阅类型0
-                intProgType = 0;
-            }
-            else
-            {
-                //提醒到下一个的订阅类型0
-                intProgType = 2;
-            }
-            if (SubscribeDAL.BossReminder(strGrpID, _round, _bc, intProgType, out DataTable dtSubsMembers))
-            {
-                if (dtSubsMembers.Rows.Count > 0)
-                {
-                    string strUnit = "";
-                    if (_ratio == 10000)
-                    {
-                        strUnit = "万";
-                    }
-                    string strRemindContext = "[公会战进度提醒]\r\n您所在群：" + strGrpID + "，BOSS进度已到B" + _bc + "，目前血量：" + _hp + strUnit + "\r\n如时间方便，请做好本战准备。";
-                    for (int i = 0; i < dtSubsMembers.Rows.Count; i++)
-                    {
-                        long lUserID = long.Parse(dtSubsMembers.Rows[i]["USERID"].ToString());
-                        ApiProperties.HttpApi.SendPrivateMessageAsync(lUserID, strRemindContext);
-                        Console.WriteLine("已私聊通知" + lUserID.ToString() + "(" + strGrpID + ")");
-                        SubscribeDAL.UpdateRemindFlag(strGrpID, lUserID.ToString(), _round, _bc, intProgType);
-                        Console.WriteLine("已更新通知状态" + lUserID.ToString() + "(" + strGrpID + ")");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("提醒查询失败（数据库错误）");
-            }
-            //下树提醒
-            if (QueueDAL.QuerySosList(strGrpID, _bc, _round, out DataTable dtSosList))
-            {
-                if (dtSosList != null && dtSosList.Rows.Count > 0)
-                {
-                    if (!(dtSosList.Rows[0][0] is DBNull))
-                    {
-                        MsgMessage += new Message("下树提醒：");
-                        for (int i = 0; i < dtSosList.Rows.Count; i++)
-                        {
-                            if (i > 0 && i < dtSosList.Rows.Count)
-                            {
-                                MsgMessage += new Message("、");
-                            }
-                            MsgMessage += Message.At(long.Parse(dtSosList.Rows[i]["userid"].ToString()));
-                        }
-                        MsgMessage += new Message("\r\n");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("下树查询失败（数据库错误）");
-            }
-            MsgSendHelper.UniversalMsgSender(MsgSendType.Raw, MsgTargetType.Group, strGrpID, MsgMessage);
-            MsgMessage = new Message("");
-        }
     }
 }

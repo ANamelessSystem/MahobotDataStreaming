@@ -84,23 +84,23 @@ namespace Marchen.BLL
                 {
                     strUserGrpCard = strUserNickName;
                 }
-                string cmdType = "";
-                if (strCmdHead.ToLower() == "c1" || strCmdHead == "排队")
+                string cmdType;
+                if (strCmdHead.ToLower().Contains("c1") || strCmdHead == "排队")
                 {
                     cmdType = "queueadd";
                     Console.WriteLine("识别为开始排刀");
                 }
-                else if (strCmdHead.ToLower() == "c2" || strCmdHead == "查看排队")
+                else if (strCmdHead.ToLower().Contains("c2") || strCmdHead == "查看排队")
                 {
                     cmdType = "queueshow";
                     Console.WriteLine("识别为查询排刀");
                 }
-                else if (strCmdHead.ToLower() == "c3" || strCmdHead == "退出排队")
+                else if (strCmdHead.ToLower().Contains("c3") || strCmdHead == "退出排队")
                 {
                     cmdType = "queuequit";
                     Console.WriteLine("识别为退出排刀");
                 }
-                else if (strCmdHead.ToLower() == "c4" || strCmdHead == "查看挂树")
+                else if (strCmdHead.ToLower().Contains("c4") || strCmdHead == "查看挂树")
                 {
                     cmdType = "sosshow";
                     Console.WriteLine("识别为查询挂树名单");
@@ -181,11 +181,6 @@ namespace Marchen.BLL
                     cmdType = "sos";
                     Console.WriteLine("挂树等救");
                 }
-                //else if (strCmdHead.ToLower() == "score")
-                //{
-                //    cmdType = "score";
-                //    Console.WriteLine("算分");
-                //}
                 else if (strSpecCmdText == "initialize member list")
                 {
                     cmdType = "namelistinit";
@@ -200,17 +195,121 @@ namespace Marchen.BLL
                 {
                     case "queueadd":
                         {
-                            CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            if (strCmdHead.ToLower() == "c1")
+                            {
+                                CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                            }
+                            else
+                            {
+                                if (strCmdHead.Length == 3)
+                                {
+                                    if (int.TryParse(strCmdHead.Substring(strCmdHead.Length - 1, 1), out int intBC))
+                                    {
+                                        if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
+                                        {
+                                            CaseQueue.QueueAdd(strGrpID, strUserID, "B" + intBC.ToString());
+                                        }
+                                        else
+                                        {
+                                            MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                            return;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    goto case "unknown";
+                                }
+                            }
                         }
                         break;
                     case "queueshow":
                         {
-                            CaseQueue.QueueShow(strGrpID, strUserID, strCmdContext);
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            if (strCmdHead.ToLower() == "c2")
+                            {
+                                CaseQueue.QueueShow(strGrpID, strUserID, strCmdContext);
+                            }
+                            else
+                            {
+                                if (strCmdHead.Length == 3)
+                                {
+                                    if (int.TryParse(strCmdHead.Substring(strCmdHead.Length - 1, 1), out int intBC))
+                                    {
+                                        if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
+                                        {
+                                            CaseQueue.QueueShow(strGrpID, strUserID, "B" + intBC.ToString());
+                                        }
+                                        else
+                                        {
+                                            MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                            return;
+                                        }
+                                    }
+                                    if (strCmdHead.ToLower().Substring(strCmdHead.Length - 1, 1) == "a")
+                                    {
+                                        CaseQueue.QueueShow(strGrpID, strUserID, "all");
+                                    }
+                                }
+                                else
+                                {
+                                    goto case "unknown";
+                                }
+                            }
                         }
                         break;
                     case "queuequit":
                         {
                             CaseQueue.QueueQuit(strGrpID, strUserID, 0);
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            if (strCmdHead.ToLower() == "c1")
+                            {
+                                CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                            }
+                            else
+                            {
+                                if (strCmdHead.Length == 3)
+                                {
+                                    if (int.TryParse(strCmdHead.Substring(strCmdHead.Length - 1, 1), out int intBC))
+                                    {
+                                        if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
+                                        {
+                                            CaseQueue.QueueAdd(strGrpID, strUserID, "B" + intBC.ToString());
+                                        }
+                                        else
+                                        {
+                                            MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                            return;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    goto case "unknown";
+                                }
+                            }
                         }
                         break;
                     case "sosshow":

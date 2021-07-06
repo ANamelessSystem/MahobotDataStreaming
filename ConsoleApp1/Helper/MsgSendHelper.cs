@@ -126,7 +126,7 @@ namespace Marchen.Helper
             }
         }
 
-        public static void ProgressStringFormat(DataRow[] drsProgress,out string strProgressFormat)
+        public static void ProgressRowHandler(DataRow[] drsProgress,out string strProgressFormat)
         {
             //预想效果：B1（1周目，1阶段，万单位/亿单位）[0..^4]/[0..^8]
             //ITEMS IN DATAROW:
@@ -151,15 +151,15 @@ namespace Marchen.Helper
             }
             if (intRoundMax - intRound == 1)
             {
-                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（注：下周目换阶段），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余：" + strHPRemain + "，";
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（注：下周目换阶段），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
             }
             else if (intRound == intRoundMin)
             {
-                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（注：阶段已更新），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余：" + strHPRemain + "，";
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（注：阶段已更新），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
             }
             else
             {
-                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目，" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余：" + strHPRemain + "，";
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目，" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
             }
         }
     }
