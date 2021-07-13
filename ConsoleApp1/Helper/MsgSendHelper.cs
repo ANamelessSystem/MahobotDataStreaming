@@ -151,11 +151,11 @@ namespace Marchen.Helper
             }
             if (intRoundMax - intRound == 1)
             {
-                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（注：下周目换阶段），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（本阶段最后周目），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
             }
             else if (intRound == intRoundMin)
             {
-                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（注：阶段已更新），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（新阶段），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
             }
             else
             {

@@ -46,7 +46,16 @@ namespace Marchen.BLL
                 return;
             }
             #endregion
-            if (InputVariables.IntEXT != 0 && InputVariables.IntEXT != 1)
+            int intJoinType;
+            if (InputVariables.IntEXT == 0)
+            {
+                intJoinType = 0;
+            }
+            else if (InputVariables.IntEXT == 1)
+            {
+                intJoinType = 1;
+            }
+            else
             {
                 MsgMessage += Message.At(long.Parse(strUserID));
                 MsgMessage += new Message("填入的队列类型不正确（类型留空或填补时）。\r\n");
@@ -54,7 +63,7 @@ namespace Marchen.BLL
             }
             try
             {
-                QueueDAL.JoinQueue(strGrpID, InputVariables.IntBossCode, strUserID, InputVariables.IntEXT);
+                QueueDAL.JoinQueue(strGrpID, InputVariables.IntBossCode, strUserID, intJoinType);
             }
             catch (Exception ex)
             {
@@ -63,16 +72,17 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (InputVariables.IntEXT == 0)
+            MsgMessage += Message.At(long.Parse(strUserID));
+            if (intJoinType == 0)
             {
-                MsgMessage += Message.At(long.Parse(strUserID));
                 MsgMessage += new Message("已加入B" + InputVariables.IntBossCode.ToString() + "队列，类型：通常\r\n");
             }
-            if (InputVariables.IntEXT == 1)
+            else
             {
-                MsgMessage += Message.At(long.Parse(strUserID));
                 MsgMessage += new Message("已加入B" + InputVariables.IntBossCode.ToString() + "队列，类型：补时\r\n");
             }
+            strCmdContext = "B" + InputVariables.IntBossCode.ToString();
+            QueueShow(strGrpID, strUserID, strCmdContext);
         }
 
         /// <summary>
@@ -233,6 +243,10 @@ namespace Marchen.BLL
             {
                 intQuitType = 0;
             }
+            if (InputVariables.IntBossCode == -1)
+            {
+                InputVariables.IntBossCode = 0;
+            }
             if (InputVariables.IntBossCode < 1 && intQuitType == 0)
             {
                 MsgMessage += Message.At(long.Parse(strUserID));
@@ -246,6 +260,7 @@ namespace Marchen.BLL
                 {
                     MsgMessage += Message.At(long.Parse(strUserID));
                     MsgMessage += new Message("命令已执行。\r\n");
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 }
                 else
                 {

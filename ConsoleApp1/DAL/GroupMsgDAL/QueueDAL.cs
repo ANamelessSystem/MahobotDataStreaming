@@ -167,7 +167,7 @@ namespace Marchen.DAL
                 new OracleParameter(":i_numBossCode", OracleDbType.Int16,1),
                 new OracleParameter(":i_varUserID", OracleDbType.Varchar2,20),
                 new OracleParameter(":i_numQueryAll", OracleDbType.Int16,1),
-                new OracleParameter(":o_refQueue",OracleDbType.RefCursor)
+                //new OracleParameter(":o_refQueue",OracleDbType.RefCursor)
             };
             param[0].Value = strGrpID;
             param[0].Direction = ParameterDirection.Input;
