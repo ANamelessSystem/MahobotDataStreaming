@@ -85,22 +85,22 @@ namespace Marchen.BLL
                     strUserGrpCard = strUserNickName;
                 }
                 string cmdType;
-                if (strCmdHead.ToLower().Contains("c1") || strCmdHead == "排队")
+                if (strCmdHead.ToLower().Contains("c1"))
                 {
                     cmdType = "queueadd";
                     Console.WriteLine("识别为开始排刀");
                 }
-                else if (strCmdHead.ToLower().Contains("c2") || strCmdHead == "查看排队")
+                else if (strCmdHead.ToLower().Contains("c2"))
                 {
                     cmdType = "queueshow";
                     Console.WriteLine("识别为查询排刀");
                 }
-                else if (strCmdHead.ToLower().Contains("c3") || strCmdHead == "退出排队")
+                else if (strCmdHead.ToLower().Contains("c3"))
                 {
                     cmdType = "queuequit";
                     Console.WriteLine("识别为退出排刀");
                 }
-                else if (strCmdHead.ToLower().Contains("c4") || strCmdHead == "查看挂树")
+                else if (strCmdHead.ToLower().Contains("c4"))
                 {
                     cmdType = "sosshow";
                     Console.WriteLine("识别为查询挂树名单");
@@ -206,24 +206,36 @@ namespace Marchen.BLL
                             {
                                 CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
                             }
-                            else
+                            else if (strCmdHead.Length > 2 && strCmdHead.Length < 5)
                             {
-                                if (strCmdHead.Length == 3)
+                                if (int.TryParse(strCmdHead.Substring(strCmdHead.Length - 1, 1), out int intBC))
                                 {
-                                    if (int.TryParse(strCmdHead.Substring(strCmdHead.Length - 1, 1), out int intBC))
+                                    if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
                                     {
-                                        if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
-                                        {
-                                            CaseQueue.QueueAdd(strGrpID, strUserID, "B" + intBC.ToString());
-                                        }
-                                        else
-                                        {
-                                            MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
-                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                            return;
-                                        }
+                                        strCmdContext = "B" + intBC.ToString() + " " + strCmdContext;
+                                        CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                                    }
+                                    else
+                                    {
+                                        MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                        return;
                                     }
                                 }
+                                else if (strCmdHead.Substring(strCmdHead.Length - 1, 1).ToLower() == "e" && int.TryParse(strCmdHead.Substring(strCmdHead.Length - 2, 1), out int _intBC))
+                                {
+                                    if (_intBC <= ValueLimits.BossLimitMax && _intBC > 0)
+                                    {
+                                        strCmdContext = "B" + _intBC.ToString() + " ext" + strCmdContext;
+                                        CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                                    }
+                                    else
+                                    {
+                                        MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                        return;
+                                    }
+                                } 
                                 else
                                 {
                                     goto case "unknown";
@@ -240,6 +252,7 @@ namespace Marchen.BLL
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
+
                             if (strCmdHead.ToLower() == "c2")
                             {
                                 CaseQueue.QueueShow(strGrpID, strUserID, strCmdContext);
@@ -261,9 +274,13 @@ namespace Marchen.BLL
                                             return;
                                         }
                                     }
-                                    if (strCmdHead.ToLower().Substring(strCmdHead.Length - 1, 1) == "a")
+                                    else if (strCmdHead.ToLower().Substring(strCmdHead.Length - 1, 1) == "a")
                                     {
                                         CaseQueue.QueueShow(strGrpID, strUserID, "all");
+                                    }
+                                    else
+                                    {
+                                        goto case "unknown";
                                     }
                                 }
                                 else
@@ -275,7 +292,6 @@ namespace Marchen.BLL
                         break;
                     case "queuequit":
                         {
-                            CaseQueue.QueueQuit(strGrpID, strUserID, 0);
                             if (!CmdHelper.LoadValueLimits())
                             {
                                 Console.WriteLine("无法读取上限值设置，程序中断");
@@ -283,9 +299,9 @@ namespace Marchen.BLL
                                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                 return;
                             }
-                            if (strCmdHead.ToLower() == "c1")
+                            if (strCmdHead.ToLower() == "c3")
                             {
-                                CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                                CaseQueue.QueueQuit(strGrpID, strUserID, strCmdContext);
                             }
                             else
                             {
@@ -295,7 +311,7 @@ namespace Marchen.BLL
                                     {
                                         if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
                                         {
-                                            CaseQueue.QueueAdd(strGrpID, strUserID, "B" + intBC.ToString());
+                                            CaseQueue.QueueQuit(strGrpID, strUserID, "B" + intBC.ToString());
                                         }
                                         else
                                         {
@@ -303,6 +319,14 @@ namespace Marchen.BLL
                                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                                             return;
                                         }
+                                    }
+                                    else if (strCmdHead.ToLower().Substring(strCmdHead.Length - 1, 1) == "a")
+                                    {
+                                        CaseQueue.QueueQuit(strGrpID, strUserID, "all");
+                                    }
+                                    else
+                                    {
+                                        goto case "unknown";
                                     }
                                 }
                                 else

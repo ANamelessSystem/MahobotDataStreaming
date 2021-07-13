@@ -20,7 +20,7 @@ namespace Marchen.BLL
         /// <param name="strUserID">用户号</param>
         public static void QueueAdd(string strGrpID, string strUserID, string strCmdContext)
         {
-            int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);
+            int intMemberStatus = NameListDAL.MemberCheck(strGrpID, strUserID);//后期人员鉴定做进存储过程
             #region member check and context splite error
             if (intMemberStatus == 0)
             {
@@ -211,32 +211,47 @@ namespace Marchen.BLL
             MsgMessage += new Message(strOutput);
             MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
         }
-
         /// <summary>
         /// 退出队列
         /// </summary>
         /// <param name="strGrpID"></param>
         /// <param name="strUserID"></param>
-        /// <param name="intType">0：直接收到C3命令；1：来自其他方法的调用</param>
+        /// <param name="strCmdContext"></param>
         public static void QueueQuit(string strGrpID, string strUserID, string strCmdContext)
         {
-            if (QueueDAL.QuitQueue(strGrpID, strUserID, out int deletedCount))
+            if (!CmdHelper.CmdSpliter(strCmdContext))
             {
-                if (deletedCount > 0)
-                {
-                    MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已将较早一次队列记录退出。\r\n");
-                }
-                else
-                {
-                    MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("退出队列失败：未找到队列记录。\r\n");
-                }
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            int intQuitType;
+            if (InputVariables.IntIsAllFlag == 1)
+            {
+                intQuitType = 1;
             }
             else
             {
-                MsgMessage += new Message("与数据库失去连接，退出队列失败。\r\n");
+                intQuitType = 0;
+            }
+            if (InputVariables.IntBossCode < 1 && intQuitType == 0)
+            {
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message("请指定BOSS编号或使用ALL指令退出所有队伍。\r\n");
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            else
+            {
+                if (QueueDAL.QuitQueue(strGrpID, InputVariables.IntBossCode, strUserID, intQuitType))
+                {
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message("命令已执行。\r\n");
+                }
+                else
+                {
+                    MsgMessage += new Message("与数据库失去连接，退出队列失败。\r\n");
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                }
             }
         }
 

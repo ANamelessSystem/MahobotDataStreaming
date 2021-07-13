@@ -196,7 +196,7 @@ namespace Marchen.BLL
                     CaseSubscribe.SubsDel(strGrpID, strUserID, InputVariables.IntBossCode);
                 }
                 //执行退队
-                CaseQueue.QueueQuit(strGrpID, strUserID, 1);
+                //CaseQueue.QueueQuit(strGrpID, strUserID, 1);
             }
             else
             {

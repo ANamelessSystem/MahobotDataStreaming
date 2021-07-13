@@ -159,19 +159,40 @@ namespace Marchen.DAL
         /// <param name="strUserID">用户QQ号</param>
         /// <param name="intDelCount">被删除的行数</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool QuitQueue(string strGrpID, string strUserID, out int intDelCount)
+        public static bool QuitQueue(string strGrpID, int intBC, string strUserID, int intType)
         {
-            string sqlDelTopQueue = "delete from TTL_Queue where GRPID = '" + strGrpID + "' and ID = '" + strUserID + "' and seq = (select MIN(seq) as seq from TTL_Queue where grpid = '" + strGrpID + "' and id = '" + strUserID + "' and seq > 0 group by id)";
+            OracleParameter[] param = new OracleParameter[]
+            {
+                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,20),
+                new OracleParameter(":i_numBossCode", OracleDbType.Int16,1),
+                new OracleParameter(":i_varUserID", OracleDbType.Varchar2,20),
+                new OracleParameter(":i_numQueryAll", OracleDbType.Int16,1),
+                new OracleParameter(":o_refQueue",OracleDbType.RefCursor)
+            };
+            param[0].Value = strGrpID;
+            param[0].Direction = ParameterDirection.Input;
+            param[1].Value = intBC;
+            param[1].Direction = ParameterDirection.Input;
+            param[2].Value = strUserID;
+            param[2].Direction = ParameterDirection.Input;
+            param[3].Value = intType;
+            param[3].Direction = ParameterDirection.Input;
             try
             {
-                intDelCount = DBHelper.ExecuteCommand(sqlDelTopQueue);
+                DBHelper.ExecuteProdQuery("PROC_QUEUEDELETE_NEW", param);
                 return true;
             }
             catch (OracleException orex)
             {
-                Console.WriteLine("修改队列时跳出错误，SQL：" + sqlDelTopQueue + "。\r\n" + orex);
-                intDelCount = 0;
+                //if (orex.Number == 20102)
+                //{
+                //    throw new Exception("尚未加入队列，请先加入一个队列，或使用BOSS编号指定查询的队列，或使用all字段查询所有队列。");
+                //}
+                //else
+                //{
+                    Console.WriteLine(DateTime.Now.ToString() + "执行PROC_QUEUEDELETE_NEW时跳出错误：" + orex);
                 return false;
+                //}
             }
         }
 
