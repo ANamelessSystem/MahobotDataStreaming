@@ -301,7 +301,7 @@ namespace Marchen.BLL
                             }
                             if (strCmdHead.ToLower() == "c3")
                             {
-                                CaseQueue.QueueQuit(strGrpID, strUserID, strCmdContext);
+                                CaseQueue.QueueQuit(strGrpID, strUserID, strCmdContext, false);
                             }
                             else
                             {
@@ -311,7 +311,7 @@ namespace Marchen.BLL
                                     {
                                         if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
                                         {
-                                            CaseQueue.QueueQuit(strGrpID, strUserID, "B" + intBC.ToString());
+                                            CaseQueue.QueueQuit(strGrpID, strUserID, "B" + intBC.ToString(), false);
                                         }
                                         else
                                         {
@@ -322,7 +322,7 @@ namespace Marchen.BLL
                                     }
                                     else if (strCmdHead.ToLower().Substring(strCmdHead.Length - 1, 1) == "a")
                                     {
-                                        CaseQueue.QueueQuit(strGrpID, strUserID, "all");
+                                        CaseQueue.QueueQuit(strGrpID, strUserID, "all", false);
                                     }
                                     else
                                     {
