@@ -187,7 +187,7 @@ namespace Marchen.DAL
         /// <param name="strGrpID">群号</param>
         /// <param name="dtProgress">dt格式进度表</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static void GetBossProgress(string strGrpID, out DataTable dtProgress)
+        public static void GetProgress(string strGrpID, out DataTable dtProgress)
         {
             OracleParameter[] param = new OracleParameter[]
             {

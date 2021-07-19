@@ -69,8 +69,6 @@ namespace Marchen.BLL
                         isProxyRecord = true;
                     }
                 }
-
-
                 if (InputVariables.IntTimeOutFlag != 1)
                 {
                     //如果没掉线就要检查数据的正确性
@@ -107,39 +105,7 @@ namespace Marchen.BLL
             }
             if (InputVariables.IntTimeOutFlag != 1)
             {
-                if (InputVariables.IntBossCode > (_bc + 1) || (InputVariables.IntBossCode + 1) < _bc)
-                {
-                    //输入了和现在进度非相邻关系的BOSS
-                    if (_bc == 5 && InputVariables.IntBossCode == 1)
-                    {
-                        //进入下一周目
-                        intRound_Calculate += 1;
-                    }
-                    else if (_bc == 1 && InputVariables.IntBossCode == 5 && _round > 1)
-                    {
-                        //填回上周目
-                        intRound_Calculate += -1;
-                    }
-                    else
-                    {
-                        //如非以上两种情况则认为输错
-                        if (_bc == 1)
-                        {
-                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B1，可报B1、B2或上周目的B5。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
-                        }
-                        else if (_bc == 5)
-                        {
-                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B5，可报B4、B5或下周目的B1。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
-                        }
-                        else
-                        {
-                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B" + _bc + "，可报B" + (_bc - 1) + "、B" + _bc + "或B" + (_bc + 1) + "。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
-                        }
-                        //MsgMessage += Message.At(long.Parse(strUserID));
-                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                        return;
-                    }
-                }
+
             }
             else
             {
