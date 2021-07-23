@@ -114,11 +114,13 @@ namespace Marchen.DAL
         /// <param name="paras">参数</param>
         public static void ExecuteProdNonQuery(string strProdName, OracleParameter[] paras)
         {
-            OracleCommand cmd = new OracleCommand(strProdName, Connection);
+            OracleCommand cmd = new OracleCommand();
+            cmd.Connection = Connection;
+            cmd.CommandText = strProdName;
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddRange(paras);
-            cmd.ExecuteNonQuery();
-            connection.Close();
+            cmd.ExecuteNonQuery(); 
+            Connection.Close();
         }
 
         /// <summary>

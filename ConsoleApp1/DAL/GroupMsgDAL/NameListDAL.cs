@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Data;
 
 namespace Marchen.DAL
@@ -240,27 +241,40 @@ namespace Marchen.DAL
         /// <returns>0:不存在；1:存在；-1：执行错误</returns>
         public static int MemberCheck(string strGrpID, string strUserID)
         {
-            if (QryNameList(strGrpID, out DataTable dtNameList))
+            int intResult = 0;
+            OracleParameter[] param = new OracleParameter[]
             {
-                DataRow[] drExistsID = dtNameList.Select("MBRID='" + strUserID + "'");
-                if (drExistsID.Length == 1)
-                {
-                    return 1;
-                }
-                if (drExistsID.Length == 0)
-                {
-                    Console.WriteLine("成员未报名。USERID:" + strUserID);
-                    return 0;
-                }
-                else
-                {
-                    Console.WriteLine("检查成员是否报名时返回结果不唯一。USERID=" + strUserID);
-                    return -1;
-                }
+                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,40),
+                new OracleParameter(":i_varUserID", OracleDbType.Varchar2,40),
+                new OracleParameter(":o_bResult", OracleDbType.Int16)
+            };
+            param[0].Value = strGrpID;
+            param[0].Direction = ParameterDirection.Input;
+            param[1].Value = strUserID;
+            param[1].Direction = ParameterDirection.Input;
+            param[2].Direction = ParameterDirection.Output;
+            try
+            {
+                DBHelper.ExecuteProdNonQuery("PROC_MBRCHECK", param);
+            }
+            catch (OracleException orex)
+            {
+                Console.WriteLine(DateTime.Now.ToString() + "执行PROC_MBRCHECK时跳出错误：" + orex);
+                return -1;
+            }
+            intResult = (int)param[2].Value;
+            if (intResult == 1)
+            {
+                return 1;
+            }
+            else if (intResult == 0)
+            {
+                Console.WriteLine("成员未报名。USERID:" + strUserID);
+                return 0;
             }
             else
             {
-                Console.WriteLine("检查成员是否报名时发生错误。");
+                Console.WriteLine("检查成员是否报名时返回结果不唯一。USERID=" + strUserID);
                 return -1;
             }
         }
