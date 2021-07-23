@@ -144,7 +144,7 @@ namespace Marchen.BLL
             }
             try
             {
-                RecordDAL.GetBossProgress(strGrpID, out dtProgress);
+                RecordDAL.GetProgress(strGrpID, out dtProgress);
             }
             catch (Exception ex)
             {
@@ -419,7 +419,7 @@ namespace Marchen.BLL
             _bc = 0;
             _hp = 0;
             _ratio = 0;
-            RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress);
+            RecordDAL.GetProgress(strGrpID, out DataTable dtBossProgress);
             {
                 if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
                 {
@@ -427,68 +427,6 @@ namespace Marchen.BLL
                     {
                         return false;
                     }
-                }
-                _hp = int.Parse(dtBossProgress.Rows[0]["hpremain"].ToString());
-                _round = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
-                _bc = int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString());
-                try
-                {
-                    if (_hp > 9999)
-                    {
-                        //5位正数以上自动转换为以万为单位优化显示
-                        _hp = int.Parse(_hp.ToString()[0..^4]);
-                        _ratio = 10000;
-                        return true;
-                    }
-                    else if (_hp <= 9999 && _hp >= -9999)
-                    {
-                        //正负4位数（小误差），自动跳到下个BOSS
-                        if (_bc == ValueLimits.BossLimitMax)
-                        {
-                            //现在为B5，需要跳到下周目B1的情况
-                            if (StatisticsDAL.GetBossMaxHP(strGrpID, 1, _round + 1, out DataTable dtBossMaxHP))
-                            {
-                                //Console.WriteLine("误差内跳到下个BOSS");
-                                _bc = 1;
-                                _round += 1;
-                                _hp = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString()[0..^4]);
-                                _ratio = 10000;
-                                return true;
-                            }
-                            else
-                            {
-                                //执行失败
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            if (StatisticsDAL.GetBossMaxHP(strGrpID, _bc + 1, _round, out DataTable dtBossMaxHP))
-                            {
-                                //Console.WriteLine("误差内跳到下个BOSS");
-                                _bc += 1;
-                                _hp = int.Parse(dtBossMaxHP.Rows[0]["HP"].ToString()[0..^4]);
-                                _ratio = 10000;
-                                return true;
-                            }
-                            else
-                            {
-                                //执行失败
-                                return false;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        //剩余情况应为长度超过4位的负数，偏差比较大，不简化会比较显眼
-                        _ratio = 1;
-                        return true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                    return false;
                 }
             }
         }
