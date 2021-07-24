@@ -269,7 +269,14 @@ namespace Marchen.BLL
                 if (QueueDAL.QuitQueue(strGrpID, InputVariables.IntBossCode, strUserID, intQuitType))
                 {
                     MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已退出B" + InputVariables.IntBossCode.ToString() + "队列。\r\n");
+                    if (intQuitType == 1)
+                    {
+                        MsgMessage += new Message("已退出所有队列。\r\n");
+                    }
+                    else
+                    {
+                        MsgMessage += new Message("已退出B" + InputVariables.IntBossCode.ToString() + "队列。\r\n");
+                    }
                     if (bShowQueue && InputVariables.IntBossCode > 0)
                     {
                         QueueShow(strGrpID,strUserID,"B" + InputVariables.IntBossCode);

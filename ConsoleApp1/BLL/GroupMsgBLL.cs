@@ -155,22 +155,22 @@ namespace Marchen.BLL
                     cmdType = "namelistdel";
                     Console.WriteLine("识别为名单列表删除指定人");
                 }
-                else if (strCmdHead.ToLower() == "s1" || strCmdHead == "订阅")
-                {
-                    cmdType = "bosssubsadd";
-                    Console.WriteLine("识别为新增BOSS订阅");
-                }
-                else if (strCmdHead.ToLower() == "s2" || strCmdHead == "查看订阅")
-                {
-                    cmdType = "bosssubsshow";
-                    Console.WriteLine("识别为查看BOSS订阅");
-                }
-                else if (strCmdHead.ToLower() == "s3" || strCmdHead == "退订")
-                {
-                    //需要另外参数
-                    cmdType = "bosssubscancel";
-                    Console.WriteLine("识别为取消boss订阅");
-                }
+                //else if (strCmdHead.ToLower() == "s1" || strCmdHead == "订阅")
+                //{
+                //    cmdType = "bosssubsadd";
+                //    Console.WriteLine("识别为新增BOSS订阅");
+                //}
+                //else if (strCmdHead.ToLower() == "s2" || strCmdHead == "查看订阅")
+                //{
+                //    cmdType = "bosssubsshow";
+                //    Console.WriteLine("识别为查看BOSS订阅");
+                //}
+                //else if (strCmdHead.ToLower() == "s3" || strCmdHead == "退订")
+                //{
+                //    //需要另外参数
+                //    cmdType = "bosssubscancel";
+                //    Console.WriteLine("识别为取消boss订阅");
+                //}
                 else if (strCmdHead.ToLower() == "测试")
                 {
                     cmdType = "test";
@@ -361,13 +361,14 @@ namespace Marchen.BLL
                         break;
                     case "help":
                         {
-                            message += new Message("加入队列：【@MahoBot c1】可进入队列\r\n");
-                            message += new Message("查询队列：【@MahoBot c2】可查询当前在队列中的人\r\n");
-                            message += new Message("退出队列：【@MahoBot c3】可离开队列\r\n");
-                            message += new Message("伤害记录：【@MahoBot 伤害 B(n) （伤害值）】（如@MahoBot 伤害 B2 1374200）\r\n 伤害值可如137w等模糊格式\r\n");
-                            message += new Message("尾刀的伤害记录：【@MahoBot 伤害 尾刀 B(n) （伤害值）】\r\n");
+                            message += new Message("加入队列：【@MahoBot c1 B(n)】可进入指定BOSS（B(n)，如B1）的队列\r\n");
+                            message += new Message("查询队列：【@MahoBot c2 B(n)/ALL】可查询指定BOSS或全部队列中的人\r\n");
+                            message += new Message("退出队列：【@MahoBot c3 B(n)】可离开指定BOSS的队列\r\n");
+                            message += new Message("救援列表：【@MahoBot c4】可查看等待救援的名单\r\n");
+                            message += new Message("伤害记录：【@MahoBot 伤害 B(n) （伤害值） 】（如@MahoBot 伤害 B2 1374200），伤害值可如137w等模糊格式\r\n");
+                            message += new Message("尾刀或补时的伤害记录：【@MahoBot 伤害 尾刀/补时 B(n) （伤害值）】\r\n");
                             message += new Message("掉线记录：【@MahoBot 伤害 掉线】可记录一次掉线\r\n");
-                            message += new Message("其他功能及用例请参考命令表\r\n https://docs.qq.com/sheet/DRGthS3JpS1ZibHlL?opendocxfrom=admin&preview_token=&coord=F27A0C0&tab=BB08J2 \r\n");
+                            message += new Message("其他功能及用例请参考命令表\r\n https://docs.qq.com/sheet/DQWRyR2t6SkliTGRX \r\n");
                             //message += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }
