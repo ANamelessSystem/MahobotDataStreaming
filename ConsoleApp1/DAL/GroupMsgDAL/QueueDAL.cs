@@ -136,7 +136,7 @@ namespace Marchen.DAL
             param[4].Direction = ParameterDirection.Output;
             try
             {
-                dtQueue = DBHelper.ExecuteProdQuery("PROC_QUEUEQUERY_NEW", param);
+                dtQueue = DBHelper.ExecuteProd2DT("PROC_QUEUEQUERY_NEW", param);
             }
             catch (OracleException orex)
             {
@@ -163,11 +163,10 @@ namespace Marchen.DAL
         {
             OracleParameter[] param = new OracleParameter[]
             {
-                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,20),
+                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,40),
                 new OracleParameter(":i_numBossCode", OracleDbType.Int16,1),
-                new OracleParameter(":i_varUserID", OracleDbType.Varchar2,20),
-                new OracleParameter(":i_numQueryAll", OracleDbType.Int16,1),
-                //new OracleParameter(":o_refQueue",OracleDbType.RefCursor)
+                new OracleParameter(":i_varUserID", OracleDbType.Varchar2,40),
+                new OracleParameter(":i_numQueryAll", OracleDbType.Int16,1)
             };
             param[0].Value = strGrpID;
             param[0].Direction = ParameterDirection.Input;
@@ -179,20 +178,13 @@ namespace Marchen.DAL
             param[3].Direction = ParameterDirection.Input;
             try
             {
-                DBHelper.ExecuteProdQuery("PROC_QUEUEDELETE_NEW", param);
+                DBHelper.ExecuteProdNonQuery("PROC_QUEUEDELETE_NEW", param);
                 return true;
             }
             catch (OracleException orex)
             {
-                //if (orex.Number == 20102)
-                //{
-                //    throw new Exception("尚未加入队列，请先加入一个队列，或使用BOSS编号指定查询的队列，或使用all字段查询所有队列。");
-                //}
-                //else
-                //{
-                    Console.WriteLine(DateTime.Now.ToString() + "执行PROC_QUEUEDELETE_NEW时跳出错误：" + orex);
+                Console.WriteLine(DateTime.Now.ToString() + "执行PROC_QUEUEDELETE_NEW时跳出错误：" + orex);
                 return false;
-                //}
             }
         }
 

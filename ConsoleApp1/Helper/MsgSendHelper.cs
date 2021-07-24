@@ -37,10 +37,8 @@ namespace Marchen.Helper
             {
                 //this number of lines is also the maxium height for ranging the bitmap
                 int _ContentHeight = Regex.Matches(strRawMessage, "\r\n").Count;
-                //when it's too long, convert it to a picture
-                //update 20210223 seems getting worse...
-                //update 20210601 seems good now
-                if (_ContentHeight > 30)
+                //_ContentHeight设定行数，消息行数超过时发送图片
+                if (_ContentHeight > 10)
                 {
                     //_ContentHeight += 1;
                     ConvertText2Pic(strRawMessage, _ContentHeight, out _outMessage);
@@ -149,17 +147,17 @@ namespace Marchen.Helper
             {
                 strHPRemain = douHPRemain.ToString();
             }
-            if (intRoundMax - intRound == 1)
+            if (intRoundMax - intRound == 0)
             {
-                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（本阶段最后周目），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目(!)，" + drsProgress[0]["PARSE"].ToString() + "阶段，剩：" + strHPRemain;
             }
-            else if (intRound == intRoundMin)
+            else if ((intRound == intRoundMin) && (intRound != 1))
             {
-                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目（新阶段），" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目，" + drsProgress[0]["PARSE"].ToString() + "阶段(!)，剩：" + strHPRemain;
             }
             else
             {
-                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目，" + drsProgress[0]["PARSE"].ToString() + "阶段，剩余HP：" + strHPRemain + "，";
+                strProgressFormat = "，" + drsProgress[0]["ROUND"].ToString() + "周目，" + drsProgress[0]["PARSE"].ToString() + "阶段，剩：" + strHPRemain;
             }
         }
     }

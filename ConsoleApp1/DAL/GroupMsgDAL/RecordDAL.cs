@@ -13,70 +13,103 @@ namespace Marchen.DAL
         /// 伤害上报的方法
         /// </summary>
         /// <param name="strGrpID">群号</param>
-        /// <param name="strUserID">用户ID(qq号)</param>
+        /// <param name="strRecID">用户ID(qq号)</param>
         /// <param name="intDMG">伤害值</param>
         /// <param name="intRound">周目值</param>
         /// <param name="intBossCode">BOSS代码</param>
         /// <param name="intEID">事件ID</param>
         /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool DamageDebrief(string strGrpID, string strUserID, int intDMG, int intRound, int intBossCode, int intExTime, out int intEID)
+        public static void AddDamageRecord(string strGrpID, string strRecID, string strUpldrID, int intDMG, int intBossCode, int intRecType, int intDateAddjust, out int intEID)
         {
-            DataTable dtMaxEID = new DataTable();
-            int intEventID = 1;
-            string sqlQryMaxEID = "select max(eventid) as maxeid from TTL_DMGRECORDS where GRPID = '" + strGrpID + "'";
+            OracleParameter[] param = new OracleParameter[]
+            {
+                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,40),
+                new OracleParameter(":i_varUsrID", OracleDbType.Varchar2,40),
+                new OracleParameter(":i_varUpldrID", OracleDbType.Varchar2,40),
+                new OracleParameter(":i_numDamage", OracleDbType.Int32),
+                new OracleParameter(":i_numBsCode", OracleDbType.Int16,1),
+                new OracleParameter(":i_numRecType", OracleDbType.Int16,1),
+                new OracleParameter(":i_numTimeOffset", OracleDbType.Int16,1),
+                new OracleParameter(":o_numEvtID", OracleDbType.Int32)
+            };
+            param[0].Value = strGrpID;
+            param[0].Direction = ParameterDirection.Input;
+            param[1].Value = strRecID;
+            param[1].Direction = ParameterDirection.Input;
+            param[2].Value = strUpldrID;
+            param[2].Direction = ParameterDirection.Input;
+            param[3].Value = intDMG;
+            param[3].Direction = ParameterDirection.Input;
+            param[4].Value = intBossCode;
+            param[4].Direction = ParameterDirection.Input;
+            param[5].Value = intRecType;
+            param[5].Direction = ParameterDirection.Input;
+            param[6].Value = intDateAddjust;
+            param[6].Direction = ParameterDirection.Input;
+            param[7].Direction = ParameterDirection.Output;
             try
             {
-                dtMaxEID = DBHelper.GetDataTable(sqlQryMaxEID);
+                DBHelper.ExecuteProdNonQuery("PROC_DMGRECADD_NEW", param);
+                intEID = int.Parse(param[7].Value.ToString());
             }
-            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            catch (OracleException orex)
             {
-                Console.WriteLine("查询最大EID时返回错误，SQL：" + sqlQryMaxEID + "。\r\n" + oex);
-                intEID = 0;
-                return false;
+                if (orex.Number == 20111)
+                {
+                    throw new Exception("因存在更低周目BOSS，无法录入本周目伤害。");
+                }
+                else if (orex.Number == 20112)
+                {
+                    throw new Exception("因存在更低阶段BOSS，无法录入本阶段伤害。");
+                }
+                else
+                {
+                    throw new Exception("未知数据库错误代码" + orex.Number.ToString() + "，请联系bot管理员。");
+                }
             }
-            if (dtMaxEID.Rows[0]["maxeid"].ToString() != null && dtMaxEID.Rows[0]["maxeid"].ToString() != "")
+        }
+
+        public static bool GetDamageRecord(string strGrpID, string strRecID, int intEventID, int intBossCode, int intRound, int intAllFlag, int intQueryMode, out DataTable dtDamageRecord)
+        {
+            OracleParameter[] param = new OracleParameter[]
             {
-                intEventID = int.Parse(dtMaxEID.Rows[0]["maxeid"].ToString()) + 1;
-            }
-            string sqlDmgDbrf = "insert into TTL_DMGRECORDS(grpid,userid,dmg,round,bc,extime,time,eventid) " +
-                "values('" + strGrpID + "','" + strUserID + "'," + intDMG + "," + intRound + "," + intBossCode + "," + intExTime + ",sysdate," + intEventID + ")";
+                new OracleParameter(":i_varGrpID", OracleDbType.Varchar2,40),
+                new OracleParameter(":i_varUsrID", OracleDbType.Varchar2,40),
+                new OracleParameter(":i_numEvtID", OracleDbType.Int32),
+                new OracleParameter(":i_numBsCode", OracleDbType.Int16,1),
+                new OracleParameter(":i_numRound", OracleDbType.Int32),
+                new OracleParameter(":i_numIsAll", OracleDbType.Int16,1),
+                new OracleParameter(":i_numQryMode", OracleDbType.Int16,1),
+                new OracleParameter(":o_result_cur", OracleDbType.RefCursor)
+            };
+            param[0].Value = strGrpID;
+            param[0].Direction = ParameterDirection.Input;
+            param[1].Value = strRecID;
+            param[1].Direction = ParameterDirection.Input;
+            param[2].Value = intEventID;
+            param[2].Direction = ParameterDirection.Input;
+            param[3].Value = intBossCode;
+            param[3].Direction = ParameterDirection.Input;
+            param[4].Value = intRound;
+            param[4].Direction = ParameterDirection.Input;
+            param[5].Value = intAllFlag;
+            param[5].Direction = ParameterDirection.Input;
+            param[6].Value = intQueryMode;
+            param[6].Direction = ParameterDirection.Input;
+            param[7].Direction = ParameterDirection.Output;
             try
             {
-                DBHelper.ExecuteCommand(sqlDmgDbrf);
-                intEID = intEventID;
+                dtDamageRecord = DBHelper.ExecuteProd2DT("PROC_DMGRECQRY_NEW", param);
                 return true;
             }
-            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
+            catch (OracleException orex)
             {
-                Console.WriteLine("上报伤害时返回错误，SQL：" + sqlDmgDbrf + "。\r\n" + oex);
-                intEID = 0;
+                Console.WriteLine(DateTime.Now.ToString() + "执行PROC_DMGRECQRY_NEW时跳出错误：" + orex);
+                dtDamageRecord = null;
                 return false;
             }
         }
 
-        /// <summary>
-        /// 记录无法被识别的语句的方法，可以通过你自己的人工学习来优化自然语言识别方向
-        /// 因为没什么用而且占空间就没投用了，连表都没建
-        /// </summary>
-        /// <param name="strGrpID">群号</param>
-        /// <param name="strUserID">用户QQ号</param>
-        /// <param name="strUnknownContext">没被识别的文本</param>
-        /// <returns>true：执行成功；false：执行失败。</returns>
-        public static bool RecordUnknownContext(string strGrpID, string strUserID, string strUnknownContext)
-        {
-            try
-            {
-                string sqlUploadUnknownContext = "insert into FAILEDCOMMAND(CMDCONTEXT,FROMGROUPID) values('" + strUnknownContext + "','" + strGrpID + "')";
-                DBHelper.ExecuteCommand(sqlUploadUnknownContext);
-                Console.WriteLine("失效命令上传数据库成功\r\n" + strUnknownContext);
-                return true;
-            }
-            catch (Oracle.ManagedDataAccess.Client.OracleException oex)
-            {
-                Console.WriteLine("失效命令上传数据库失败\r\n" + oex);
-                return false;
-            }
-        }
 
         /// <summary>
         /// 查询EventID对应记录的方法
@@ -199,7 +232,7 @@ namespace Marchen.DAL
             param[1].Direction = ParameterDirection.Output;
             try
             {
-                dtProgress = DBHelper.ExecuteProdQuery("PROC_PROGQUERY", param);
+                dtProgress = DBHelper.ExecuteProd2DT("PROC_PROGQUERY", param);
             }
             catch (OracleException orex)
             {

@@ -166,10 +166,17 @@ namespace Marchen.BLL
                     if (dtQueue.Rows[j]["BC"].ToString() == i.ToString())
                     {
                         intCount += 1;
+                        int intElapsedMinutes = (DateTime.Now - (DateTime)dtQueue.Rows[j]["JOINTIME"]).Minutes;
                         if (dtQueue.Rows[j]["JOINTYPE"].ToString() == "1")
                         {
                             intCount_Ext += 1;
-                            strList_Ext += "【补时】" + dtQueue.Rows[j]["USERNAME"].ToString() + "(" + dtQueue.Rows[j]["USERID"].ToString() + ")\r\n";
+                            strList_Ext += "【补时】" + dtQueue.Rows[j]["USERNAME"].ToString() + "(" + dtQueue.Rows[j]["USERID"].ToString() + ")";
+                            if (intElapsedMinutes > 10)
+                            {
+                                strList_Ext += "\t(已等待" + intElapsedMinutes.ToString() + "分钟)";
+                            }
+                            strList_Ext += "\r\n";
+
                         }
                         else if (dtQueue.Rows[j]["JOINTYPE"].ToString() == "2")
                         {
@@ -177,7 +184,12 @@ namespace Marchen.BLL
                         }
                         else
                         {
-                            strList_Normal += "【" + (intCount - intCount_Ext - intCount_Sos).ToString() + "】" + dtQueue.Rows[j]["USERNAME"].ToString() + "(" + dtQueue.Rows[j]["USERID"].ToString() + ")\r\n";
+                            strList_Normal += "【" + (intCount - intCount_Ext - intCount_Sos).ToString() + "】" + dtQueue.Rows[j]["USERNAME"].ToString() + "(" + dtQueue.Rows[j]["USERID"].ToString() + ")";
+                            if (intElapsedMinutes > 10)
+                            {
+                                strList_Normal += "\t(已等待" + intElapsedMinutes.ToString() + "分钟)";
+                            }
+                            strList_Normal += "\r\n";
                         }
                     }
                 }
@@ -188,11 +200,11 @@ namespace Marchen.BLL
                 }
                 if (InputVariables.IntIsAllFlag == 1)
                 {
-                    strOutput += "B" + i.ToString() + strProcessRow + "队列：";
+                    strOutput += "B" + i.ToString() + strProcessRow;
                 }
                 else
                 {
-                    strOutput += "B" + i.ToString() + strProcessRow + "队列：";
+                    strOutput += "B" + i.ToString() + strProcessRow;
                 }
                 if (intCount > 0)
                 {
@@ -297,7 +309,7 @@ namespace Marchen.BLL
             }
             if (InputVariables.IntBossCode == -1)
             {
-                MsgMessage += new Message("清空队列需指定BOSS编码以清空特定BOSS的队列。\r\n");
+                MsgMessage += new Message("请指定需要清空的BOSS队列。\r\n");
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -403,33 +415,33 @@ namespace Marchen.BLL
         }
 
 
-        /// <summary>
-        /// 经过优化的进度（剩余HP简略至万位）
-        /// </summary>
-        /// <param name="strGrpID"></param>
-        /// <param name="_round"></param>
-        /// <param name="_bc"></param>
-        /// <param name="_hp"></param>
-        /// <param name="_ratio"></param>
-        /// <returns></returns>
-        public static bool Format_Progress(string strGrpID, out int _round, out int _bc, out int _hp, out int _ratio)
-        {
-            //bool isCorrect = false;
-            _round = 0;
-            _bc = 0;
-            _hp = 0;
-            _ratio = 0;
-            RecordDAL.GetProgress(strGrpID, out DataTable dtBossProgress);
-            {
-                if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
-                {
-                    if (dtBossProgress.Rows[0][0] is DBNull || dtBossProgress.Rows[0]["hpremain"] is DBNull || dtBossProgress.Rows[0]["maxround"] is DBNull || dtBossProgress.Rows[0]["maxbc"] is DBNull)
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
+        ///// <summary>
+        ///// 经过优化的进度（剩余HP简略至万位）
+        ///// </summary>
+        ///// <param name="strGrpID"></param>
+        ///// <param name="_round"></param>
+        ///// <param name="_bc"></param>
+        ///// <param name="_hp"></param>
+        ///// <param name="_ratio"></param>
+        ///// <returns></returns>
+        //public static bool Format_Progress(string strGrpID, out int _round, out int _bc, out int _hp, out int _ratio)
+        //{
+        //    //bool isCorrect = false;
+        //    _round = 0;
+        //    _bc = 0;
+        //    _hp = 0;
+        //    _ratio = 0;
+        //    RecordDAL.GetProgress(strGrpID, out DataTable dtBossProgress);
+        //    {
+        //        if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
+        //        {
+        //            if (dtBossProgress.Rows[0][0] is DBNull || dtBossProgress.Rows[0]["hpremain"] is DBNull || dtBossProgress.Rows[0]["maxround"] is DBNull || dtBossProgress.Rows[0]["maxbc"] is DBNull)
+        //            {
+        //                return false;
+        //            }
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// 查挂树名单

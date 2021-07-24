@@ -129,7 +129,7 @@ namespace Marchen.DAL
         /// <param name="strProdName">存储过程名</param>
         /// <param name="paras">参数（输出参数需在属性中指定）</param>
         /// <returns>Datatable结果集</returns>
-        public static DataTable ExecuteProdQuery(string strProdName, OracleParameter[] paras)
+        public static DataTable ExecuteProd2DT(string strProdName, OracleParameter[] paras)
         {
             OracleCommand cmd = new OracleCommand(strProdName, Connection);
             DataTable dt = new DataTable();

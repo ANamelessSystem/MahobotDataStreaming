@@ -262,7 +262,7 @@ namespace Marchen.DAL
                 Console.WriteLine(DateTime.Now.ToString() + "执行PROC_MBRCHECK时跳出错误：" + orex);
                 return -1;
             }
-            intResult = (int)param[2].Value;
+            intResult = int.Parse(param[2].Value.ToString());
             if (intResult == 1)
             {
                 return 1;

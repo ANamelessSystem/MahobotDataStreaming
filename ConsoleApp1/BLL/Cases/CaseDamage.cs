@@ -35,8 +35,11 @@ namespace Marchen.BLL
                 return;
             }
             bool isCorrect = true;//数据正误标记位
-            string strRecUID = strUserID;//代刀标记
-            bool isProxyRecord = false;//代刀标记
+            string strRecUID = strUserID;//被代刀人ID，此处初始化
+            string strUpldrID = strUserID;//原上传人ID，使用调用人ID
+            int intTimeAddjust = 0;
+            bool isProxy = false;//代刀标记
+            int intEID;
             //分拆命令
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
@@ -46,10 +49,6 @@ namespace Marchen.BLL
             else
             {
                 //识别出来的数据处理
-                if (InputVariables.IntEXT != 2)
-                {
-                    InputVariables.IntEXT = 0;
-                }
                 if (InputVariables.DouUID != -1)
                 {
                     //代刀规则
@@ -66,7 +65,7 @@ namespace Marchen.BLL
                     }
                     else
                     {
-                        isProxyRecord = true;
+                        isProxy = true;
                     }
                 }
                 if (InputVariables.IntTimeOutFlag != 1)
@@ -91,86 +90,43 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            int intRound_Calculate = 0;
-            //请求目前进度
-            if (CaseQueue.Format_Progress(strGrpID, out int _round, out int _bc, out int _hp, out int _ratio))
-            {
-                intRound_Calculate = _round;
-            }
-            else
-            {
-                MsgMessage += new Message("与数据库失去连接，查询进度失败。\r\n");
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            if (InputVariables.IntTimeOutFlag != 1)
-            {
 
-            }
-            else
+            if (InputVariables.IntTimeOutFlag == 1)
             {
-                //如果掉线了就按当前进度记录0伤害的数据
+                //掉线
                 //防止计入尾刀掉线
                 if (InputVariables.IntEXT == 2)
                 {
                     InputVariables.IntEXT = 0;
                 }
                 InputVariables.IntDMG = 0;
-                InputVariables.IntRound = _round;
-                InputVariables.IntBossCode = _bc;
+                InputVariables.IntBossCode = 1;
             }
-            if (isProxyRecord)
+
+            if (isProxy)
             {
                 strRecUID = InputVariables.DouUID.ToString();
             }
-            RecordDAL.CheckLastAttack(strGrpID, strRecUID, out int isLastAtk);
-            if (isLastAtk == 1)
-            {
-                //上一刀为尾刀，本刀自动记为补时
-                InputVariables.IntEXT = 1;
-            }
+
             //执行上传
-            if (RecordDAL.DamageDebrief(strGrpID, strRecUID, InputVariables.IntDMG, intRound_Calculate, InputVariables.IntBossCode, InputVariables.IntEXT, out int intEID))
+            try
             {
-                string strDmg_Type = "";
-                if (InputVariables.IntEXT == 0)
-                {
-                    strDmg_Type = "通常";
-                }
-                else if (InputVariables.IntEXT == 1)
-                {
-                    strDmg_Type = "补时";
-                }
-                else
-                {
-                    strDmg_Type = "尾刀";
-                }
-                Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + InputVariables.IntBossCode.ToString() + "，" + intRound_Calculate.ToString() + "周目，数值：" + InputVariables.IntDMG.ToString() + "，补时标识：" + InputVariables.IntEXT);
-                //吞消息比较频繁，先发送保存的消息，再进行队列操作的输出
-                MsgMessage = new Message("伤害已保存，类型：" + strDmg_Type + "，周目：" + intRound_Calculate + "，档案号=" + intEID.ToString() + "\r\n");
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                MsgMessage = new Message("");
-                //如果是尾刀，自动订阅下个周目的相同BOSS
-                if (isProxyRecord)
-                {
-                    //如果代打了，删除被代打人的预约
-                    CaseSubscribe.SubsDel(strGrpID, strRecUID, InputVariables.IntBossCode);
-                }
-                else
-                {
-                    //其余情况删除会话人预约
-                    CaseSubscribe.SubsDel(strGrpID, strUserID, InputVariables.IntBossCode);
-                }
-                //执行退队
-                //CaseQueue.QueueQuit(strGrpID, strUserID, 1);
+                RecordDAL.AddDamageRecord(strGrpID, strRecUID, strUpldrID, InputVariables.IntDMG, InputVariables.IntBossCode, InputVariables.IntEXT, intTimeAddjust, out intEID);
             }
-            else
+            catch (Exception ex)
             {
-                MsgMessage += new Message("与数据库失去连接，伤害保存失败。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message(ex.Message.ToString());
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
+            MsgMessage = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
+            //根据返回EID，反查记录并显示
+            //MsgMessage = new Message("伤害已保存，类型：" + strDmg_Type + "，周目：" + intRound_Calculate + "，档案号=" + intEID.ToString() + "\r\n");
+            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            MsgMessage = new Message("");
+            //执行退队
+            CaseQueue.QueueQuit(strGrpID, strRecUID, "B" + InputVariables.IntBossCode.ToString(), true);
         }
 
         /// <summary>

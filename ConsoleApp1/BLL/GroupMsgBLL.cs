@@ -343,7 +343,7 @@ namespace Marchen.BLL
                         break;
                     case "clear":
                         {
-                            //CaseQueue.QueueClear(strGrpID, strUserID, memberInfo);
+                            CaseQueue.QueueClear(strGrpID, strUserID, memberInfo, strCmdContext);
                         }
                         break;
                     case "debrief":
