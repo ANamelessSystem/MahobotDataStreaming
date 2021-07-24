@@ -22,7 +22,7 @@ namespace Marchen.BLL
                     int intGrpType = int.Parse(dtVfyResult.Rows[0]["ORG_TYPE"].ToString());
                     if (intGrpStat != 1)
                     {
-                        MsgMessage += new Message("本群已关闭bot功能，请联系bot维护团队。");
+                        MsgMessage += new Message("本群已关闭bot功能，请联系bot维护人员。");
                         Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                         bResullt = false;
@@ -35,7 +35,7 @@ namespace Marchen.BLL
                 }
                 else
                 {
-                    MsgMessage += new Message("本群激活状态有误，请联系bot维护团队。");
+                    MsgMessage += new Message("本群激活状态有误，请联系bot维护人员。");
                     Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     bResullt = false;
@@ -43,7 +43,7 @@ namespace Marchen.BLL
             }
             else
             {
-                MsgMessage += new Message("验证时连接数据库失败，请联系bot维护团队。");
+                MsgMessage += new Message("验证时连接数据库失败，请联系bot维护人员。");
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 bResullt = false;
             }
