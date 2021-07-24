@@ -198,23 +198,16 @@ namespace Marchen.BLL
                     DataRow[] drProgress = dtProgress.Select("BC = " + i.ToString());
                     MsgSendHelper.ProgressRowHandler(drProgress,out strProcessRow);
                 }
-                if (InputVariables.IntIsAllFlag == 1)
-                {
-                    strOutput += "B" + i.ToString() + strProcessRow;
-                }
-                else
-                {
-                    strOutput += "B" + i.ToString() + strProcessRow;
-                }
+                strOutput += "B" + i.ToString() + strProcessRow;
                 if (intCount > 0)
                 {
                     if (intCount_Sos == intCount)//只有人挂树而无有效队列的情况
                     {
-                        strOutput += "（" + intCount_Sos + "人挂树）\r\n目前队列中无人。\r\n";
+                        strOutput += "【" + intCount_Sos + "人等待救援】\r\n活动队列中无人。\r\n";
                     }
                     else if (intCount_Sos != 0)
                     {
-                        strOutput += "（" + intCount_Sos + "人挂树）\r\n" + strList_Ext + strList_Normal;
+                        strOutput += "【" + intCount_Sos + "人等待救援】\r\n" + strList_Ext + strList_Normal;
                     }
                     else
                     {
@@ -223,7 +216,7 @@ namespace Marchen.BLL
                 }
                 else
                 {
-                    strOutput += "\r\n目前队列中无人。\r\n";
+                    strOutput += "\r\n活动队列中无人。\r\n";
                 }
                 if (InputVariables.IntIsAllFlag == 1)
                 {
@@ -267,7 +260,7 @@ namespace Marchen.BLL
             if (InputVariables.IntBossCode < 1 && intQuitType == 0)
             {
                 MsgMessage += Message.At(long.Parse(strUserID));
-                MsgMessage += new Message("请指定BOSS编号或使用ALL指令退出所有队伍。\r\n");
+                MsgMessage += new Message("请指定BOSS编号或使用ALL指令退出所有队列。\r\n");
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
@@ -276,7 +269,7 @@ namespace Marchen.BLL
                 if (QueueDAL.QuitQueue(strGrpID, InputVariables.IntBossCode, strUserID, intQuitType))
                 {
                     MsgMessage += Message.At(long.Parse(strUserID));
-                    MsgMessage += new Message("已退出队列。\r\n");
+                    MsgMessage += new Message("已退出B" + InputVariables.IntBossCode.ToString() + "队列。\r\n");
                     if (bShowQueue && InputVariables.IntBossCode > 0)
                     {
                         QueueShow(strGrpID,strUserID,"B" + InputVariables.IntBossCode);
@@ -319,33 +312,6 @@ namespace Marchen.BLL
                 {
                     MsgMessage += new Message("已清空B" + InputVariables.IntBossCode.ToString() + "队列。\r\n");
                 }
-                //if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue_old))
-                //{
-                //    if (dtQueue_old.Rows.Count > 0)
-                //    {
-                //        if (QueueDAL.ClearQueue(strGrpID, out int deletedCount))
-                //        {
-                //            MsgMessage += new Message("已清空队列。\r\n");
-                //            Console.WriteLine("执行清空队列指令成功，共有" + deletedCount + "条记录受到影响");
-                //            MsgMessage += new Message("由于队列被清空，请以下成员重新排队：");
-                //            for (int i = 0; i < dtQueue_old.Rows.Count; i++)
-                //            {
-                //                string strUID = dtQueue_old.Rows[i]["id"].ToString();
-                //                MsgMessage += new Message("\r\nID：" + strUID + "， ") + Message.At(long.Parse(strUID));
-                //            }
-                //        }
-                //        else
-                //        {
-                //            Console.WriteLine("与数据库失去连接，清空队列失败。");
-                //            MsgMessage += new Message("与数据库失去连接，清空队列失败。\r\n");
-                //        }
-                //    }
-                //else
-                //{
-                //    Console.WriteLine("执行清空队列指令失败，队列中无人。");
-                //    MsgMessage += new Message("队列中无人，不需要清空。\r\n");
-                //}
-                //    }
                 else
                 {
                     MsgMessage += new Message("数据库错误，清空队列失败。\r\n");
@@ -367,122 +333,73 @@ namespace Marchen.BLL
         /// <param name="strUserID">QQ号</param>
         public static void QueueAdd_Sos(string strGrpID, string strUserID,string strCmdContext)
         {
-            //if (!CmdHelper.CmdSpliter(strCmdContext))
-            //{
-            //    MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-            //    //MsgMessage += Message.At(long.Parse(strUserID));
-            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-            //    return;
-            //}
-            //if (InputVariables.IntBossCode == -1)
-            //{
-            //    MsgMessage += new Message("未能找到BOSS编号。\r\n");
-            //    //MsgMessage += Message.At(long.Parse(strUserID));
-            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-            //    return;
-            //}
-            //if (InputVariables.IntRound == -1)
-            //{
-            //    if (RecordDAL.GetBossProgress(strGrpID, out DataTable dtBossProgress))
-            //    {
-            //        InputVariables.IntRound = int.Parse(dtBossProgress.Rows[0]["maxround"].ToString());
-            //        if (InputVariables.IntBossCode < int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) && int.Parse(dtBossProgress.Rows[0]["maxbc"].ToString()) == 5)
-            //        {
-            //            InputVariables.IntRound += 1;//BOSS显示进度还在B5，挂树着已经到了下B1或B2的情况
-            //        }
-            //    }
-            //}
-            //if (QueueDAL.UpdateQueueToSos(strGrpID, strUserID, InputVariables.IntBossCode, InputVariables.IntRound, out int updCount))
-            //{
-            //    if (updCount > 0)
-            //    {
-            //        Console.WriteLine("已将群：" + strGrpID + "，" + strUserID + "较早一刀置为等待救援状态。（B" + InputVariables.IntBossCode + "，" + InputVariables.IntRound + "周目）");
-            //        MsgMessage += new Message("已将较早一次队列记录置为等待救援状态。\r\n");
-            //    }
-            //    else
-            //    {
-            //        Console.WriteLine("群：" + strGrpID + "，" + strUserID + "修改队列状态失败：未找到记录。");
-            //        MsgMessage += new Message("未找到队列记录，请先进入队列再改为等待救援状态。\r\n");
-            //    }
-            //    //QueueShow(strGrpID, strUserID);
-            //}
-            //else
-            //{
-            //    MsgMessage += new Message("与数据库失去连接，修改队列状态失败。\r\n");
-            //    //MsgMessage += Message.At(long.Parse(strUserID));
-            //    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-            //}
+            if (!CmdHelper.CmdSpliter(strCmdContext))
+            {
+                MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (InputVariables.IntBossCode == -1)
+            {
+                MsgMessage += new Message("未能找到BOSS编号。\r\n");
+                MsgMessage += Message.At(long.Parse(strUserID));
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            try
+            {
+                QueueDAL.JoinQueue(strGrpID, InputVariables.IntBossCode, strUserID, 2);
+            }
+            catch (Exception ex)
+            {
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message(ex.Message.ToString());
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            MsgMessage += Message.At(long.Parse(strUserID));
+            MsgMessage += new Message("已将较早一次B" + InputVariables.IntBossCode + "队列记录置为等待救援状态。");
+            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
         }
-
-
-        ///// <summary>
-        ///// 经过优化的进度（剩余HP简略至万位）
-        ///// </summary>
-        ///// <param name="strGrpID"></param>
-        ///// <param name="_round"></param>
-        ///// <param name="_bc"></param>
-        ///// <param name="_hp"></param>
-        ///// <param name="_ratio"></param>
-        ///// <returns></returns>
-        //public static bool Format_Progress(string strGrpID, out int _round, out int _bc, out int _hp, out int _ratio)
-        //{
-        //    //bool isCorrect = false;
-        //    _round = 0;
-        //    _bc = 0;
-        //    _hp = 0;
-        //    _ratio = 0;
-        //    RecordDAL.GetProgress(strGrpID, out DataTable dtBossProgress);
-        //    {
-        //        if (dtBossProgress != null && dtBossProgress.Rows.Count > 0)
-        //        {
-        //            if (dtBossProgress.Rows[0][0] is DBNull || dtBossProgress.Rows[0]["hpremain"] is DBNull || dtBossProgress.Rows[0]["maxround"] is DBNull || dtBossProgress.Rows[0]["maxbc"] is DBNull)
-        //            {
-        //                return false;
-        //            }
-        //        }
-        //    }
-        //}
 
         /// <summary>
         /// 查挂树名单
         /// </summary>
         /// <param name="strGrpID">群号</param>
-        //public static void QueueShow_Sos(string strGrpID)
-        //{
-        //    if (QueueDAL.ShowQueue(strGrpID, out DataTable dtQueue))
-        //    {
-        //        if (dtQueue.Rows.Count > 0)
-        //        {
-        //            string strList_sos = "";
-        //            for (int i = 0; i < dtQueue.Rows.Count; i++)
-        //            {
-        //                if (dtQueue.Rows[i]["sosflag"].ToString() == "1")
-        //                {
-        //                    strList_sos += "【挂树第"+i.ToString()+"名】" + dtQueue.Rows[i]["MBRNAME"].ToString() + "(" + dtQueue.Rows[i]["ID"].ToString() + ")    【挂于B" + dtQueue.Rows[i]["BC"].ToString() + "(周目" + dtQueue.Rows[i]["ROUND"].ToString() + ")】\r\n";
-        //                }
-        //            }
-        //            string strOutput;
-        //            if (strList_sos.Length != 0)
-        //            {
-        //                strOutput = "光   荣   榜：\r\n" + strList_sos;
-        //            }
-        //            else
-        //            {
-        //                strOutput = "目前队列无人挂树。太好了，继续保持。\r\n";
-        //            }
-        //            MsgMessage += new Message();
-        //            MsgMessage += new Message(strOutput);
-        //        }
-        //        else
-        //        {
-        //            MsgMessage += new Message("目前队列中无人。\r\n");
-        //        }
-        //    }
-        //    else
-        //    {
-        //        MsgMessage += new Message("与数据库失去连接，查询队列失败。\r\n");
-        //    }
-        //    MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
-        //}
+        public static void QueueShow_Sos(string strGrpID)
+        {
+            DataTable dtSosQueue;
+            string strList_sos = "";
+            try
+            {
+                QueueDAL.ShowQueue(strGrpID, 0, "", 1, out dtSosQueue);
+            }
+            catch (Exception ex)
+            {
+                MsgMessage += new Message(ex.Message.ToString());
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            if (dtSosQueue.Rows.Count > 0)
+            {
+                strList_sos += "等待救援列表：\r\n";
+                for (int i = 0; i < dtSosQueue.Rows.Count; i++)
+                {
+                    if (dtSosQueue.Rows[i]["JOINTYPE"].ToString() == "2")
+                    {
+                        //预想效果：【B1】昵称(UID) 挂于X周目(已等待x分钟)
+                        int intElapsedMinutes = (DateTime.Now - (DateTime)dtSosQueue.Rows[i]["JOINTIME"]).Minutes;
+                        strList_sos += "【B" + dtSosQueue.Rows[i]["BC"].ToString() + "】" + dtSosQueue.Rows[i]["USERNAME"].ToString() + "(" + dtSosQueue.Rows[i]["USERID"].ToString() + ")\t挂于" + dtSosQueue.Rows[i]["JOINROUND"].ToString() + "周目(已等待" + intElapsedMinutes.ToString() + "分钟)\r\n";
+                    }
+                }
+            }
+            else
+            {
+                strList_sos += "目前无人等待救援";
+            }
+            MsgMessage += new Message(strList_sos);
+            MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
+        }
     }
 }

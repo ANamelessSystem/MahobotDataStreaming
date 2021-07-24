@@ -89,15 +89,19 @@ namespace Marchen.DAL
             {
                 if (orex.Number == 20101)
                 {
-                    throw new Exception("无法同时加入多个队伍，请先使用C3退出现有队伍。");
+                    throw new Exception("无法同时加入多个队列，请先使用C3退出现有队列。");
                 }
                 else if (orex.Number == 20102)
                 {
-                    throw new Exception("尚未加入队伍，请先加入一个队伍。");
+                    throw new Exception("尚未加入队列，请先加入一个队列。");
                 }
                 else if (orex.Number == 20104)
                 {
                     throw new Exception("缺少周目值，请指定周目值。");
+                }
+                else if (orex.Number == 20105)
+                {
+                    throw new Exception("请指定BOSS。");
                 }
                 else
                 {

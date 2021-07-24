@@ -338,7 +338,7 @@ namespace Marchen.BLL
                         break;
                     case "sosshow":
                         {
-                            //CaseQueue.QueueShow_Sos(strGrpID);
+                            CaseQueue.QueueShow_Sos(strGrpID);
                         }
                         break;
                     case "clear":
@@ -472,11 +472,6 @@ namespace Marchen.BLL
                             CaseQueue.QueueAdd_Sos(strGrpID, strUserID, strCmdContext);
                         }
                         break;
-                    //case "score":
-                    //    {
-                    //        CaseStatistics.ShowScoreNow(strGrpID,strCmdContext);
-                    //    }
-                    //    break;
                     case "namelistinit":
                         {
                             CaseNameList.InitNameList(strGrpID, memberInfo);
