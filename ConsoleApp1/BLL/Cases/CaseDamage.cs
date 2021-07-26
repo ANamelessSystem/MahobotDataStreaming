@@ -293,7 +293,7 @@ namespace Marchen.BLL
                 string strRUID = InputVariables.DouUID.ToString();
                 try
                 {
-                    RecordDAL.GetDamageRecord(strGrpID, strUserID, 0, 0, 0, InputVariables.IntIsAllFlag, 2, out dtDmgRecords);
+                    RecordDAL.GetDamageRecord(strGrpID, strRUID, 0, 0, 0, InputVariables.IntIsAllFlag, 2, out dtDmgRecords);
                 }
                 catch (Exception ex)
                 {
