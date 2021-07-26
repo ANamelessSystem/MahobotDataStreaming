@@ -47,7 +47,7 @@ namespace Marchen.BLL
             }
             #endregion
             int intJoinType;
-            if (InputVariables.IntEXT == 0)
+            if (InputVariables.IntEXT == 0 || InputVariables.IntEXT == -1)
             {
                 intJoinType = 0;
             }
