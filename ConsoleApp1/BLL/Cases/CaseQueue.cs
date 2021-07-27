@@ -166,7 +166,7 @@ namespace Marchen.BLL
                     if (dtQueue.Rows[j]["BC"].ToString() == i.ToString())
                     {
                         intCount += 1;
-                        int intElapsedMinutes = (DateTime.Now - (DateTime)dtQueue.Rows[j]["JOINTIME"]).Minutes;
+                        CmdHelper.GetTimeDiff((DateTime)dtQueue.Rows[j]["JOINTIME"],out int intElapsedMinutes);
                         if (dtQueue.Rows[j]["JOINTYPE"].ToString() == "1")
                         {
                             intCount_Ext += 1;
@@ -396,7 +396,8 @@ namespace Marchen.BLL
                     if (dtSosQueue.Rows[i]["JOINTYPE"].ToString() == "2")
                     {
                         //预想效果：【B1】昵称(UID) 挂于X周目(已等待x分钟)
-                        int intElapsedMinutes = (DateTime.Now - (DateTime)dtSosQueue.Rows[i]["JOINTIME"]).Minutes;
+                        CmdHelper.GetTimeDiff((DateTime)dtSosQueue.Rows[i]["JOINTIME"],out int intElapsedMinutes);
+                        //int intElapsedMinutes = (DateTime.Now - (DateTime)dtSosQueue.Rows[i]["JOINTIME"]).Minutes;
                         strList_sos += "【B" + dtSosQueue.Rows[i]["BC"].ToString() + "】" + dtSosQueue.Rows[i]["USERNAME"].ToString() + "(" + dtSosQueue.Rows[i]["USERID"].ToString() + ")\t挂于" + dtSosQueue.Rows[i]["JOINROUND"].ToString() + "周目(已等待" + intElapsedMinutes.ToString() + "分钟)\r\n";
                     }
                 }

@@ -374,5 +374,16 @@ namespace Marchen.BLL
                 }
             }
         }
+
+        /// <summary>
+        /// 转换输入时间与系统时间的时间差，系统时间-输入时间=输出分钟
+        /// </summary>
+        /// <param name="_dateTime">输入时间</param>
+        /// <param name="_minutes">输出分钟数</param>
+        public static void GetTimeDiff(DateTime _dateTime, out int _minutes)
+        {
+            TimeSpan _ts = DateTime.Now - _dateTime;
+            _minutes = _ts.Hours * 60 + _ts.Minutes;
+        }
     }
 }
