@@ -383,7 +383,7 @@ namespace Marchen.BLL
         public static void GetTimeDiff(DateTime _dateTime, out int _minutes)
         {
             TimeSpan _ts = DateTime.Now - _dateTime;
-            _minutes = _ts.Hours * 60 + _ts.Minutes;
+            _minutes = Convert.ToInt32(_ts.TotalMinutes);
         }
     }
 }
