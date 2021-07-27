@@ -88,7 +88,7 @@ namespace Marchen.BLL
             InputVariables.IntBossCode = -1;//输入的BOSS编号
             InputVariables.IntRound = -1;//输入的周目编号
             InputVariables.IntDMG = -1;//输入的伤害值
-            InputVariables.IntEXT = 0;//输入的类型值，0=正常，1=补时，2=尾刀
+            InputVariables.IntEXT = -1;//输入的类型值，0=正常，1=补时，2=尾刀
             //CommonVariables.IntSubsType = -1;
             InputVariables.IntTimeOutFlag = 0;
             InputVariables.IntIsAllFlag = 0;

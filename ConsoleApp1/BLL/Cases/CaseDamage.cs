@@ -68,6 +68,10 @@ namespace Marchen.BLL
                         isProxy = true;
                     }
                 }
+                if (InputVariables.IntEXT == -1)
+                {
+                    InputVariables.IntEXT = 0;
+                }
                 if (InputVariables.IntTimeOutFlag != 1)
                 {
                     //如果没掉线就要检查数据的正确性
