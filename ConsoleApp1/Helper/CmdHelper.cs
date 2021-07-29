@@ -100,7 +100,7 @@ namespace Marchen.BLL
                 {
                     InputVariables.IntEXT = 1;
                 }
-                else if (e == "非补时" || e.ToLower() == "noext" || e == "非尾刀" || e.ToLower() == "nolast" || e.ToLower() == "normal")
+                else if (e.ToLower() == "normal" || e == "通常")
                 {
                     InputVariables.IntEXT = 0;
                 }
