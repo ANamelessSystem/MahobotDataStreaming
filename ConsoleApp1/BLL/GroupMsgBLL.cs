@@ -22,7 +22,7 @@ namespace Marchen.BLL
                     int intGrpType = int.Parse(dtVfyResult.Rows[0]["ORG_TYPE"].ToString());
                     if (intGrpStat != 1)
                     {
-                        MsgMessage += new Message("本群已关闭bot功能，请联系bot维护团队。");
+                        MsgMessage += new Message("本群已关闭bot功能，请联系bot维护人员。");
                         Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
                         ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                         bResullt = false;
@@ -35,7 +35,7 @@ namespace Marchen.BLL
                 }
                 else
                 {
-                    MsgMessage += new Message("本群激活状态有误，请联系bot维护团队。");
+                    MsgMessage += new Message("本群激活状态有误，请联系bot维护人员。");
                     Console.WriteLine("群：" + strGrpID + "进行群有效性查询时，查询结果不为1");
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     bResullt = false;
@@ -43,7 +43,7 @@ namespace Marchen.BLL
             }
             else
             {
-                MsgMessage += new Message("验证时连接数据库失败，请联系bot维护团队。");
+                MsgMessage += new Message("验证时连接数据库失败，请联系bot维护人员。");
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 bResullt = false;
             }
@@ -84,23 +84,23 @@ namespace Marchen.BLL
                 {
                     strUserGrpCard = strUserNickName;
                 }
-                string cmdType = "";
-                if (strCmdHead.ToLower() == "c1" || strCmdHead == "排队")
+                string cmdType;
+                if (strCmdHead.ToLower().Contains("c1"))
                 {
                     cmdType = "queueadd";
                     Console.WriteLine("识别为开始排刀");
                 }
-                else if (strCmdHead.ToLower() == "c2" || strCmdHead == "查看排队")
+                else if (strCmdHead.ToLower().Contains("c2"))
                 {
                     cmdType = "queueshow";
                     Console.WriteLine("识别为查询排刀");
                 }
-                else if (strCmdHead.ToLower() == "c3" || strCmdHead == "退出排队")
+                else if (strCmdHead.ToLower().Contains("c3"))
                 {
                     cmdType = "queuequit";
                     Console.WriteLine("识别为退出排刀");
                 }
-                else if (strCmdHead.ToLower() == "c4" || strCmdHead == "查看挂树")
+                else if (strCmdHead.ToLower().Contains("c4"))
                 {
                     cmdType = "sosshow";
                     Console.WriteLine("识别为查询挂树名单");
@@ -155,22 +155,22 @@ namespace Marchen.BLL
                     cmdType = "namelistdel";
                     Console.WriteLine("识别为名单列表删除指定人");
                 }
-                else if (strCmdHead.ToLower() == "s1" || strCmdHead == "订阅")
-                {
-                    cmdType = "bosssubsadd";
-                    Console.WriteLine("识别为新增BOSS订阅");
-                }
-                else if (strCmdHead.ToLower() == "s2" || strCmdHead == "查看订阅")
-                {
-                    cmdType = "bosssubsshow";
-                    Console.WriteLine("识别为查看BOSS订阅");
-                }
-                else if (strCmdHead.ToLower() == "s3" || strCmdHead == "退订")
-                {
-                    //需要另外参数
-                    cmdType = "bosssubscancel";
-                    Console.WriteLine("识别为取消boss订阅");
-                }
+                //else if (strCmdHead.ToLower() == "s1" || strCmdHead == "订阅")
+                //{
+                //    cmdType = "bosssubsadd";
+                //    Console.WriteLine("识别为新增BOSS订阅");
+                //}
+                //else if (strCmdHead.ToLower() == "s2" || strCmdHead == "查看订阅")
+                //{
+                //    cmdType = "bosssubsshow";
+                //    Console.WriteLine("识别为查看BOSS订阅");
+                //}
+                //else if (strCmdHead.ToLower() == "s3" || strCmdHead == "退订")
+                //{
+                //    //需要另外参数
+                //    cmdType = "bosssubscancel";
+                //    Console.WriteLine("识别为取消boss订阅");
+                //}
                 else if (strCmdHead.ToLower() == "测试")
                 {
                     cmdType = "test";
@@ -181,11 +181,6 @@ namespace Marchen.BLL
                     cmdType = "sos";
                     Console.WriteLine("挂树等救");
                 }
-                //else if (strCmdHead.ToLower() == "score")
-                //{
-                //    cmdType = "score";
-                //    Console.WriteLine("算分");
-                //}
                 else if (strSpecCmdText == "initialize member list")
                 {
                     cmdType = "namelistinit";
@@ -200,17 +195,145 @@ namespace Marchen.BLL
                 {
                     case "queueadd":
                         {
-                            CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            if (strCmdHead.ToLower() == "c1")
+                            {
+                                CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                            }
+                            else if (strCmdHead.Length > 2 && strCmdHead.Length < 5)
+                            {
+                                if (int.TryParse(strCmdHead.Substring(strCmdHead.Length - 1, 1), out int intBC))
+                                {
+                                    if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
+                                    {
+                                        strCmdContext = "B" + intBC.ToString() + " " + strCmdContext;
+                                        CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                                    }
+                                    else
+                                    {
+                                        MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                        return;
+                                    }
+                                }
+                                else if (strCmdHead.Substring(strCmdHead.Length - 1, 1).ToLower() == "e" && int.TryParse(strCmdHead.Substring(strCmdHead.Length - 2, 1), out int _intBC))
+                                {
+                                    if (_intBC <= ValueLimits.BossLimitMax && _intBC > 0)
+                                    {
+                                        strCmdContext = "B" + _intBC.ToString() + " ext" + strCmdContext;
+                                        CaseQueue.QueueAdd(strGrpID, strUserID, strCmdContext);
+                                    }
+                                    else
+                                    {
+                                        MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                        return;
+                                    }
+                                } 
+                                else
+                                {
+                                    goto case "unknown";
+                                }
+                            }
                         }
                         break;
                     case "queueshow":
                         {
-                            CaseQueue.QueueShow(strGrpID, strUserID);
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+
+                            if (strCmdHead.ToLower() == "c2")
+                            {
+                                CaseQueue.QueueShow(strGrpID, strUserID, strCmdContext);
+                            }
+                            else
+                            {
+                                if (strCmdHead.Length == 3)
+                                {
+                                    if (int.TryParse(strCmdHead.Substring(strCmdHead.Length - 1, 1), out int intBC))
+                                    {
+                                        if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
+                                        {
+                                            CaseQueue.QueueShow(strGrpID, strUserID, "B" + intBC.ToString());
+                                        }
+                                        else
+                                        {
+                                            MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                            return;
+                                        }
+                                    }
+                                    else if (strCmdHead.ToLower().Substring(strCmdHead.Length - 1, 1) == "a")
+                                    {
+                                        CaseQueue.QueueShow(strGrpID, strUserID, "all");
+                                    }
+                                    else
+                                    {
+                                        goto case "unknown";
+                                    }
+                                }
+                                else
+                                {
+                                    goto case "unknown";
+                                }
+                            }
                         }
                         break;
                     case "queuequit":
                         {
-                            CaseQueue.QueueQuit(strGrpID, strUserID, 0);
+                            if (!CmdHelper.LoadValueLimits())
+                            {
+                                Console.WriteLine("无法读取上限值设置，程序中断");
+                                MsgMessage += new Message("无法读取上限值设置，请联系维护人员");
+                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                return;
+                            }
+                            if (strCmdHead.ToLower() == "c3")
+                            {
+                                CaseQueue.QueueQuit(strGrpID, strUserID, strCmdContext, false);
+                            }
+                            else
+                            {
+                                if (strCmdHead.Length == 3)
+                                {
+                                    if (int.TryParse(strCmdHead.Substring(strCmdHead.Length - 1, 1), out int intBC))
+                                    {
+                                        if (intBC <= ValueLimits.BossLimitMax && intBC > 0)
+                                        {
+                                            CaseQueue.QueueQuit(strGrpID, strUserID, "B" + intBC.ToString(), false);
+                                        }
+                                        else
+                                        {
+                                            MsgMessage += new Message("指定的BOSS编码超过设定上限，请在0—" + ValueLimits.BossLimitMax.ToString() + "选择。");
+                                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                                            return;
+                                        }
+                                    }
+                                    else if (strCmdHead.ToLower().Substring(strCmdHead.Length - 1, 1) == "a")
+                                    {
+                                        CaseQueue.QueueQuit(strGrpID, strUserID, "all", false);
+                                    }
+                                    else
+                                    {
+                                        goto case "unknown";
+                                    }
+                                }
+                                else
+                                {
+                                    goto case "unknown";
+                                }
+                            }
                         }
                         break;
                     case "sosshow":
@@ -220,7 +343,7 @@ namespace Marchen.BLL
                         break;
                     case "clear":
                         {
-                            CaseQueue.QueueClear(strGrpID, strUserID, memberInfo);
+                            CaseQueue.QueueClear(strGrpID, strUserID, memberInfo, strCmdContext);
                         }
                         break;
                     case "debrief":
@@ -238,13 +361,14 @@ namespace Marchen.BLL
                         break;
                     case "help":
                         {
-                            message += new Message("加入队列：【@MahoBot c1】可进入队列\r\n");
-                            message += new Message("查询队列：【@MahoBot c2】可查询当前在队列中的人\r\n");
-                            message += new Message("退出队列：【@MahoBot c3】可离开队列\r\n");
-                            message += new Message("伤害记录：【@MahoBot 伤害 B(n) （伤害值）】（如@MahoBot 伤害 B2 1374200）\r\n 伤害值可如137w等模糊格式\r\n");
-                            message += new Message("尾刀的伤害记录：【@MahoBot 伤害 尾刀 B(n) （伤害值）】\r\n");
+                            message += new Message("加入队列：【@MahoBot c1 B(n)】可进入指定BOSS（B(n)，如B1）的队列\r\n");
+                            message += new Message("查询队列：【@MahoBot c2 B(n)/ALL】可查询指定BOSS或全部队列中的人\r\n");
+                            message += new Message("退出队列：【@MahoBot c3 B(n)】可离开指定BOSS的队列\r\n");
+                            message += new Message("救援列表：【@MahoBot c4】可查看等待救援的名单\r\n");
+                            message += new Message("伤害记录：【@MahoBot 伤害 B(n) （伤害值） 】（如@MahoBot 伤害 B2 1374200），伤害值可如137w等模糊格式\r\n");
+                            message += new Message("尾刀或补时的伤害记录：【@MahoBot 伤害 尾刀/补时 B(n) （伤害值）】\r\n");
                             message += new Message("掉线记录：【@MahoBot 伤害 掉线】可记录一次掉线\r\n");
-                            message += new Message("其他功能及用例请参考命令表\r\n https://docs.qq.com/sheet/DRGthS3JpS1ZibHlL?opendocxfrom=admin&preview_token=&coord=F27A0C0&tab=BB08J2 \r\n");
+                            message += new Message("其他功能及用例请参考命令表\r\n https://docs.qq.com/sheet/DQWRyR2t6SkliTGRX \r\n");
                             //message += Message.At(long.Parse(strUserID));
                             ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), message).Wait();
                         }
@@ -349,11 +473,6 @@ namespace Marchen.BLL
                             CaseQueue.QueueAdd_Sos(strGrpID, strUserID, strCmdContext);
                         }
                         break;
-                    //case "score":
-                    //    {
-                    //        CaseStatistics.ShowScoreNow(strGrpID,strCmdContext);
-                    //    }
-                    //    break;
                     case "namelistinit":
                         {
                             CaseNameList.InitNameList(strGrpID, memberInfo);

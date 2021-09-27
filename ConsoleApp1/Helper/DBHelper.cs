@@ -34,6 +34,17 @@ namespace Marchen.DAL
             }
         }
 
+        public static void DBConnectClose()
+        {
+            if (connection.State == ConnectionState.Open)
+            {
+                connection.Close();
+            }
+            if (connection.State == ConnectionState.Broken)
+            {
+                connection.Close();
+            }
+        }
         /// <summary>
         /// 采用DataTable方式查询
         /// </summary>
@@ -57,12 +68,11 @@ namespace Marchen.DAL
         public static int ExecuteCommand(string sql)
         {
             OracleCommand cmd = new OracleCommand(sql, Connection);
-            int count = 0;
             ///OracleCommand command = connection.CreateCommand();
             OracleTransaction trans = connection.BeginTransaction();
             cmd.Transaction = trans;
             cmd.CommandText = sql;
-            count = cmd.ExecuteNonQuery();
+            int count = cmd.ExecuteNonQuery();
             trans.Commit();
             connection.Close();
             Console.WriteLine(DateTime.Now.ToString() + ":" + sql);
@@ -95,6 +105,58 @@ namespace Marchen.DAL
             opgid.Value = strParaValue;
             cmd.ExecuteNonQuery();
             connection.Close();
+        }
+
+        /// <summary>
+        /// 执行带参数的存储过程（无返回）
+        /// </summary>
+        /// <param name="strProdName">存储过程名字</param>
+        /// <param name="paras">参数</param>
+        public static void ExecuteProdNonQuery(string strProdName, OracleParameter[] paras)
+        {
+            OracleCommand cmd = new OracleCommand();
+            cmd.Connection = Connection;
+            cmd.CommandText = strProdName;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddRange(paras);
+            cmd.ExecuteNonQuery(); 
+            Connection.Close();
+        }
+
+        /// <summary>
+        /// 执行带参数的存储过程（返回dt结果集）
+        /// </summary>
+        /// <param name="strProdName">存储过程名</param>
+        /// <param name="paras">参数（输出参数需在属性中指定）</param>
+        /// <returns>Datatable结果集</returns>
+        public static DataTable ExecuteProd2DT(string strProdName, OracleParameter[] paras)
+        {
+            OracleCommand cmd = new OracleCommand(strProdName, Connection);
+            DataTable dt = new DataTable();
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddRange(paras);
+            dt.Load(cmd.ExecuteReader(CommandBehavior.CloseConnection));
+            return dt;
+        }
+
+        /// <summary>
+        /// 执行带参数的存储过程（返回ds结果集）//reserve
+        /// </summary>
+        /// <param name="strProdName">存储过程名</param>
+        /// <param name="paras">参数（输出参数需在属性中指定）</param>
+        /// <returns>DataSet结果集</returns>
+        public static DataSet ExecuteProd2DataSet(string strProdName, OracleParameter[] paras)
+        {
+            OracleCommand cmd = new OracleCommand();
+            cmd.Connection = Connection;
+            cmd.CommandText = strProdName;
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddRange(paras);
+            OracleDataAdapter daReader = new OracleDataAdapter(cmd);
+            DataSet ds = new DataSet();
+            daReader.Fill(ds);
+            Connection.Close();
+            return ds;
         }
     }
 }

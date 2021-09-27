@@ -35,8 +35,11 @@ namespace Marchen.BLL
                 return;
             }
             bool isCorrect = true;//数据正误标记位
-            string strRecUID = strUserID;//代刀标记
-            bool isProxyRecord = false;//代刀标记
+            string strRecUID = strUserID;//被代刀人ID，此处初始化
+            string strUpldrID = strUserID;//原上传人ID，使用调用人ID
+            int intTimeAddjust = 0;
+            bool isProxy = false;//代刀标记
+            int intEID;
             //分拆命令
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
@@ -46,10 +49,6 @@ namespace Marchen.BLL
             else
             {
                 //识别出来的数据处理
-                if (InputVariables.IntEXT != 2)
-                {
-                    InputVariables.IntEXT = 0;
-                }
                 if (InputVariables.DouUID != -1)
                 {
                     //代刀规则
@@ -66,11 +65,13 @@ namespace Marchen.BLL
                     }
                     else
                     {
-                        isProxyRecord = true;
+                        isProxy = true;
                     }
                 }
-
-
+                if (InputVariables.IntEXT == -1)
+                {
+                    InputVariables.IntEXT = 0;
+                }
                 if (InputVariables.IntTimeOutFlag != 1)
                 {
                     //如果没掉线就要检查数据的正确性
@@ -93,118 +94,43 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            int intRound_Calculate = 0;
-            //请求目前进度
-            if (CaseQueue.Format_Progress(strGrpID, out int _round, out int _bc, out int _hp, out int _ratio))
+
+            if (InputVariables.IntTimeOutFlag == 1)
             {
-                intRound_Calculate = _round;
-            }
-            else
-            {
-                MsgMessage += new Message("与数据库失去连接，查询进度失败。\r\n");
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                return;
-            }
-            if (InputVariables.IntTimeOutFlag != 1)
-            {
-                if (InputVariables.IntBossCode > (_bc + 1) || (InputVariables.IntBossCode + 1) < _bc)
-                {
-                    //输入了和现在进度非相邻关系的BOSS
-                    if (_bc == 5 && InputVariables.IntBossCode == 1)
-                    {
-                        //进入下一周目
-                        intRound_Calculate += 1;
-                    }
-                    else if (_bc == 1 && InputVariables.IntBossCode == 5 && _round > 1)
-                    {
-                        //填回上周目
-                        intRound_Calculate += -1;
-                    }
-                    else
-                    {
-                        //如非以上两种情况则认为输错
-                        if (_bc == 1)
-                        {
-                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B1，可报B1、B2或上周目的B5。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
-                        }
-                        else if (_bc == 5)
-                        {
-                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B5，可报B4、B5或下周目的B1。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
-                        }
-                        else
-                        {
-                            MsgMessage += new Message("所提交的BOSS有误，已拒绝本次提交。\r\n目前进度为" + _round + "周目B" + _bc + "，可报B" + (_bc - 1) + "、B" + _bc + "或B" + (_bc + 1) + "。如需补报更早的记录，请先报成本BOSS再使用记录修改功能进行更改。\r\n");
-                        }
-                        //MsgMessage += Message.At(long.Parse(strUserID));
-                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                        return;
-                    }
-                }
-            }
-            else
-            {
-                //如果掉线了就按当前进度记录0伤害的数据
+                //掉线
                 //防止计入尾刀掉线
                 if (InputVariables.IntEXT == 2)
                 {
                     InputVariables.IntEXT = 0;
                 }
                 InputVariables.IntDMG = 0;
-                InputVariables.IntRound = _round;
-                InputVariables.IntBossCode = _bc;
+                InputVariables.IntBossCode = 1;
             }
-            if (isProxyRecord)
+
+            if (isProxy)
             {
                 strRecUID = InputVariables.DouUID.ToString();
             }
-            RecordDAL.CheckLastAttack(strGrpID, strRecUID, out int isLastAtk);
-            if (isLastAtk == 1)
-            {
-                //上一刀为尾刀，本刀自动记为补时
-                InputVariables.IntEXT = 1;
-            }
+
             //执行上传
-            if (RecordDAL.DamageDebrief(strGrpID, strRecUID, InputVariables.IntDMG, intRound_Calculate, InputVariables.IntBossCode, InputVariables.IntEXT, out int intEID))
+            try
             {
-                string strDmg_Type = "";
-                if (InputVariables.IntEXT == 0)
-                {
-                    strDmg_Type = "通常";
-                }
-                else if (InputVariables.IntEXT == 1)
-                {
-                    strDmg_Type = "补时";
-                }
-                else
-                {
-                    strDmg_Type = "尾刀";
-                }
-                Console.WriteLine(DateTime.Now.ToString() + "伤害已保存，档案号=" + intEID.ToString() + "，B" + InputVariables.IntBossCode.ToString() + "，" + intRound_Calculate.ToString() + "周目，数值：" + InputVariables.IntDMG.ToString() + "，补时标识：" + InputVariables.IntEXT);
-                //吞消息比较频繁，先发送保存的消息，再进行队列操作的输出
-                MsgMessage = new Message("伤害已保存，类型：" + strDmg_Type + "，周目：" + intRound_Calculate + "，档案号=" + intEID.ToString() + "\r\n");
-                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                MsgMessage = new Message("");
-                //如果是尾刀，自动订阅下个周目的相同BOSS
-                if (isProxyRecord)
-                {
-                    //如果代打了，删除被代打人的预约
-                    CaseSubscribe.SubsDel(strGrpID, strRecUID, InputVariables.IntBossCode);
-                }
-                else
-                {
-                    //其余情况删除会话人预约
-                    CaseSubscribe.SubsDel(strGrpID, strUserID, InputVariables.IntBossCode);
-                }
-                //执行退队
-                CaseQueue.QueueQuit(strGrpID, strUserID, 1);
+                RecordDAL.AddDamageRecord(strGrpID, strRecUID, strUpldrID, InputVariables.IntDMG, InputVariables.IntBossCode, InputVariables.IntEXT, intTimeAddjust, out intEID);
             }
-            else
+            catch (Exception ex)
             {
-                MsgMessage += new Message("与数据库失去连接，伤害保存失败。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message(ex.Message.ToString());
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
+            MsgMessage = new Message("伤害已保存，档案号=" + intEID.ToString() + "\r\n");
+            //根据返回EID，反查记录并显示
+            //MsgMessage = new Message("伤害已保存，类型：" + strDmg_Type + "，周目：" + intRound_Calculate + "，档案号=" + intEID.ToString() + "\r\n");
+            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+            MsgMessage = new Message("");
+            //执行退队
+            CaseQueue.QueueQuit(strGrpID, strRecUID, "B" + InputVariables.IntBossCode.ToString(), true);
         }
 
         /// <summary>
@@ -216,12 +142,6 @@ namespace Marchen.BLL
         /// <param name="memberInfo">传入的用户信息</param>
         public static void DmgModify(string strGrpID, string strUserID, string strCmdContext, GroupMemberInfo memberInfo)
         {
-            int intRound = 0;
-            int intDMG = -1;
-            int intBossCode = 0;
-            int intExTime = 0;
-            string strOriUID = "";
-            string strNewUID = "";
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
@@ -233,32 +153,47 @@ namespace Marchen.BLL
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
-            if (RecordDAL.QueryDmgRecByEID(InputVariables.IntEID, strGrpID, out DataTable dtDmgRecOriginal))
+            DataTable dtDmgRecOriginal;
+            try
             {
-                if (dtDmgRecOriginal.Rows.Count < 1)
-                {
-                    Console.WriteLine("输入的档案号：" + InputVariables.IntEID + " 未能找到数据。");
-                    MsgMessage += new Message("输入的档案号：" + InputVariables.IntEID + " 未能找到数据。\r\n");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    return;
-                }
-                else if (dtDmgRecOriginal.Rows.Count > 1)
-                {
-                    Console.WriteLine("输入的档案号：" + InputVariables.IntEID + " 返回非唯一结果。");
-                    MsgMessage += new Message("输入的档案号：" + InputVariables.IntEID + " 返回非唯一结果，请联系维护团队。\r\n");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    return;
-                }
-                else
-                {
-                    //给结果值先赋上原始数据，再用需要修改的部分覆盖掉这些数值，以简化判断
-                    strOriUID = dtDmgRecOriginal.Rows[0]["userid"].ToString();
-                    strNewUID = strOriUID;
-                    intDMG = int.Parse(dtDmgRecOriginal.Rows[0]["dmg"].ToString());
-                    intRound = int.Parse(dtDmgRecOriginal.Rows[0]["round"].ToString());
-                    intBossCode = int.Parse(dtDmgRecOriginal.Rows[0]["bc"].ToString());
-                    intExTime = int.Parse(dtDmgRecOriginal.Rows[0]["extime"].ToString());
-                }
+                RecordDAL.GetDamageRecord(strGrpID,"", InputVariables.IntEID,0,0,0,1,out dtDmgRecOriginal);
+            }
+            catch (Exception ex)
+            {
+                MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += new Message(ex.Message.ToString());
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            int intRound;
+            int intDMG;
+            int intBossCode;
+            int intExTime;
+            string strOriUID;
+            string strNewUID;
+            if (dtDmgRecOriginal.Rows.Count < 1)
+            {
+                Console.WriteLine("输入的档案号：" + InputVariables.IntEID + " 未能找到数据。");
+                MsgMessage += new Message("输入的档案号：" + InputVariables.IntEID + " 未能找到数据。\r\n");
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            else if (dtDmgRecOriginal.Rows.Count > 1)
+            {
+                Console.WriteLine("输入的档案号：" + InputVariables.IntEID + " 返回非唯一结果。");
+                MsgMessage += new Message("输入的档案号：" + InputVariables.IntEID + " 返回非唯一结果，请联系bot维护人员。\r\n");
+                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                return;
+            }
+            else
+            {
+                //给结果值先赋上原始数据，再用需要修改的部分覆盖掉这些数值，以简化判断
+                strOriUID = dtDmgRecOriginal.Rows[0]["USERID"].ToString();
+                strNewUID = strOriUID;
+                intDMG = int.Parse(dtDmgRecOriginal.Rows[0]["DMG"].ToString());
+                intRound = int.Parse(dtDmgRecOriginal.Rows[0]["RECROUND"].ToString());
+                intBossCode = int.Parse(dtDmgRecOriginal.Rows[0]["BC"].ToString());
+                intExTime = int.Parse(dtDmgRecOriginal.Rows[0]["RECTYPE"].ToString());
             }
             if (InputVariables.DouUID != -1)
             {
@@ -283,23 +218,25 @@ namespace Marchen.BLL
             if (strUserID == strOriUID || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Leader || memberInfo.Authority == GroupMemberInfo.GroupMemberAuthority.Manager)
             {
                 //仅允许本人或管理员进行修改
-                if (RecordDAL.DamageUpdate(strGrpID, strNewUID, intDMG, intRound, intBossCode, intExTime, InputVariables.IntEID))
+                try
                 {
-                    MsgMessage += new Message("修改成功。");
-                    if (DmgOutputUniform(dtDmgRecOriginal,0, out string strOriOutput))
-                    {
-                        MsgMessage += new Message("\r\n原记录：\r\n" + strOriOutput);
-                    }
-                    string strQryEID = "E" + InputVariables.IntEID.ToString();
-                    MsgMessage += new Message("\r\n修改后：");
-                    RecordQuery(strGrpID, strUserID, strQryEID);
+                    RecordDAL.ModifyDamageRecord(strGrpID, strNewUID, intDMG, intRound, intBossCode, intExTime, InputVariables.IntEID);
                 }
-                else
+                catch (Exception ex)
                 {
-                    MsgMessage += new Message("与数据库失去连接，修改失败。\r\n");
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message(ex.Message.ToString());
                     ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                     return;
                 }
+                MsgMessage += new Message("修改成功。");
+                if (DmgOutputUniform(dtDmgRecOriginal, 0, out string strOriOutput))
+                {
+                    MsgMessage += new Message("\r\n原记录：\r\n" + strOriOutput);
+                }
+                string strQryEID = "E" + InputVariables.IntEID.ToString();
+                MsgMessage += new Message("\r\n修改后：");
+                RecordQuery(strGrpID, strUserID, strQryEID);
             }
             else
             {
@@ -321,44 +258,36 @@ namespace Marchen.BLL
             if (!CmdHelper.CmdSpliter(strCmdContext))
             {
                 MsgMessage += new Message("输入【@MahoBot help】获取帮助。\r\n");
-                //MsgMessage += Message.At(long.Parse(strUserID));
+                MsgMessage += Message.At(long.Parse(strUserID));
                 ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
                 return;
             }
+            DataTable dtDmgRecords;
             if (InputVariables.IntEID != -1)
             {
-                Console.WriteLine("识别到EventID，优先使用EventID作为查询条件（唯一）");
-                if (RecordDAL.QueryDmgRecByEID(InputVariables.IntEID, strGrpID, out DataTable dtDmgRecords))
+                //Console.WriteLine("识别到EventID，优先使用EventID作为查询条件（唯一）");
+                try
                 {
-                    if (dtDmgRecords.Rows.Count < 1)
-                    {
-                        Console.WriteLine("输入的档案号：" + InputVariables.IntEID + " 未能找到数据。\r\n");
-                        MsgMessage += new Message("输入的档案号：" + InputVariables.IntEID + " 未能找到数据。\r\n");
-                    }
-                    else if (dtDmgRecords.Rows.Count > 1)
-                    {
-                        Console.WriteLine("输入的档案号：" + InputVariables.IntEID + " 返回非唯一结果。");
-                        MsgMessage += new Message("输入的档案号：" + InputVariables.IntEID + " 返回非唯一结果，请联系维护团队。\r\n");
-                    }
-                    else
-                    {
-                        if (DmgOutputUniform(dtDmgRecords,0, out string strOutput))
-                        {
-                            MsgMessage += new Message("档案号E" + InputVariables.IntEID + "的记录：\r\n");
-                            MsgMessage += new Message(strOutput);
-                        }
-                        else
-                        {
-                            MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                            //MsgMessage += Message.At(long.Parse(strUserID));
-                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                            return;
-                        }
-                    }
+                    RecordDAL.GetDamageRecord(strGrpID, strUserID, InputVariables.IntEID, 0, 0, 0, 1, out dtDmgRecords);
+                }
+                catch (Exception ex)
+                {
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message(ex.Message.ToString());
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    return;
+                }
+                if (DmgOutputUniform(dtDmgRecords, 0, out string strOutput))
+                {
+                    MsgMessage += new Message("档案号E" + InputVariables.IntEID + "的记录：\r\n");
+                    MsgMessage += new Message(strOutput);
                 }
                 else
                 {
-                    MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
+                    MsgMessage += new Message("出现意料外的错误，请联系bot维护人员。\r\n");
+                    //MsgMessage += Message.At(long.Parse(strUserID));
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    return;
                 }
             }
             else if ((InputVariables.DouUID != -1 && InputVariables.IntBossCode == -1 && InputVariables.IntRound == -1))
@@ -366,197 +295,101 @@ namespace Marchen.BLL
                 //仅按UID查询
                 //Console.WriteLine("识别为按UID");
                 string strRUID = InputVariables.DouUID.ToString();
-                string strRName = "";
-                if (NameListDAL.GetMemberName(strGrpID, InputVariables.DouUID.ToString(), out string strResult))
+                try
                 {
-                    strRName = strResult;
+                    RecordDAL.GetDamageRecord(strGrpID, strRUID, 0, 0, 0, InputVariables.IntIsAllFlag, 2, out dtDmgRecords);
+                }
+                catch (Exception ex)
+                {
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message(ex.Message.ToString());
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    return;
+                }
+                if (dtDmgRecords.Rows.Count == 0)
+                {
+                    MsgMessage += new Message("尚无伤害记录。");
                 }
                 else
                 {
-                    MsgMessage += new Message("该用户未在名单中注册。\r\n");
-                }
-                if (!ClanInfoDAL.GetClanTimeOffset(strGrpID, out int intHourSet))
-                {
-                    MsgMessage += new Message("与数据库失去连接，查询区域时间设定失败。\r\n");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    return;
-                }
-                if (intHourSet < 0)
-                {
-                    MsgMessage += new Message("每日更新小时设定小于0，尚未验证这种形式的时间格式是否正常，已退回本功能。\r\n");
-                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                    return;
-                }
-                if (RecordDAL.QueryTimeNowOnDatabase(out DataTable dtResultTime))
-                {
-                    DateTime dtNow = (DateTime)dtResultTime.Rows[0]["sysdate"];
-                    DateTime dtStart = CmdHelper.GetZeroTime(dtNow).AddHours(intHourSet);//当天结算时间开始
-                    DateTime dtEnd = CmdHelper.GetZeroTime(dtNow.AddDays(1)).AddHours(intHourSet);//第二天结算时间结束
-                    if (InputVariables.IntIsAllFlag == 1)
+                    string strRName = dtDmgRecords.Rows[0]["NAME"].ToString();
+                    if (InputVariables.IntIsAllFlag == 0)
                     {
-                        if (RecordDAL.QueryDmgRecords_All(InputVariables.DouUID, strGrpID, out DataTable dtDmgRecords))
-                        {
-                            if (InputVariables.IntIsAllFlag == 0)
-                            {
-                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
-                            }
-                            else
-                            {
-                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
-                            }
-                            if (dtDmgRecords.Rows.Count == 0)
-                            {
-                                MsgMessage += new Message("\r\n尚无伤害记录。");
-                            }
-                            else
-                            {
-                                if (DmgOutputUniform(dtDmgRecords, 1, out string strOutput))
-                                {
-                                    MsgMessage += new Message(strOutput);
-                                }
-                                else
-                                {
-                                    MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                    //MsgMessage += Message.At(long.Parse(strUserID));
-                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                    return;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
-                        }
-                    }
-                    else if (dtNow.Hour >= 0 && dtNow.Hour < intHourSet)
-                    {
-                        //0点后日期变换，开始日期需查到昨天
-                        dtStart = dtStart.AddDays(-1);//当天结算时间开始
-                        dtEnd = dtEnd.AddDays(-1);//第二天结算时间结束
-                        if (RecordDAL.QueryDmgRecords(InputVariables.DouUID, strGrpID, dtStart, dtEnd, out DataTable dtDmgRecords))
-                        {
-                            if (InputVariables.IntIsAllFlag == 0)
-                            {
-                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
-                            }
-                            else
-                            {
-                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
-                            }
-                            if (dtDmgRecords.Rows.Count == 0)
-                            {
-                                MsgMessage += new Message("\r\n尚无伤害记录。");
-                            }
-                            else
-                            {
-                                if (DmgOutputUniform(dtDmgRecords, 1, out string strOutput))
-                                {
-                                    MsgMessage += new Message(strOutput);
-                                }
-                                else
-                                {
-                                    MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                    //MsgMessage += Message.At(long.Parse(strUserID));
-                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                    return;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
-                        }
+                        MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
                     }
                     else
                     {
-                        if (RecordDAL.QueryDmgRecords(InputVariables.DouUID, strGrpID, dtStart, dtEnd, out DataTable dtDmgRecords))
-                        {
-                            if (InputVariables.IntIsAllFlag == 0)
-                            {
-                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：本日)\r\n");
-                            }
-                            else
-                            {
-                                MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
-                            }
-                            if (dtDmgRecords.Rows.Count == 0)
-                            {
-                                MsgMessage += new Message("\r\n尚无伤害记录。");
-                            }
-                            else
-                            {
-                                if (DmgOutputUniform(dtDmgRecords, 1, out string strOutput))
-                                {
-                                    MsgMessage += new Message(strOutput);
-                                }
-                                else
-                                {
-                                    MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                    //MsgMessage += Message.At(long.Parse(strUserID));
-                                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                    return;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
-                        }
+                        MsgMessage += new Message(strRName + "(" + strRUID + ")的记录：\r\n(查询范围：整期)\r\n");
+                    }
+                    if (DmgOutputUniform(dtDmgRecords, 1, out string strOutput))
+                    {
+                        MsgMessage += new Message(strOutput);
+                    }
+                    else
+                    {
+                        MsgMessage += new Message("出现意料外的错误，请联系bot维护人员。\r\n");
+                        MsgMessage += Message.At(long.Parse(strUserID));
+                        ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                        return;
                     }
                 }
             }
-            else if ((InputVariables.DouUID == -1 && InputVariables.IntBossCode != -1 && InputVariables.IntRound != -1) || (InputVariables.DouUID == -1 && InputVariables.IntRound != -1))
+            else if (InputVariables.DouUID == -1 && InputVariables.IntBossCode != -1 && InputVariables.IntRound != -1)
             {
                 //按周目+BOSS查询
-                Console.WriteLine("识别为按周目+BOSS或单独周目");
-                if (RecordDAL.QueryDmgRecords(InputVariables.IntBossCode, InputVariables.IntRound, strGrpID, out DataTable dtDmgRecords))
+                //Console.WriteLine("识别为按周目+BOSS或单独周目");
+                try
                 {
-                    if (dtDmgRecords.Rows.Count == 0)
-                    {
-                        MsgMessage += new Message("\r\n尚无伤害记录。\r\n");
-                    }
-                    else
-                    {
-                        string strOutput = "";
-                        if (InputVariables.IntBossCode != -1)
-                        {
-                            if (DmgOutputUniform(dtDmgRecords, 3, out strOutput))
-                            {
-                                MsgMessage += new Message(InputVariables.IntRound + "周目B" + InputVariables.IntBossCode + "的记录：\r\n");
-                            }
-                            else
-                            {
-                                MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                //MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
-                            }
-                        }
-                        else
-                        {
-                            if (DmgOutputUniform(dtDmgRecords, 2, out strOutput))
-                            {
-                                MsgMessage += new Message(InputVariables.IntRound + "周目的记录：\r\n");
-                            }
-                            else
-                            {
-                                MsgMessage += new Message("出现意料外的错误，请联系维护团队。\r\n");
-                                //MsgMessage += Message.At(long.Parse(strUserID));
-                                ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
-                                return;
-                            }
-                        }
-                        MsgMessage += new Message(strOutput);
-                    }
+                    RecordDAL.GetDamageRecord(strGrpID, strUserID, 0, InputVariables.IntBossCode, InputVariables.IntRound, 0, 3, out dtDmgRecords);
+                }
+                catch (Exception ex)
+                {
+                    MsgMessage += Message.At(long.Parse(strUserID));
+                    MsgMessage += new Message(ex.Message.ToString());
+                    ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                    return;
+                }
+                if (dtDmgRecords.Rows.Count == 0)
+                {
+                    MsgMessage += new Message("\r\n尚无伤害记录。\r\n");
                 }
                 else
                 {
-                    MsgMessage += new Message("与数据库失去连接，查询记录失败。\r\n");
+                    string strOutput;
+                    if (InputVariables.IntBossCode != -1)
+                    {
+                        if (DmgOutputUniform(dtDmgRecords, 3, out strOutput))
+                        {
+                            MsgMessage += new Message(InputVariables.IntRound + "周目B" + InputVariables.IntBossCode + "的记录：\r\n");
+                        }
+                        else
+                        {
+                            MsgMessage += new Message("出现意料外的错误，请联系bot维护人员。\r\n");
+                            MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (DmgOutputUniform(dtDmgRecords, 2, out strOutput))
+                        {
+                            MsgMessage += new Message(InputVariables.IntRound + "周目的记录：\r\n");
+                        }
+                        else
+                        {
+                            MsgMessage += new Message("出现意料外的错误，请联系bot维护人员。\r\n");
+                            //MsgMessage += Message.At(long.Parse(strUserID));
+                            ApiProperties.HttpApi.SendGroupMessageAsync(long.Parse(strGrpID), MsgMessage).Wait();
+                            return;
+                        }
+                    }
+                    MsgMessage += new Message(strOutput);
                 }
             }
             else
             {
-                MsgMessage += new Message("不支持的查询模式。仅支持以下四种条件查询：\r\n1.单独按档案号查询\r\n2.单独按QQ号查询\r\n3.单独按周目查询\r\n4.同时按BOSS与周目查询。\r\n");
+                MsgMessage += new Message("不支持的查询模式。仅支持以下四种条件查询：\r\n1.单独按档案号查询\r\n2.单独按QQ号查询\r\n3.同时按BOSS与周目查询。\r\n");
             }
             //MsgMessage += Message.At(long.Parse(strUserID));
             MsgSendHelper.UniversalMsgSender(MsgSendType.Auto, MsgTargetType.Group, strGrpID, MsgMessage);
@@ -577,18 +410,18 @@ namespace Marchen.BLL
             {
                 for (int i = 0; i < dtInput.Rows.Count; i++)
                 {
-                    string strRDmg = dtInput.Rows[i]["dmg"].ToString();
-                    string strRRound = dtInput.Rows[i]["round"].ToString();
-                    string strRBC = dtInput.Rows[i]["bc"].ToString();
-                    string strREID = dtInput.Rows[i]["eventid"].ToString();
-                    string strRTime = dtInput.Rows[i]["time"].ToString();
-                    string strRUID = dtInput.Rows[i]["userid"].ToString();
-                    string strRName = dtInput.Rows[i]["name"].ToString();
-                    if (dtInput.Rows[i]["extime"].ToString() == "2")
+                    string strRDmg = dtInput.Rows[i]["DMG"].ToString();
+                    string strRRound = dtInput.Rows[i]["RECROUND"].ToString();
+                    string strRBC = dtInput.Rows[i]["BC"].ToString();
+                    string strREID = dtInput.Rows[i]["EVENTID"].ToString();
+                    string strRTime = dtInput.Rows[i]["RECTIME"].ToString();
+                    string strRUID = dtInput.Rows[i]["USERID"].ToString();
+                    string strRName = dtInput.Rows[i]["NAME"].ToString();
+                    if (dtInput.Rows[i]["RECTYPE"].ToString() == "2")
                     {
                         strRDmg += " （尾刀）";
                     }
-                    else if (dtInput.Rows[i]["extime"].ToString() == "1")
+                    else if (dtInput.Rows[i]["RECTYPE"].ToString() == "1")
                     {
                         strRDmg += " （补时）";
                     }
