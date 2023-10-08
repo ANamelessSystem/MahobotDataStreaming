@@ -130,22 +130,28 @@ namespace Marchen.Helper
             //ITEMS IN DATAROW:
             //GRPID BC ROUND PARSE DMG HP ROUNDMIN ROUNDMAX
             string strHPRemain = "";
-            double douHPRemain = double.Parse(drsProgress[0]["HP"].ToString()) - double.Parse(drsProgress[0]["DMG"].ToString());
+            int intHPRemain = int.Parse(drsProgress[0]["HP"].ToString()) - int.Parse(drsProgress[0]["DMG"].ToString());
             int intParse = int.Parse(drsProgress[0]["PARSE"].ToString());
             int intRound = int.Parse(drsProgress[0]["ROUND"].ToString());
             int intRoundMax = int.Parse(drsProgress[0]["ROUNDMAX"].ToString());
             int intRoundMin = int.Parse(drsProgress[0]["ROUNDMIN"].ToString());
-            if (douHPRemain >= 10000 && douHPRemain < 100000000)
+            if (intHPRemain>=100000000)
             {
-                strHPRemain = douHPRemain.ToString()[0..^4] + "万";
+                int yi = intHPRemain / 100000000;
+                int wan = (intHPRemain % 100000000) / 10000;
+                strHPRemain = yi.ToString() + "亿";
+                if (wan > 0)
+                {
+                    strHPRemain += wan.ToString() + "万";
+                }
             }
-            else if (douHPRemain >= 100000000)
+            else if (intHPRemain >= 10000)
             {
-                strHPRemain = douHPRemain.ToString()[0..^8] + "亿";
+                strHPRemain = (intHPRemain/10000).ToString() + "万";
             }
             else
             {
-                strHPRemain = douHPRemain.ToString();
+                strHPRemain = intHPRemain.ToString();
             }
             if (intRoundMax - intRound == 0)
             {
